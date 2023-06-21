@@ -1,0 +1,63 @@
+require_relative '../node_modules/react-native/scripts/react_native_pods'
+require_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'
+
+platform :ios, '13.0'
+install! 'cocoapods', :deterministic_uuids => false
+$RNMapboxMapsImpl = 'maplibre' # optional as this is the default
+$RNMapboxMapsVersion = 'exactVersion 5.12.1'
+
+target 'CleanApp' do
+  config = use_native_modules!
+  use_react_native!(
+    :path => config[:reactNativePath],
+    # to enable hermes on iOS, change `false` to `true` and then install pods
+    :hermes_enabled => false
+  )
+
+  pod 'react-native-charts-wrapper', :path => '../node_modules/react-native-charts-wrapper' # do not delete this 
+
+  pod 'react-native-webview', :path => '../node_modules/react-native-webview'
+
+  pod 'RNBackgroundFetch', :path => '../node_modules/react-native-background-fetch'
+
+  pod 'RNCPushNotificationIOS', :path => '../node_modules/@react-native-community/push-notification-ios'
+
+  # React Native Maps dependencies
+  # rn_maps_path = '../node_modules/react-native-maps'
+  # pod 'react-native-google-maps', :path => rn_maps_path
+  # pod 'GoogleMaps'
+  # pod 'Google-Maps-iOS-Utils', :git => 'https://github.com/Simon-TechForm/google-maps-ios-utils.git', :branch => 'feat/support-apple-silicon'
+  
+  permissions_path = '../node_modules/react-native-permissions/ios'
+  pod 'Permission-LocationWhenInUse', :path => "#{permissions_path}/LocationWhenInUse"
+  pod 'Permission-PhotoLibrary', :path => "#{permissions_path}/PhotoLibrary"
+  pod 'Permission-PhotoLibraryAddOnly', :path => "#{permissions_path}/PhotoLibraryAddOnly"
+  pod 'Permission-Camera', :path => "#{permissions_path}/Camera"
+
+  pod 'react-native-cameraroll', :path => '../node_modules/@react-native-camera-roll/camera-roll'
+
+  target 'CleanAppTests' do
+    inherit! :complete
+    # Pods for testing
+  end
+
+  # Enables Flipper.
+  #
+  # Note that if you have use_frameworks! enabled, Flipper will not work and
+  # you should disable the next line.
+  #use_flipper!()
+
+  #post_install do |installer|
+  #  react_native_post_install(installer)
+  #end
+
+  pre_install do |installer|
+    $RNMapboxMaps.pre_install(installer)
+  end
+
+  post_install do |installer|
+    $RNMapboxMaps.post_install(installer)
+  end
+
+ #pod 'react-native-mapbox-gl', :path => '../node_modules/@react-native-mapbox-gl/maps'
+end
