@@ -18,6 +18,7 @@ export const actions = {
   EXIT_WALKTHROUGH: 'EXIT_WALKTHROUGH',
   SET_CURRENCYSETTING: 'SET_CURRENCYSETTING',
   SET_CAMERA_ACTION: 'SET_CAMERA_ACTION',
+  SET_USER_LOCATION: 'SET_USER_LOCATION',
 };
 
 export const reducer = (state, action) => {
@@ -124,6 +125,12 @@ export const reducer = (state, action) => {
       return {
         ...state,
         cameraAction: action.cameraAction,
+      };
+
+    case actions.SET_USER_LOCATION:
+      return {
+        ...state,
+        userLocation: action.userLocation,
       };
 
     default:

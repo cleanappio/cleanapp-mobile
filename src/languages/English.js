@@ -506,6 +506,9 @@ export default {
       usernamewalletaddress: 'Username/Wallet address',
       add: 'Add',
       invitedusers: 'Invited Users',
+      guildnameempty: 'Guild Name is Empty!',
+      guilddescempty: 'Guild Description is Empty!',
+      profileimageempty: 'Guild Profile Image is Empty!',
     },
     guildscreen: {
       joinaguild: 'Join a Guild',

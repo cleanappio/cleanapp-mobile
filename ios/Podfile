@@ -3,8 +3,8 @@ require_relative '../node_modules/@react-native-community/cli-platform-ios/nativ
 
 platform :ios, '13.0'
 install! 'cocoapods', :deterministic_uuids => false
-$RNMapboxMapsImpl = 'maplibre' # optional as this is the default
-$RNMapboxMapsVersion = 'exactVersion 5.12.1'
+$RNMapboxMapsImpl = 'mapbox' # optional as this is the default
+#$RNMapboxMapsVersion = 'exactVersion 5.12.1'
 
 target 'CleanApp' do
   config = use_native_modules!
@@ -35,6 +35,8 @@ target 'CleanApp' do
   pod 'Permission-Camera', :path => "#{permissions_path}/Camera"
 
   pod 'react-native-cameraroll', :path => '../node_modules/@react-native-camera-roll/camera-roll'
+
+  pod 'react-native-config', :path => '../node_modules/react-native-config'
 
   target 'CleanAppTests' do
     inherit! :complete

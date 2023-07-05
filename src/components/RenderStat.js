@@ -9,7 +9,7 @@ const RenderStat = (props) => {
 
   //const isUser = item && ((item.username && userName === item.username) || (item.address && ( walletAddress === item.address))) &&  !isSelf;
 
-  const bottomMargin = (index == 0 || index == 1) && !isSelf ? 8 : 0;
+  const bottomMargin = (index === 0 || index === 1) && !isSelf ? 8 : 0;
   let indexColor = 'white',
     indexSize = 12,
     bottomBorderColor = 'transparent',
@@ -75,7 +75,7 @@ const RenderStat = (props) => {
               fontSize: indexSize,
               fontFamily: fontFamilies.Default,
             }}>{`${index + 1}${
-            index == 0 ? 'st' : index == 1 ? 'nd' : index == 2 ? 'rd' : 'th'
+            index === 0 ? 'st' : index === 1 ? 'nd' : index === 2 ? 'rd' : 'th'
           }`}</Text>
           <View
             style={{
@@ -94,7 +94,11 @@ const RenderStat = (props) => {
                 fontFamily: fontFamilies.Default,
                 textAlign: 'center',
               }}>
-              {isSelf ? 'You' : item.username || item.address}
+              {isSelf
+                ? 'You'
+                : item.username
+                ? item.username
+                : item.public_address}
             </Text>
             <Text
               style={{
@@ -103,7 +107,7 @@ const RenderStat = (props) => {
                 fontWeight: '300',
                 fontSize: nameSize,
                 fontFamily: fontFamilies.Default,
-              }}>{`${item.value} CATS`}</Text>
+              }}>{`${item.rewards} CATS`}</Text>
           </View>
         </View>
       )}

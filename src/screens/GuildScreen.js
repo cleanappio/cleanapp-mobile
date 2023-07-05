@@ -9,137 +9,41 @@ import RenderStat from '../components/RenderStat';
 import Ripple from '../components/Ripple';
 import {useNavigation} from '@react-navigation/native';
 import {useTranslation} from 'react-i18next';
-const test_leaderboard_guilds = [
-  {
-    username: 'The ETHerius',
-    value: 12345,
-    desc: 'Welcome to Apex Launchers guild. Inactive people will be kicked out.\n\n\nLorem ipsum dolor sit amet consectetur. Nunc faucibus id dictum amet iaculis sed ut nunc mauris. Non eu senectus nec elementum et gravida. Nisl enim eget elementum nisl ut quis. Sapien diam sit libero tellus blandit at in. Urna ipsum id volutpat aliquet feugiat etiam venenatis. Et id ac diam ac feugiat quis tempus viverra iaculis.\n\n\nLets clean the world !',
-    members: 67,
-  },
-  {
-    username: 'Altcoin Gang',
-    value: 12344,
-    desc: 'Welcome to Apex Launchers guild. Inactive people will be kicked out.\n\n\nLorem ipsum dolor sit amet consectetur. Nunc faucibus id dictum amet iaculis sed ut nunc mauris. Non eu senectus nec elementum et gravida. Nisl enim eget elementum nisl ut quis. Sapien diam sit libero tellus blandit at in. Urna ipsum id volutpat aliquet feugiat etiam venenatis. Et id ac diam ac feugiat quis tempus viverra iaculis.\n\n\nLets clean the world !',
-    members: 67,
-  },
-  {
-    username: 'CyberBytes',
-    value: 12343,
-    desc: 'Welcome to Apex Launchers guild. Inactive people will be kicked out.\n\n\nLorem ipsum dolor sit amet consectetur. Nunc faucibus id dictum amet iaculis sed ut nunc mauris. Non eu senectus nec elementum et gravida. Nisl enim eget elementum nisl ut quis. Sapien diam sit libero tellus blandit at in. Urna ipsum id volutpat aliquet feugiat etiam venenatis. Et id ac diam ac feugiat quis tempus viverra iaculis.\n\n\nLets clean the world !',
-    members: 67,
-  },
-  {
-    username: 'Cryptoholics',
-    value: 12342,
-    desc: 'Welcome to Apex Launchers guild. Inactive people will be kicked out.\n\n\nLorem ipsum dolor sit amet consectetur. Nunc faucibus id dictum amet iaculis sed ut nunc mauris. Non eu senectus nec elementum et gravida. Nisl enim eget elementum nisl ut quis. Sapien diam sit libero tellus blandit at in. Urna ipsum id volutpat aliquet feugiat etiam venenatis. Et id ac diam ac feugiat quis tempus viverra iaculis.\n\n\nLets clean the world !',
-    members: 67,
-  },
-  {
-    username: 'CoinLoco',
-    value: 12341,
-    desc: 'Welcome to Apex Launchers guild. Inactive people will be kicked out.\n\n\nLorem ipsum dolor sit amet consectetur. Nunc faucibus id dictum amet iaculis sed ut nunc mauris. Non eu senectus nec elementum et gravida. Nisl enim eget elementum nisl ut quis. Sapien diam sit libero tellus blandit at in. Urna ipsum id volutpat aliquet feugiat etiam venenatis. Et id ac diam ac feugiat quis tempus viverra iaculis.\n\n\nLets clean the world !',
-    members: 67,
-  },
-  {
-    username: 'Ace Crypto',
-    value: 12340,
-    desc: 'Welcome to Apex Launchers guild. Inactive people will be kicked out.\n\n\nLorem ipsum dolor sit amet consectetur. Nunc faucibus id dictum amet iaculis sed ut nunc mauris. Non eu senectus nec elementum et gravida. Nisl enim eget elementum nisl ut quis. Sapien diam sit libero tellus blandit at in. Urna ipsum id volutpat aliquet feugiat etiam venenatis. Et id ac diam ac feugiat quis tempus viverra iaculis.\n\n\nLets clean the world !',
-    members: 67,
-  },
-  {
-    username: 'Blockdot',
-    value: 12339,
-    desc: 'Welcome to Apex Launchers guild. Inactive people will be kicked out.\n\n\nLorem ipsum dolor sit amet consectetur. Nunc faucibus id dictum amet iaculis sed ut nunc mauris. Non eu senectus nec elementum et gravida. Nisl enim eget elementum nisl ut quis. Sapien diam sit libero tellus blandit at in. Urna ipsum id volutpat aliquet feugiat etiam venenatis. Et id ac diam ac feugiat quis tempus viverra iaculis.\n\n\nLets clean the world !',
-    members: 67,
-  },
-  {
-    username: 'Gorecovery',
-    value: 12338,
-    desc: 'Welcome to Apex Launchers guild. Inactive people will be kicked out.\n\n\nLorem ipsum dolor sit amet consectetur. Nunc faucibus id dictum amet iaculis sed ut nunc mauris. Non eu senectus nec elementum et gravida. Nisl enim eget elementum nisl ut quis. Sapien diam sit libero tellus blandit at in. Urna ipsum id volutpat aliquet feugiat etiam venenatis. Et id ac diam ac feugiat quis tempus viverra iaculis.\n\n\nLets clean the world !',
-    members: 67,
-  },
-  {
-    username: 'Cryptoblen',
-    value: 12337,
-    desc: 'Welcome to Apex Launchers guild. Inactive people will be kicked out.\n\n\nLorem ipsum dolor sit amet consectetur. Nunc faucibus id dictum amet iaculis sed ut nunc mauris. Non eu senectus nec elementum et gravida. Nisl enim eget elementum nisl ut quis. Sapien diam sit libero tellus blandit at in. Urna ipsum id volutpat aliquet feugiat etiam venenatis. Et id ac diam ac feugiat quis tempus viverra iaculis.\n\n\nLets clean the world !',
-    members: 67,
-  },
-  {
-    username: 'Koinox',
-    value: 12336,
-    desc: 'Welcome to Apex Launchers guild. Inactive people will be kicked out.\n\n\nLorem ipsum dolor sit amet consectetur. Nunc faucibus id dictum amet iaculis sed ut nunc mauris. Non eu senectus nec elementum et gravida. Nisl enim eget elementum nisl ut quis. Sapien diam sit libero tellus blandit at in. Urna ipsum id volutpat aliquet feugiat etiam venenatis. Et id ac diam ac feugiat quis tempus viverra iaculis.\n\n\nLets clean the world !',
-    members: 67,
-  },
-  {
-    username: 'The ETHerius',
-    value: 12345,
-    desc: 'Welcome to Apex Launchers guild. Inactive people will be kicked out.\n\n\nLorem ipsum dolor sit amet consectetur. Nunc faucibus id dictum amet iaculis sed ut nunc mauris. Non eu senectus nec elementum et gravida. Nisl enim eget elementum nisl ut quis. Sapien diam sit libero tellus blandit at in. Urna ipsum id volutpat aliquet feugiat etiam venenatis. Et id ac diam ac feugiat quis tempus viverra iaculis.\n\n\nLets clean the world !',
-    members: 67,
-  },
-  {
-    username: 'Altcoin Gang',
-    value: 12344,
-    desc: 'Welcome to Apex Launchers guild. Inactive people will be kicked out.\n\n\nLorem ipsum dolor sit amet consectetur. Nunc faucibus id dictum amet iaculis sed ut nunc mauris. Non eu senectus nec elementum et gravida. Nisl enim eget elementum nisl ut quis. Sapien diam sit libero tellus blandit at in. Urna ipsum id volutpat aliquet feugiat etiam venenatis. Et id ac diam ac feugiat quis tempus viverra iaculis.\n\n\nLets clean the world !',
-    members: 67,
-  },
-  {
-    username: 'CyberBytes',
-    value: 12343,
-    desc: 'Welcome to Apex Launchers guild. Inactive people will be kicked out.\n\n\nLorem ipsum dolor sit amet consectetur. Nunc faucibus id dictum amet iaculis sed ut nunc mauris. Non eu senectus nec elementum et gravida. Nisl enim eget elementum nisl ut quis. Sapien diam sit libero tellus blandit at in. Urna ipsum id volutpat aliquet feugiat etiam venenatis. Et id ac diam ac feugiat quis tempus viverra iaculis.\n\n\nLets clean the world !',
-    members: 67,
-  },
-  {
-    username: 'Cryptoholics',
-    value: 12342,
-    desc: 'Welcome to Apex Launchers guild. Inactive people will be kicked out.\n\n\nLorem ipsum dolor sit amet consectetur. Nunc faucibus id dictum amet iaculis sed ut nunc mauris. Non eu senectus nec elementum et gravida. Nisl enim eget elementum nisl ut quis. Sapien diam sit libero tellus blandit at in. Urna ipsum id volutpat aliquet feugiat etiam venenatis. Et id ac diam ac feugiat quis tempus viverra iaculis.\n\n\nLets clean the world !',
-    members: 67,
-  },
-  {
-    username: 'CoinLoco',
-    value: 12341,
-    desc: 'Welcome to Apex Launchers guild. Inactive people will be kicked out.\n\n\nLorem ipsum dolor sit amet consectetur. Nunc faucibus id dictum amet iaculis sed ut nunc mauris. Non eu senectus nec elementum et gravida. Nisl enim eget elementum nisl ut quis. Sapien diam sit libero tellus blandit at in. Urna ipsum id volutpat aliquet feugiat etiam venenatis. Et id ac diam ac feugiat quis tempus viverra iaculis.\n\n\nLets clean the world !',
-    members: 67,
-  },
-  {
-    username: 'Ace Crypto',
-    value: 12340,
-    desc: 'Welcome to Apex Launchers guild. Inactive people will be kicked out.\n\n\nLorem ipsum dolor sit amet consectetur. Nunc faucibus id dictum amet iaculis sed ut nunc mauris. Non eu senectus nec elementum et gravida. Nisl enim eget elementum nisl ut quis. Sapien diam sit libero tellus blandit at in. Urna ipsum id volutpat aliquet feugiat etiam venenatis. Et id ac diam ac feugiat quis tempus viverra iaculis.\n\n\nLets clean the world !',
-    members: 67,
-  },
-  {
-    username: 'Blockdot',
-    value: 12339,
-    desc: 'Welcome to Apex Launchers guild. Inactive people will be kicked out.\n\n\nLorem ipsum dolor sit amet consectetur. Nunc faucibus id dictum amet iaculis sed ut nunc mauris. Non eu senectus nec elementum et gravida. Nisl enim eget elementum nisl ut quis. Sapien diam sit libero tellus blandit at in. Urna ipsum id volutpat aliquet feugiat etiam venenatis. Et id ac diam ac feugiat quis tempus viverra iaculis.\n\n\nLets clean the world !',
-    members: 67,
-  },
-  {
-    username: 'Gorecovery',
-    value: 12338,
-    desc: 'Welcome to Apex Launchers guild. Inactive people will be kicked out.\n\n\nLorem ipsum dolor sit amet consectetur. Nunc faucibus id dictum amet iaculis sed ut nunc mauris. Non eu senectus nec elementum et gravida. Nisl enim eget elementum nisl ut quis. Sapien diam sit libero tellus blandit at in. Urna ipsum id volutpat aliquet feugiat etiam venenatis. Et id ac diam ac feugiat quis tempus viverra iaculis.\n\n\nLets clean the world !',
-    members: 67,
-  },
-  {
-    username: 'Cryptoblen',
-    value: 12337,
-    desc: 'Welcome to Apex Launchers guild. Inactive people will be kicked out.\n\n\nLorem ipsum dolor sit amet consectetur. Nunc faucibus id dictum amet iaculis sed ut nunc mauris. Non eu senectus nec elementum et gravida. Nisl enim eget elementum nisl ut quis. Sapien diam sit libero tellus blandit at in. Urna ipsum id volutpat aliquet feugiat etiam venenatis. Et id ac diam ac feugiat quis tempus viverra iaculis.\n\n\nLets clean the world !',
-    members: 67,
-  },
-  {
-    username: 'Koinox',
-    value: 12336,
-    desc: 'Welcome to Apex Launchers guild. Inactive people will be kicked out.\n\n\nLorem ipsum dolor sit amet consectetur. Nunc faucibus id dictum amet iaculis sed ut nunc mauris. Non eu senectus nec elementum et gravida. Nisl enim eget elementum nisl ut quis. Sapien diam sit libero tellus blandit at in. Urna ipsum id volutpat aliquet feugiat etiam venenatis. Et id ac diam ac feugiat quis tempus viverra iaculis.\n\n\nLets clean the world !',
-    members: 67,
-  },
-];
+import {getGuildList, joinGuild} from '../services/API/APIManager';
+import RenderGuildListItem from '../components/RenderGuildListItem';
 
 const GuildScreen = () => {
-  const [guildlist, setGuildlist] = useState(test_leaderboard_guilds);
+  const [guildlist, setGuildlist] = useState([]);
+  const [selectedId, setSelectedId] = useState(null);
   const navigation = useNavigation();
   const {t} = useTranslation();
 
   const openCreateGuildScreen = () => {
     navigation.navigate('CreateGuild');
   };
+
+  const onToggle = (id) => {
+    setSelectedId((prevId) => {
+      if (prevId === id) {
+        return null;
+      }
+      return id;
+    });
+  };
+
+  const onJoinGuild = (id) => {
+    joinGuild({guild_id: id}).then((resp) => {
+      navigation.navigate('Leaderboard');
+    });
+  }
+
+  useEffect(() => {
+    getGuildList().then((guildListResponse) => {
+      if (guildListResponse && guildListResponse.length > 0) {
+        setGuildlist(guildListResponse);
+      }
+    });
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -169,7 +73,16 @@ const GuildScreen = () => {
         style={styles.list}
         data={guildlist}
         keyExtractor={(item, index) => index}
-        renderItem={RenderStat}
+        renderItem={({item, index}) =>
+          RenderGuildListItem({
+            item,
+            index,
+            isRank: false,
+            selectedId,
+            onToggle: onToggle,
+            joinGuild: onJoinGuild
+          })
+        }
         nestedScrollEnabled
       />
       <View style={styles.btnBlock}>

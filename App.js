@@ -33,23 +33,23 @@ import {I18nextProvider} from 'react-i18next';
 import {MenuProvider} from 'react-native-popup-menu';
 import {ethers} from 'ethers';
 import {NftProvider} from 'use-nft';
-import {getPtoyPrice} from './src/utils/TokenPrice';
 
 // 1. Import the modules.
 import BackgroundFetch from 'react-native-background-fetch';
-//import PushNotification, { Importance } from 'react-native-push-notification';
 import {getNotifications} from './src/services/API/APIManager';
 import NotifService from './NotifService';
 import {WalletConnectProvider} from '@walletconnect/react-native-dapp/dist/providers';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import MapboxGL from '@rnmapbox/maps';
 import {PERMISSIONS, RESULTS, check, request} from 'react-native-permissions';
-import {MAPBOX_ACCESS_TOKEN} from './env';
+import Config from 'react-native-config';
+import {getLocation} from './src/functions/geolocation';
+import {getReverseGeocodingData} from './src/services/API/MapboxAPI';
 
 getWeb3_.catch((err) => {
   //console.warn('Error in web3 initialization.', err));
 });
-MapboxGL.setAccessToken(MAPBOX_ACCESS_TOKEN);
+MapboxGL.setAccessToken(Config.MAPBOX_ACCESS_TOKEN);
 
 const persistor = persistStore(store);
 
@@ -65,13 +65,40 @@ const RootNavigator = () => {
     checkStatus();
     checkDataUsageSettings();
     checkVerifySettings();
-    checkCurrencySettings();
-
     fetchNotification();
     fetchTask();
 
-    handleLocationPermission();
+    checkUserLocation();
+    //handleLocationPermission();
   }, []);
+
+  const checkUserLocation = async () => {
+    const location = await getLocation();
+    let locationStr = '';
+    let cityStr = '';
+    if (location && location.latitude) {
+      const locStr = await getReverseGeocodingData(
+        [location.longitude, location.latitude],
+        true,
+      );
+      if (locStr && locStr.features) {
+        const features = locStr.features;
+        if (features.length > 0) {
+          locationStr = features[0].context.find((context) =>
+            context.id.startsWith('locality.'),
+          ).text;
+          cityStr = features[0].context.find((context) =>
+            context.id.startsWith('place.'),
+          ).text;
+        }
+      }
+    }
+
+    dispatch({
+      type: actions.SET_USER_LOCATION,
+      userLocation: {...location, location: locationStr, city: cityStr},
+    });
+  };
 
   const handleLocationPermission = async () => {
     let permissionCheck = '';
@@ -200,23 +227,6 @@ const RootNavigator = () => {
         });
       }
     } catch (err) {}
-  };
-
-  const checkCurrencySettings = async () => {
-    //
-    let rate = await getPtoyPrice();
-    if (rate === 0) {
-      const currencySettings = getCurrencySettings();
-      rate = currencySettings.rate;
-    }
-
-    dispatch({
-      type: actions.SET_CURRENCYSETTING,
-      currencySettings: {
-        rate: rate,
-        currency: 'USD',
-      },
-    });
   };
 
   const getAlertSettings = () => {

@@ -36,6 +36,7 @@ import CheckBigIcon from '../assets/ico_check_big.svg';
 import {BlurView} from '@react-native-community/blur';
 import {ActivityIndicator} from 'react-native';
 import {useTranslation} from 'react-i18next';
+import {uploadImage} from '../services/API/APIManager';
 
 const CameraScreen = (props) => {
   const [hasPermission, setHasPermission] = useState(false);
@@ -47,7 +48,7 @@ const CameraScreen = (props) => {
   const [torchEnabled, setTorchEnabled] = useState(false);
   const camera = useRef(null);
   const [photoPath, setPhotoPath] = useState('');
-  const [{cameraAction}, dispatch] = useStateValue();
+  const [{cameraAction, userLocation}, dispatch] = useStateValue();
   const [phototaken, setPhototaken] = useState(false);
   const [animatedValue] = useState(new Animated.Value(0));
   const {t} = useTranslation();
@@ -178,16 +179,36 @@ const CameraScreen = (props) => {
     skipMetadata: true,
   }));
 
+  const uploadPhoto = async (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    if (userLocation && userLocation.latitude && userLocation.longitude) {
+      formData.append('latitude', userLocation.latitude);
+      formData.append('longitude', userLocation.longitude);
+      formData.append('locality', userLocation.location);
+      formData.append('city', userLocation.city);
+    }
+    const res = await uploadImage(formData);
+    if (res) {
+    }
+  };
+
   const takePhoto = async () => {
     if (camera.current) {
       try {
         if (camera.current === null) throw new Error('Camera is null!');
         const photo = await camera.current.takePhoto(takePhotoOptions);
         setPhotoPath(photo.path);
-
-        CameraRoll.save(photo.path, 'photo')
-          .then(() => {
-            // photo saved success
+        uploadPhoto({
+          uri:
+            Platform.OS === 'ios'
+              ? photo.path.replace('file://', '')
+          : 'file://' + photo.path,
+          type: 'image/jpeg',
+          name: 'photo.jpg',
+        })
+          .then((data) => {
+            setPhotoPath('');
           })
           .catch((err) => {
             Alert.alert(
@@ -196,11 +217,7 @@ const CameraScreen = (props) => {
               [{text: t('camerascreen.ok'), onPress: () => {}}],
               {cancelable: false},
             );
-          })
-          .finally(() => {});
-        setTimeout(() => {
-          setPhotoPath('');
-        }, 3000);
+          });
       } catch (e) {
         // error occured while saving photo
       }

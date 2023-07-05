@@ -30,4 +30,10 @@ export const initialState = {
   cameraAction: {
     requestCameraShot: false,
   },
+  userLocation: {
+    longitude: 0,
+    latitude: 0,
+    location: '',
+    city: '',
+  },
 };

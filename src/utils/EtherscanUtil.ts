@@ -1,4 +1,4 @@
-import {ETHERSCAN_API_TOKEN, PTOY_CONTRACT} from '../../env';
+import Config from 'react-native-config';
 
 export const getTransactions = async (address: string) => {
   let url =
@@ -12,8 +12,8 @@ export const getTransactions = async (address: string) => {
     const response = await fetch(
       url
         .replace('$[address]', address)
-        .replace('$[contractaddress]', PTOY_CONTRACT)
-        .replace('$[apikey]', ETHERSCAN_API_TOKEN),
+        .replace('$[contractaddress]', Config.PTOY_CONTRACT)
+        .replace('$[apikey]', Config.ETHERSCAN_API_TOKEN),
       config,
     );
     const result = await response.json();

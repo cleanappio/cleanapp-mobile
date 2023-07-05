@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {memo, useCallback, useEffect, useRef, useState} from 'react';
 import MapboxGL from '@rnmapbox/maps';
 import {
   StyleSheet,
@@ -7,10 +7,12 @@ import {
   FlatList,
   Image,
   Dimensions,
+  Platform,
 } from 'react-native';
 import SlidingUpPanel from 'rn-sliding-up-panel';
-import {MAPBOX_STYLE_MONOCHROME} from '../../env';
+import Config from 'react-native-config';
 import {
+  getCoordinatesFromLocation,
   getMapSearchItems,
   getReverseGeocodingData,
 } from '../services/API/MapboxAPI';
@@ -22,36 +24,23 @@ import {Tooltip} from 'react-native-elements';
 import BottomSheetDialog from '../components/BotomSheetDialog';
 import Ripple from '../components/Ripple';
 import {useTranslation} from 'react-i18next';
-const test_image1 = require('../assets/test_marker1.jpg');
-const test_image2 = require('../assets/test_marker2.jpg');
-const test_markers = [
-  {position: [-74.020257, 40.774479], image: test_image1},
-  {position: [-74.023257, 40.775479], image: test_image1},
-  {position: [-74.022257, 40.776479], image: test_image1},
-  {position: [-74.021257, 40.773479], image: test_image1},
-  {position: [-74.025257, 40.772479], image: test_image1},
-  {position: [-74.026257, 40.771479], image: test_image1},
-];
+import {useStateValue} from '../services/State/State';
+import {getImage, searchImagesByLocation} from '../services/API/APIManager';
+import MarkerGreen from '../assets/marker_green.svg';
+import MarkerBlue from '../assets/marker_blue.svg';
 
 const MapScreen = (props) => {
   const slidingPanel = useRef(null);
-  const [coordinates, setCoordinates] = useState([-74.020257, 40.774479]);
-  const [data, setData] = useState(test_markers);
+  const [coordinates, setCoordinates] = useState([0, 0]);
+  const [data, setData] = useState([]);
   const [selectedMarker, setSelectedMarker] = useState(null);
   const [searchText, setSearchText] = useState('');
   const [searchItems, setSearchItems] = useState([]);
+  const [{userLocation}, dispatch] = useStateValue();
+  const [searchLocText, setSearchLocText] = useState('');
+  const camera = useRef(null);
 
   const {t} = useTranslation();
-
-  useState(() => {
-    if (searchText.length > 2) {
-      getMapSearchItems(searchText).then((data) => {
-        if (data) {
-          setSearchItems(data);
-        }
-      });
-    }
-  }, [searchText]);
 
   const onMarkerPress = useCallback(
     (feature) => {
@@ -61,83 +50,136 @@ const MapScreen = (props) => {
     [slidingPanel],
   );
 
+  const fetchImages = async (latitude, longitude, range = 1) => {
+    searchImagesByLocation({
+      latitude: latitude,
+      longitude: longitude,
+      range: 1,
+    }).then((data) => {
+      if (data.result) {
+        setData(data.result);
+      }
+    });
+  };
+
+  const onRegionDidChange = async (e) => {
+    if (e.geometry && e.geometry.coordinates) {
+      const latitude = e.geometry.coordinates[1];
+      const longitude = e.geometry.coordinates[0];
+      fetchImages(latitude, longitude);
+    }
+  };
+
+  const onDismissSlide = async () => {
+    setSelectedMarker(null);
+  };
+
+  const selectSuggestion = async (text) => {
+    if (text) {
+      getCoordinatesFromLocation(text).then((data) => {
+        if (data !== null) {
+          setCoordinates(data);
+        }
+      });
+    }
+    setSearchItems([]);
+  };
+
+  const gotoLocation = async (e) => {
+    const text = e.nativeEvent.text;
+    if (text) {
+      getCoordinatesFromLocation(text).then((data) => {
+        if (data !== null) {
+          setCoordinates(data);
+        }
+      });
+    }
+  };
+
   useEffect(() => {
-    getReverseGeocodingData([-74.026257, 40.771479], false).then((data) => {});
-    getReverseGeocodingData([-74.026257, 40.771479], true).then((data) => {});
+    if (searchLocText.length > 2) {
+      getMapSearchItems(searchLocText).then((data) => {
+        if (data) {
+          setSearchItems(data);
+        }
+      });
+    } else {
+      setSearchItems([]);
+    }
+  }, [searchLocText]);
+
+  useEffect(() => {
+    if (userLocation && userLocation.latitude && userLocation.longitude) {
+      setCoordinates([userLocation.longitude, userLocation.latitude]);
+    }
+  }, [userLocation]);
+
+  useEffect(() => {
+    fetchImages(userLocation.latitude, userLocation.longitude);
   }, []);
 
-  /**
-   * https://dev.to/ajmal_hasan/mapbox-geocoding-directions-integration-with-react-native-mapbox-49i6
-   * @param {*} param0
-   * @returns
-   */
-  const SearchLocationInput = ({}) => {
-    return (
-      <View style={styles.inputBox}>
-        <SearchIcon />
-        <TextInput
-          autoCorrect={false}
-          spellCheck={false}
-          style={styles.searchInput}
-          placeholder="Bowery, New York"
-          placeholderTextColor={theme.COLORS.TEXT_GREY_50P}
-          //onChangeText={setSearchText}
-        />
-      </View>
-    );
-  };
-
   const SearchItemsSeperator = () => {
-    return <></>;
+    return <View style={styles.seperator}></View>;
   };
 
-  const SearchContainer = ({}) => {
-    return (
-      <View style={styles.searchContainer}>
-        <Text style={styles.heading}>{t('mapscreen.maps')}</Text>
-        <FlatList
-          style={styles.searchlist}
-          data={searchItems}
-          renderItem={({item}) => (
-            <Text style={{padding: 10}}>{item.name} </Text>
+  const RenderSearchItemView = ({item}) => (
+    <Ripple onPress={() => selectSuggestion(item)}>
+      <Text style={styles.searchItemText}>{item} </Text>
+    </Ripple>
+  );
+
+  const DetailView = memo(
+    ({
+      isVisible = true,
+      onClose = () => {},
+      item = {
+        latitude: 0,
+        longitude: 0,
+        locality: '',
+        city: '',
+        image_id: '',
+      },
+    }) => {
+      const [image, setImage] = useState(null);
+      useEffect(() => {
+        if (item) {
+          getSingleImage(item.image_id);
+        }
+      }, [item]);
+
+      const getSingleImage = async (imageId) => {
+        let result = await getImage(imageId);
+        const fileReaderInstance = new FileReader();
+        fileReaderInstance.readAsDataURL(result);
+        fileReaderInstance.onload = () => {
+          setImage(fileReaderInstance.result);
+        };
+      };
+
+      return (
+        <View
+          style={{
+            width: '100%',
+            borderTopLeftRadius: 8,
+            borderTopRightRadius: 8,
+            backgroundColor: theme.APP_COLOR_1,
+            padding: 16,
+          }}>
+          {item && (
+            <View style={styles.row}>
+              <Text style={styles.txt12}>{item.locality}</Text>
+              <Text style={styles.txt12}>{item.city}</Text>
+            </View>
           )}
-          keyExtractor={(item) => item.name}
-          ItemSeparatorComponent={SearchItemsSeperator}
-          ListHeaderComponent={SearchLocationInput}
-        />
-      </View>
-    );
-  };
-
-  const DetailView = ({
-    isVisible = true,
-    onClose = () => {},
-    item = {
-      location: 'Christie St, 67B',
-      city: 'New York',
-    },
-  }) => {
-    return (
-      <View
-        style={{
-          width: '100%',
-          borderTopLeftRadius: 8,
-          borderTopRightRadius: 8,
-          backgroundColor: theme.APP_COLOR_1,
-          padding: 16,
-        }}>
-        <View style={styles.row}>
-          <Text style={styles.txt12}>{item.location}</Text>
-          <Text style={styles.txt12}>{item.city}</Text>
+          <Image
+            source={{uri: image}}
+            style={styles.detailImage}
+            resizeMode="cover"
+          />
         </View>
-        <Image
-          source={test_image1}
-          style={styles.detailImage}
-          resizeMode="cover"
-        />
-      </View>
-    );
-  };
+      );
+    },
+  );
 
   const Balloon = ({title = ''}) => {
     return (
@@ -153,29 +195,64 @@ const MapScreen = (props) => {
   return (
     <View style={styles.page}>
       <View style={styles.container}>
-        <SearchContainer />
-        <MapboxGL.MapView styleURL={MAPBOX_STYLE_MONOCHROME} style={styles.map}>
-          <MapboxGL.Camera zoomLevel={17} centerCoordinate={coordinates} />
+        <View style={styles.searchContainer}>
+          <Text style={styles.heading}>{t('mapscreen.maps')}</Text>
+          <View style={styles.inputBox}>
+            <SearchIcon />
+            <TextInput
+              autoCorrect={false}
+              spellCheck={false}
+              style={styles.searchInput}
+              placeholder="Bowery, New York"
+              placeholderTextColor={theme.COLORS.TEXT_GREY_50P}
+              onChangeText={setSearchLocText}
+              onSubmitEditing={gotoLocation}
+            />
+          </View>
+          {searchItems && searchItems.length > 0 && (
+            <FlatList
+              style={styles.searchlist}
+              data={searchItems}
+              renderItem={RenderSearchItemView}
+              keyExtractor={(item) => item}
+              ItemSeparatorComponent={SearchItemsSeperator}
+            />
+          )}
+        </View>
+        <MapboxGL.MapView
+          styleURL={Config.MAPBOX_STYLE_MONOCHROME}
+          style={styles.map}
+          onRegionDidChange={onRegionDidChange}>
+          <MapboxGL.Camera
+            ref={camera}
+            zoomLevel={17}
+            centerCoordinate={coordinates}
+            animationMode="moveTo"
+          />
           {data.map((element, index) => (
             <MapboxGL.PointAnnotation
-              coordinate={element.position}
-              onSelected={() => onMarkerPress(element)}
-            />
+              id={`flag-${index}`}
+              key={`flag-${index}`}
+              coordinate={[element.longitude, element.latitude]}
+              onSelected={() => onMarkerPress(element)}>
+              <MarkerGreen />
+            </MapboxGL.PointAnnotation>
           ))}
           {selectedMarker && (
             <MapboxGL.MarkerView
               id={'marker'}
-              coordinate={selectedMarker.position}>
-              <Balloon title={'Christie, St 67B'} />
+              coordinate={[selectedMarker.longitude, selectedMarker.latitude]}>
+              <Balloon title={`${selectedMarker.locality}`} />
             </MapboxGL.MarkerView>
           )}
         </MapboxGL.MapView>
       </View>
       <SlidingUpPanel
         ref={slidingPanel}
+        onBottomReached={onDismissSlide}
         draggableRange={{top: 272, bottom: 0}}
         showBackdrop={false}>
-        <DetailView isVisible={false} />
+        <DetailView isVisible={true} item={selectedMarker} />
       </SlidingUpPanel>
     </View>
   );
@@ -229,9 +306,26 @@ const styles = StyleSheet.create({
     color: theme.COLORS.TEXT_GREY,
   },
   searchlist: {
-    marginTop: 16,
+    marginTop: 3,
+    backgroundColor: theme.APP_COLOR_1,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+  },
+  searchItemText: {
+    paddingVertical: 16,
+    color: theme.COLORS.TEXT_GREY,
+    fontSize: 12,
+    fontFamily: fontFamilies.Default,
+    fontWeight: '400',
+  },
+  seperator: {
+    width: '100%',
+    height: 1,
+    backgroundColor: theme.COLORS.BORDER,
   },
   inputBox: {
+    marginTop: 16,
     flexDirection: 'row',
     paddingVertical: 12,
     paddingHorizontal: 16,
@@ -249,7 +343,7 @@ const styles = StyleSheet.create({
     fontWeight: '400',
   },
   balloonContainer: {
-    marginTop: -110,
+    marginTop: -80,
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
@@ -290,7 +384,8 @@ const styles = StyleSheet.create({
   detailImage: {
     marginTop: 8,
     borderRadius: 8,
-    width: '100%',
+    width: Dimensions.get('screen').width - 40,
+    height: Dimensions.get('screen').height - 350,
   },
 });
 export default MapScreen;

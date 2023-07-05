@@ -1,3 +1,4 @@
+import Config from 'react-native-config';
 import {
   getData,
   getFile,
@@ -102,7 +103,11 @@ export const storeUserResponse = async (data) => {
 
 export const userLogin = async (public_address, signature) => {
   try {
-    let data = {public_address: public_address, signature: signature};
+    let data = {
+      public_address: public_address,
+      signature: signature,
+      source: Config.APP_SOURCE_NAME,
+    };
     const response = await postData(s.auth.login, data);
     return response;
   } catch (err) {
@@ -112,7 +117,10 @@ export const userLogin = async (public_address, signature) => {
 
 export const userRegister = async (public_address, referral_id = '') => {
   try {
-    let data = {public_address: public_address};
+    let data = {
+      public_address: public_address,
+      source: Config.APP_SOURCE_NAME,
+    };
     if (referral_id) {
       data.referral_id = referral_id;
     }
@@ -309,84 +317,6 @@ export const getRomanNumberStats = async () => {
   }
 };
 
-export const getNfts = async (owner) => {
-  try {
-    const config = {
-      method: 'get',
-    };
-    const response = await fetch(
-      s.alchemy.getNfts.replace('$[owner]', owner),
-      config,
-    );
-    const result = await response.json();
-    return result;
-  } catch (err) {
-    return null;
-  }
-};
-
-export const getNftMetadata = async (contractAddress, tokenId) => {
-  try {
-    const config = {
-      method: 'get',
-    };
-    const response = await fetch(
-      s.alchemy.getNFTMetadata
-        .replace('$[contractAddress]', contractAddress)
-        .replace('$[tokenId]', tokenId),
-      config,
-    );
-    const result = await response.json();
-    return result;
-  } catch (err) {
-    return null;
-  }
-};
-
-export const pinFileToIPFS = async (file) => {
-  const req = new FormData();
-  req.append('file', file);
-  const config = {
-    method: 'post',
-    headers: {
-      pinata_api_key: s.pinata.key,
-      pinata_secret_api_key: s.pinata.secret,
-      'Content-Type': 'multipart/form-data',
-    },
-    body: req,
-  };
-  try {
-    const response = await fetch(s.pinata.pinFileToIPFS, config)
-      .then((res) => res.json())
-      .then((res) => res)
-      .catch((error) => error);
-    return response;
-  } catch (err) {
-    return null;
-  }
-};
-
-export const pinJSONToIPFS = async (data) => {
-  const config = {
-    method: 'post',
-    headers: {
-      pinata_api_key: s.pinata.key,
-      pinata_secret_api_key: s.pinata.secret,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(data),
-  };
-  try {
-    const response = await fetch(s.pinata.pinJSONToIPFS, config)
-      .then((res) => res.json())
-      .then((res) => res)
-      .catch((error) => error);
-    return response;
-  } catch (err) {
-    return null;
-  }
-};
-
 export const getReferralId = async () => {
   try {
     const response = await getUserData(s.user.referral_id);
@@ -409,4 +339,137 @@ export const getNotifications = async (data = null) => {
     const response = await postUserData(s.other.notifications, data, false);
     return response;
   } catch (err) {}
+};
+
+export const createGuild = async ({
+  profile_image,
+  name = '',
+  description = '',
+  invited_users = [],
+}) => {
+  const req = new FormData();
+  req.append('file', profile_image);
+  req.append('name', name);
+  req.append('description', description);
+  req.append('invited_users', invited_users);
+  try {
+    const response = await postUserData(s.guild.createGuild, req, true);
+    return response;
+  } catch (err) {
+    return null;
+  }
+};
+
+export const joinGuild = async ({guild_id = ''}) => {
+  try {
+    const response = await getUserData(
+      s.guild.joinGuild.replace('$[GUILD_ID]', guild_id),
+    );
+    return response;
+  } catch (err) {}
+  return null;
+};
+
+export const leaveGuild = async ({guild_id = ''}) => {
+  try {
+    const response = await getUserData(
+      s.guild.leaveGuild.replace('$[GUILD_ID]', guild_id),
+    );
+    return response;
+  } catch (err) {}
+  return null;
+};
+
+export const getGuildList = async () => {
+  try {
+    const response = await getUserData(s.guild.getGuildList);
+    return response;
+  } catch (err) {}
+  return null;
+};
+
+export const getUserRank = async () => {
+  try {
+    const response = await getUserData(s.guild.userrank);
+    return response;
+  } catch (err) {}
+  return null;
+};
+
+export const setDataSharingOption = async (option) => {
+  try {
+    const response = await postUserData(s.metadata.shareDataLive, {
+      data_sharing_option: option,
+    });
+    return response;
+  } catch (err) {}
+  return null;
+};
+
+export const getDataSharingOption = async () => {
+  try {
+    const response = await getUserData(s.metadata.shareDataLive);
+    return response;
+  } catch (err) {}
+  return null;
+};
+
+export const startTutorial = async () => {
+  try {
+    const response = await getUserData(s.other.startTutorial);
+    return response;
+  } catch (err) {}
+  return null;
+};
+
+export const searchImagesByLocation = async ({
+  latitude,
+  longitude,
+  range = 1,
+}) => {
+  try {
+    const response = await getUserData(
+      s.metadata.searchImagesByLocation
+        .replace('$[latitude]', latitude)
+        .replace('$[longitude]', longitude)
+        .replace('$[range]', range),
+    );
+    return response;
+  } catch (err) {}
+
+  return null;
+};
+
+export const getTeamStatus = async () => {
+  try {
+    const response = await getUserData(s.other.team_status);
+    return response;
+  } catch (err) {}
+  return null;
+};
+
+export const getGuildImage = async (guildId) => {
+  try {
+    const response = await getFile(
+      s.guild.getGuildImage.replace('$[GUILD_ID]', guildId),
+    );
+    return response;
+  } catch (err) {}
+  return null;
+};
+
+export const get_reward_status = async () => {
+  try {
+    const response = await getUserData(s.reward.get_reward_status);
+    return response;
+  } catch (err) {}
+  return null;
+};
+
+export const get_claim_time = async () => {
+  try {
+    const response = await getUserData(s.reward.next_claim_time);
+    return response;
+  } catch (err) {}
+  return null;
 };

@@ -5,6 +5,7 @@ import {useTranslation} from 'react-i18next';
 import {
   Dimensions,
   Image,
+  ImageBackground,
   Pressable,
   StyleSheet,
   Text,
@@ -17,10 +18,18 @@ import {fontFamilies} from '../utils/fontFamilies';
 import Ripple from '../components/Ripple';
 import Share, {Social} from 'react-native-share';
 import {getUserName, getWalletAddress} from '../services/DataManager';
-import {changeUserName, getUserRanks} from '../services/API/APIManager';
+import {
+  changeUserName,
+  getGuildList,
+  getGuildImage,
+  getTeamStatus,
+  getUserRank,
+  getUserRanks,
+  leaveGuild,
+} from '../services/API/APIManager';
 import {actions} from '../services/State/Reducer';
 import {useStateValue} from '../services/State/State';
-import {useNavigation} from '@react-navigation/native';
+import {useFocusEffect, useNavigation} from '@react-navigation/native';
 
 import {setUserName} from '../services/DataManager';
 import LinearGradient from 'react-native-linear-gradient';
@@ -29,6 +38,10 @@ import PlusCircleIcon from '../assets/ico_plus_circle.svg';
 import RenderStat from '../components/RenderStat';
 import {Chip} from 'react-native-paper';
 import BottomSheetDialog from '../components/BotomSheetDialog';
+import RenderGuildListItem from '../components/RenderGuildListItem';
+import { Row } from '../components/Row';
+
+import MemberIcon from '../assets/ico_member.svg';
 
 const TestGuildProfileImage = require('../assets/test_guild.png');
 const uploadIcon = require('../assets/uploads.png');
@@ -36,47 +49,6 @@ const classificationIcon = require('../assets/verification_white.png');
 const ShareIcon = require('../assets/Share.png');
 const PencilIcon = require('../assets/Pencil.png');
 const referralLink = 'nCight.com/referral%RobinLehmann%';
-
-const test_leaderboard_players = [
-  {address: '0xdbb1235b2e68ah009', value: 12345},
-  {address: '0xdbb1235b2e68ah009', value: 12344},
-  {address: '0xdbb1235b2e68ah009', value: 12343},
-  {address: '0xdbb1235b2e68ah009', value: 12342},
-  {address: '0xdbb1235b2e68ah009', value: 12341},
-  {address: '0xdbb1235b2e68ah009', value: 12340},
-  {address: '0xdbb1235b2e68ah009', value: 12339},
-  {address: '0xdbb1235b2e68ah009', value: 12338},
-  {address: '0xdbb1235b2e68ah009', value: 12337},
-  {address: '0xdbb1235b2e68ah009', value: 12336},
-  {address: '0xdbb1235b2e68ah009', value: 12335},
-  {address: '0xdbb1235b2e68ah009', value: 12334},
-  {address: '0xdbb1235b2e68ah009', value: 12333},
-  {address: '0xdbb1235b2e68ah009', value: 12332},
-  {address: '0xdbb1235b2e68ah009', value: 12331},
-  {address: '0xdbb1235b2e68ah009', value: 12330},
-  {address: '0xdbb1235b2e68ah009', value: 12329},
-  {address: '0xdbb1235b2e68ah009', value: 12328},
-  {address: '0xdbb1235b2e68ah009', value: 12327},
-  {address: '0xdbb1235b2e68ah009', value: 12326},
-  {address: '0xdbb1235b2e68ah009', value: 12325},
-  {address: '0xdbb1235b2e68ah009', value: 12324},
-  {address: '0xdbb1235b2e68ah009', value: 12323},
-  {address: '0xdbb1235b2e68ah009', value: 12322},
-  {address: '0xdbb1235b2e68ah009', value: 12321},
-];
-
-const test_leaderboard_guilds = [
-  {username: 'The ETHerius', value: 12345},
-  {username: 'Altcoin Gang', value: 12344},
-  {username: 'CyberBytes', value: 12343},
-  {username: 'Cryptoholics', value: 12342},
-  {username: 'CoinLoco', value: 12341},
-  {username: 'Ace Crypto', value: 12340},
-  {username: 'Blockdot', value: 12339},
-  {username: 'Gorecovery', value: 12338},
-  {username: 'Cryptoblen', value: 12337},
-  {username: 'Koinox', value: 12336},
-];
 
 const colorTable = ['#FFD743', '#F3EFE0', '#C68335'];
 
@@ -102,10 +74,10 @@ const Tab = ({title, icon, value, isSelected, setTab}) => {
 
 export const Leaderboard = (props) => {
   const {t} = useTranslation();
+  const [{}, dispatch] = useStateValue();
   const navigation = useNavigation();
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [userName, setName] = useState('');
-  const [{}, dispatch] = useStateValue();
   const [selectedOption, setSelectedOption] = useState('nCight Score');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [leaderboardData, setLeaderboardData] = useState([]);
@@ -114,20 +86,19 @@ export const Leaderboard = (props) => {
   const [editName, setEditName] = useState(false);
   const [newName, setNewName] = useState(false);
   const nameRef = useRef(null);
+  const [userIndex, setUserIndex] = useState(-1);
+  const [userGuildIndex, setUserGuildIndex] = useState(-1);
 
-  const [leaderboardPlayers, setLeaderboardPlayers] = useState(
-    test_leaderboard_players,
-  );
-  const [leaderboardGuilds, setLeaderboardGuilds] = useState(
-    test_leaderboard_guilds,
-  );
+  const [leaderboardPlayers, setLeaderboardPlayers] = useState([]);
+  const [leaderboardGuilds, setLeaderboardGuilds] = useState([]);
   const [joined, setJoined] = useState(false);
   const [created, setCreated] = useState(false);
 
-  const [blueStat, setBlueStat] = useState(42031);
-  const [greenStat, setGreenStat] = useState(45622);
+  const [blueStat, setBlueStat] = useState(0);
+  const [greenStat, setGreenStat] = useState(0);
   const [tabIndex, setTabIndex] = useState(0);
   const [bottomSheetOpened, setBottomSheetOpened] = useState(false);
+  const [teamStatus, setTeamStatus] = useState(null);
 
   const bottomSheetRef = useRef(null);
   const [routes] = useState([
@@ -144,27 +115,54 @@ export const Leaderboard = (props) => {
   };
 
   const fetchData = async () => {
-    getWalletAddress().then((wallet) => {
-      if (wallet) {
-        setWalletAddress(wallet);
+    const wallet = await getWalletAddress();
+    if (wallet) {
+      setWalletAddress(wallet);
+    }
+
+    getTeamStatus().then((teamResponse) => {
+      if (teamResponse && teamResponse.data) {
+        teamResponse.data.forEach((ele) => {
+          if (ele.name === 'blue') setBlueStat(ele.point);
+          if (ele.name === 'green') setGreenStat(ele.point);
+        });
+      }
+    });
+
+    getGuildList().then((guildListResponse) => {
+      if (guildListResponse && guildListResponse.length > 0) {
+        setLeaderboardGuilds(guildListResponse);
+        guildListResponse.forEach((ele, index) => {
+          if (ele.members.findIndex((e) => e === wallet) !== -1) {
+            setUserGuildIndex(index);
+            setJoined(true);
+          }
+        });
+      }
+    });
+
+    getUserRank().then((userrankResponse) => {
+      if (userrankResponse && userrankResponse.length > 0) {
+        setLeaderboardPlayers(userrankResponse);
+        userrankResponse.forEach((ele, index) => {
+          if (ele.public_address === wallet) {
+            setUserIndex(index);
+          }
+        });
       }
     });
 
     getUserName().then((data) => {
       setName(data.userName);
       setNewName(data.userName);
-
-      getUserRanks().then((data) => {
-        if (data && data.result && data.result.length > 0) {
-          setLeaderboardData(sortData(data.result[0]));
-        }
-      });
     });
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchData();
+    }, []),
+  );
 
   const sortData = (data) => {
     const _data = [...data];
@@ -217,6 +215,18 @@ export const Leaderboard = (props) => {
     setBottomSheetOpened(false);
   };
 
+  const onLeaveGuild = () => {
+    if (userGuildIndex > -1) {
+      const guild_id = leaderboardGuilds[userGuildIndex]._id;
+      leaveGuild({guild_id: guild_id}).then((resp) => {
+        onCloseBottomSheet();
+        setUserGuildIndex(-1);
+        setJoined(false);
+        fetchData();
+      });
+    }
+  };
+
   const LeaderboardPlayers = () => {
     return (
       <>
@@ -243,11 +253,13 @@ export const Leaderboard = (props) => {
               height: 1,
             }}
           />
-          <RenderStat
-            isSelf={true}
-            item={{address: '0xdbb1235b2e68ah009', value: 12345}}
-            index={805}
-          />
+          {leaderboardPlayers && (
+            <RenderStat
+              isSelf={true}
+              item={leaderboardPlayers[userIndex]}
+              index={userIndex}
+            />
+          )}
           <LinearGradient
             end={{x: 0, y: 0.5}}
             start={{x: 1, y: 0.5}}
@@ -266,30 +278,78 @@ export const Leaderboard = (props) => {
     );
   };
 
-  const GuildDetail = ({isVisible = false, onClose = () => {}}) => {
-    const [guildUsers] = useState(['abc1', 'abc2', 'abc3']);
+  const GuildDetail = ({
+    isVisible = false,
+    onLeaveGuild = () => {},
+    onClose = () => {},
+    userItem = {
+      members: [],
+      name: '',
+      description: '',
+      profile_image: '',
+    },
+  }) => {
+    const [image, setImage] = useState(null);
+
+    const getSingleImage = async (imageId) => {
+      let result = await getGuildImage(imageId);
+      const fileReaderInstance = new FileReader();
+      fileReaderInstance.readAsDataURL(result);
+      fileReaderInstance.onload = () => {
+        setImage(fileReaderInstance.result);
+      };
+    };
+
+    useEffect(() => {
+      if (userItem) {
+        getSingleImage(userItem._id);
+      }
+    }, [userItem]);
+
+    if (userItem === null) return null;
+
     return (
       <BottomSheetDialog
         isVisible={isVisible}
         onClose={onClose}
-        title={'The Earth Gang'}>
+        title={userItem.name}>
         <View style={{marginTop: 22}}>
-          <Image
-            style={{
-              width: '100%',
-            }}
-            resizeMode={'cover'}
-            source={TestGuildProfileImage}
-          />
+          {image && (
+            <ImageBackground
+              style={{
+                borderRadius: 8,
+                width: Dimensions.get('screen').width - 40,
+                height: ((Dimensions.get('screen').width - 40) * 9) / 16,
+                alignItems: 'baseline',
+                justifyContent: 'flex-end',
+                paddingVertical: 7,
+                paddingHorizontal: 10,
+              }}
+              resizeMode={'cover'}
+              source={{uri: image}}>
+              <Row>
+                <View style={{flexDirection: 'row'}}>
+                  <MemberIcon />
+                  <Text style={{...styles.txt16, marginLeft: 4}}>
+                    {userItem.members.length}
+                  </Text>
+                </View>
+                <View style={{flexDirection: 'row'}}>
+                  <Text style={styles.txt12}>
+                    {`Total$Cat  `}
+                    <Text style={styles.txt16}>{userItem.rewards}</Text>
+                  </Text>
+                </View>
+              </Row>
+            </ImageBackground>
+          )}
         </View>
-        <Text style={styles.guild_desc}>
-          {'Welcome to The Earth Gang. Inactive people will be kicked out.'}
-        </Text>
+        <Text style={styles.guild_desc}>{userItem.description}</Text>
         <View style={{marginTop: 22}}>
           <Text style={styles.guild_desc}>{'Users'}</Text>
         </View>
         <View style={styles.tagsContainer}>
-          {guildUsers.map((user) => (
+          {userItem.members.map((user) => (
             <Chip title={user} style={styles.chip} textStyle={styles.chipText}>
               {user}
             </Chip>
@@ -302,7 +362,7 @@ export const Leaderboard = (props) => {
             marginTop: 24,
           }}>
           <Ripple
-            onPress={() => {}}
+            onPress={onClose}
             containerStyle={{
               flex: 0.5,
             }}
@@ -324,7 +384,7 @@ export const Leaderboard = (props) => {
             </Text>
           </Ripple>
           <Ripple
-            onPress={() => {}}
+            onPress={onLeaveGuild}
             containerStyle={{
               flex: 0.45,
             }}
@@ -357,7 +417,7 @@ export const Leaderboard = (props) => {
           style={{marginTop: 24}}
           data={leaderboardGuilds.slice(0, 7)}
           keyExtractor={(item, index) => index}
-          renderItem={RenderStat}
+          renderItem={RenderGuildListItem}
           nestedScrollEnabled
         />
         <View
@@ -377,24 +437,12 @@ export const Leaderboard = (props) => {
               height: 1,
             }}
           />
-          {joined ? (
-            <Ripple
-              style={{
-                paddingVertical: 8,
-                width: '100%',
-                flexDirection: 'row',
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}
-              onPress={() => {
-                setJoined(true);
-                openGuildDetail();
-              }}>
-              <RenderStat
-                index={180}
-                item={{username: 'The ETHerius', value: 12345}}
+          {joined && userGuildIndex > -1 ? (
+              <RenderGuildListItem
+                onToggle={openGuildDetail}
+                index={userGuildIndex}
+                item={leaderboardGuilds[userGuildIndex]}
               />
-            </Ripple>
           ) : (
             <Ripple
               style={{
@@ -491,7 +539,10 @@ export const Leaderboard = (props) => {
                 style={{
                   ...styles.statusbar_left,
                   marginRight: 10,
-                  flex: blueStat / (blueStat + greenStat),
+                  flex:
+                    blueStat + greenStat === 0
+                      ? 1
+                      : blueStat / (blueStat + greenStat),
                 }}>
                 <View style={styles.blueBall} />
               </LinearGradient>
@@ -505,7 +556,10 @@ export const Leaderboard = (props) => {
                 style={{
                   ...styles.statusbar_right,
                   marginLeft: 10,
-                  flex: greenStat / (blueStat + greenStat),
+                  flex:
+                    blueStat + greenStat === 0
+                      ? 1
+                      : greenStat / (blueStat + greenStat),
                 }}>
                 <View style={styles.greenBall} />
               </LinearGradient>
@@ -531,9 +585,11 @@ export const Leaderboard = (props) => {
               <Text style={{...styles.statTitle, textAlign: 'right'}}>
                 {t('leaderboard.teamgreen')}
               </Text>
-              <Text style={styles.greenStat}>{`${greenStat} ${t(
-                'leaderboard.cats',
-              )}`}</Text>
+              <Text
+                style={{
+                  ...styles.greenStat,
+                  textAlign: 'right',
+                }}>{`${greenStat} ${t('leaderboard.cats')}`}</Text>
             </View>
           </View>
 
@@ -572,7 +628,14 @@ export const Leaderboard = (props) => {
           {selectedIndex === 1 && <LeaderboardGuilds />}
         </View>
       </ScrollView>
-      <GuildDetail isVisible={bottomSheetOpened} onClose={onCloseBottomSheet} />
+      <GuildDetail
+        isVisible={bottomSheetOpened}
+        onClose={onCloseBottomSheet}
+        onLeaveGuild={onLeaveGuild}
+        userItem={
+          userGuildIndex > -1 ? leaderboardGuilds[userGuildIndex] : null
+        }
+      />
     </View>
   );
 };
@@ -712,6 +775,27 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 24,
     fontWeight: '700',
+  },
+  txt9: {
+    color: theme.COLORS.WHITE,
+    fontFamily: fontFamilies.Default,
+    fontSize: 9,
+    lineHeight: 24,
+    fontWeight: '400',
+  },
+  txt12: {
+    color: theme.COLORS.WHITE,
+    fontFamily: fontFamilies.Default,
+    fontWeight: '500',
+    fontSize: 12,
+    lineHeight: 24,
+  },
+  txt16: {
+    color: theme.COLORS.WHITE,
+    fontFamily: fontFamilies.Default,
+    fontWeight: '500',
+    fontSize: 16,
+    lineHeight: 24,
   },
   txtTip: {
     fontSize: 12,

@@ -24,7 +24,13 @@ import LinearGradient from 'react-native-linear-gradient';
 import {useSelector} from 'react-redux';
 import Ripple from '../components/Ripple';
 import {LoginFromWalletConnect, LoginProc} from '../functions/login';
-import {changeUserName, requestUserName} from '../services/API/APIManager';
+import {
+  changeUserName,
+  requestUserName,
+  saveUsageFlag,
+  setDataSharingOption,
+  startTutorial,
+} from '../services/API/APIManager';
 import {theme} from '../services/Common/theme';
 import {
   getUserName,
@@ -43,6 +49,7 @@ import Swiper from 'react-native-swiper';
 const background = require('../assets/onboard_background.jpg');
 
 import CheckIcon from '../assets/btn_check.svg';
+import UncheckIcon from '../assets/btn_uncheck.svg';
 import {Row} from '../components/Row';
 import {createLocalWallet, loginUser} from '../functions/walletconnect';
 
@@ -262,12 +269,37 @@ const WelcomeScreen = ({
   );
 };
 
-const PrivacyScreen = ({onComplete = () => {}}) => {
+const PrivacyScreen = ({onStartTutorial = () => {}, onComplete = () => {}}) => {
   const {t} = useTranslation();
   const [privacy, setPrivacy] = useState(0);
+  const [agreeTOC, setAgreeTOC] = useState(true);
 
   const switchPrivacy = (_privacy) => {
     setPrivacy(_privacy);
+    setDataSharingOption(
+      _privacy === 0 ? 'share_data_live' : 'not_share_data_live',
+    );
+  };
+
+  const switchAgreeTOC = (agree) => {
+    setAgreeTOC(agree);
+  };
+
+  const doCompleteAction = async () => {
+    await setDataSharingOption(
+      privacy === 0 ? 'share_data_live' : 'not_share_data_live',
+    );
+    await saveUsageFlag(agreeTOC ? {flag: 'ACCEPTED'} : {flag: 'REJECTED'});
+    onComplete();
+  };
+
+  const onPressNext = () => {
+    doCompleteAction();
+  };
+
+  const onPressStartTutorial = async () => {
+    await startTutorial();
+    await doCompleteAction();
   };
 
   return (
@@ -288,7 +320,7 @@ const PrivacyScreen = ({onComplete = () => {}}) => {
               {t('onboarding.traceable')}
             </Text>
           </View>
-          <View style={privacy == 0 ? styles.radioSelected : styles.radio} />
+          <View style={privacy === 0 ? styles.radioSelected : styles.radio} />
         </Ripple>
         <Ripple
           style={
@@ -305,7 +337,7 @@ const PrivacyScreen = ({onComplete = () => {}}) => {
               {t('onboarding.nodatacollectedwhileflagging')}
             </Text>
           </View>
-          <View style={privacy == 1 ? styles.radioSelected : styles.radio} />
+          <View style={privacy === 1 ? styles.radioSelected : styles.radio} />
         </Ripple>
       </View>
       <View
@@ -326,11 +358,16 @@ const PrivacyScreen = ({onComplete = () => {}}) => {
           </Text>
           {t('onboarding.tocSuffix')}
         </Text>
-        <CheckIcon />
+        <Ripple
+          onPress={() => {
+            switchAgreeTOC(!agreeTOC);
+          }}>
+          {agreeTOC ? <CheckIcon /> : <UncheckIcon />}
+        </Ripple>
       </View>
 
       <View style={styles.btns}>
-        <Ripple style={{...styles.skipbtn}} onPress={onComplete}>
+        <Ripple style={{...styles.skipbtn}} onPress={onPressNext}>
           <Text style={styles.btnText}>{t('onboarding.skip')}</Text>
         </Ripple>
         <Ripple
@@ -339,7 +376,7 @@ const PrivacyScreen = ({onComplete = () => {}}) => {
             marginLeft: 16,
           }}
           style={{...styles.btn}}
-          onPress={() => {}}>
+          onPress={onPressStartTutorial}>
           <Text style={styles.btnText}>{t('onboarding.startTutorial')}</Text>
         </Ripple>
       </View>

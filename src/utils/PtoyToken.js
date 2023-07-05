@@ -1,8 +1,8 @@
-import {PTOY_CONTRACT} from '../../env';
+import Config from 'react-native-config';
 import erc20ABI from '../abis/erc20.json';
 
 export const getTokenBalance = async (web3, address) => {
-  const contract = new web3.eth.Contract(erc20ABI, PTOY_CONTRACT);
+  const contract = new web3.eth.Contract(erc20ABI, Config.PTOY_CONTRACT);
 
   const res = await contract.methods.balanceOf(address).call();
   // confirm whether PTOY is in gwei

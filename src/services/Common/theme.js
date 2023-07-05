@@ -5,6 +5,7 @@ export const theme = {
   COLORS: {
     BG: '#2B2B2B',
     PANEL_BG: '#222222',
+    BTN_LIGHTE_GREY: '#2A2A2A',
     BTN_BG_BLUE: '#25C088',
     BTN_BG_BLUE_30P: '#25C08850',
     BTN_BG_RED: '#C02525',

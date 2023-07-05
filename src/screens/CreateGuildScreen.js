@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {StyleSheet, View, TextInput, Keyboard, KeyboardAvoidingView, Platform, ScrollView} from 'react-native';
+import {StyleSheet, View, TextInput, Keyboard, KeyboardAvoidingView, Platform, ScrollView, Alert} from 'react-native';
 import {Text} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import DocumentPicker from 'react-native-document-picker';
@@ -17,12 +17,14 @@ import CancelIcon from '../assets/ico_xcircle.svg';
 import {Chip} from 'react-native-paper';
 import XIcon from '../assets/ico_x.svg';
 import {useTranslation} from 'react-i18next';
+import {createGuild} from '../services/API/APIManager';
 
 const CreateGuildScreen = () => {
   const [guildName, setGuildName] = useState('');
+  const [imageFile, setImageFile] = useState(null);
   const [profileImage, setProfileImage] = useState('');
   const [guildDesc, setGuildDesc] = useState('');
-  const [guildUsers, setGuildUsers] = useState(['abc1', 'abc2', 'abc3']);
+  const [guildUsers, setGuildUsers] = useState([]);
   const [currentUser, setCurrentUser] = useState('');
 
   const guilddescInput = useRef(null);
@@ -33,8 +35,31 @@ const CreateGuildScreen = () => {
 
   const navigation = useNavigation();
 
-  const openCreateGuildScreen = () => {
-    navigation.navigate('Leaderboard');
+  const onCreateGuild = async () => {
+    if (guildName === '') {
+      Alert.alert(t('createyourguild.guildnameempty'));
+      return;
+    }
+
+    if (guildDesc === '') {
+      Alert.alert(t('createyourguild.guilddescempty'));
+      return;
+    }
+
+    if (imageFile === null) {
+      Alert.alert(t('createyourguild.profileimageempty'));
+    }
+
+    const guildResponse = await createGuild({
+      name: guildName,
+      description: guildDesc,
+      profile_image: {...imageFile, name: 'profile.jpg'},
+      invited_users: guildUsers,
+    });
+
+    if (guildResponse) {
+      navigation.navigate('Leaderboard');
+    }
   };
 
   const addUser = () => {
@@ -60,7 +85,9 @@ const CreateGuildScreen = () => {
         mediaType: 'photo',
       };
       const result = await launchImageLibrary(options);
-      if (result) {
+
+      if (result && result.assets.length > 0) {
+        setImageFile(result.assets[0]);
         setProfileImage(result.assets[0].fileName);
       }
     } else {
@@ -73,7 +100,9 @@ const CreateGuildScreen = () => {
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.container}>
           <View style={styles.header}>
-            <Text style={styles.title}>{t('createyourguild.createyourguild')}</Text>
+            <Text style={styles.title}>
+              {t('createyourguild.createyourguild')}
+            </Text>
           </View>
           <View style={styles.block}>
             <Text style={styles.heading}>{t('createyourguild.guildName')}</Text>
@@ -135,6 +164,7 @@ const CreateGuildScreen = () => {
               keyboardType="default"
               numberOfLines={5}
               textAlignVertical="top"
+              onChangeText={setGuildDesc}
               placeholderTextColor={theme.COLORS.TEXT_GREY_30P}
               placeholder={t('createyourguild.welcommessagerules')}
               //returnKeyType="next"
@@ -183,7 +213,9 @@ const CreateGuildScreen = () => {
           </View>
 
           <View style={styles.block}>
-            <Text style={styles.heading}>{t('createyourguild.invitedusers')}</Text>
+            <Text style={styles.heading}>
+              {t('createyourguild.invitedusers')}
+            </Text>
             <View style={styles.tagsContainer}>
               {guildUsers.map((user) => (
                 <Chip
@@ -206,7 +238,7 @@ const CreateGuildScreen = () => {
               style={styles.btn}
               containerStyle={styles.btnContainer}
               onPress={() => {
-                openCreateGuildScreen();
+                onCreateGuild();
               }}>
               <Text style={styles.btnText}>
                 {t('createyourguild.createyourguild')}

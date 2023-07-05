@@ -1,9 +1,9 @@
 import {randomBytes} from 'react-native-randombytes';
 import Web3 from 'web3';
-import {INFURA_KEY} from '../../env';
+import Config from 'react-native-config';
 
 export const web3 = new Web3(
-  Web3.givenProvider || `https://rinkeby.infura.io/v3/${INFURA_KEY}`,
+  Web3.givenProvider || `https://rinkeby.infura.io/v3/${Config.INFURA_KEY}`,
 );
 
 export const contracts = {

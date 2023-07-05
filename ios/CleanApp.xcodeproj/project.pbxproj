@@ -22,6 +22,8 @@
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		86641BBB4A3E969090BAEAFE /* libPods-CleanApp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6C1BB2178422B879281F97AE /* libPods-CleanApp.a */; };
 		9308E8F4297A2B6F00891021 /* RNBackgroundFetch+AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 9308E8F3297A2B6F00891021 /* RNBackgroundFetch+AppDelegate.m */; };
+		937726892A49C5E9009AF748 /* Mapbox in Frameworks */ = {isa = PBXBuildFile; productRef = B6518B10257A44C2C58879EE /* Mapbox */; };
+		9377268A2A49C5E9009AF748 /* Mapbox in Frameworks */ = {isa = PBXBuildFile; productRef = D2166EC21731F4D4294E31B3 /* Mapbox */; };
 		937C2463287CF63F00D5D553 /* assets in Resources */ = {isa = PBXBuildFile; fileRef = 937C2462287CF63F00D5D553 /* assets */; };
 		93D5052D28625BDF00C3692E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 93D5052C28625BDF00C3692E /* Assets.xcassets */; };
 		A12D5D6AB3D6CE4475DB9B8A /* libPods-CleanApp-CleanAppTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 32FA4C4E29720913B35A0186 /* libPods-CleanApp-CleanAppTests.a */; };
@@ -110,6 +112,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9377268A2A49C5E9009AF748 /* Mapbox in Frameworks */,
 				A12D5D6AB3D6CE4475DB9B8A /* libPods-CleanApp-CleanAppTests.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -118,6 +121,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				937726892A49C5E9009AF748 /* Mapbox in Frameworks */,
 				86641BBB4A3E969090BAEAFE /* libPods-CleanApp.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -268,6 +272,7 @@
 				00E356EB1AD99517003FC87E /* Frameworks */,
 				00E356EC1AD99517003FC87E /* Resources */,
 				65BF2D9CD964A07AB84BF506 /* [CP] Copy Pods Resources */,
+				BDF0A0F0B24C4D028D69BD5C /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -293,6 +298,7 @@
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				415343D5DDEC084BA1333702 /* [CP] Copy Pods Resources */,
+				C8A276B2C76A2F813F108B5D /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -451,6 +457,23 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
+		BDF0A0F0B24C4D028D69BD5C /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-CleanApp-CleanAppTests/Pods-CleanApp-CleanAppTests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-CleanApp-CleanAppTests/Pods-CleanApp-CleanAppTests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-CleanApp-CleanAppTests/Pods-CleanApp-CleanAppTests-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 		BF02FA79EFA000F4890C6989 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -471,6 +494,23 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		C8A276B2C76A2F813F108B5D /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-CleanApp/Pods-CleanApp-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-CleanApp/Pods-CleanApp-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-CleanApp/Pods-CleanApp-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		FD10A7F022414F080027D42C /* Start Packager */ = {

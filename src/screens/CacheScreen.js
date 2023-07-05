@@ -30,16 +30,52 @@ import BackgroundTimer from 'react-native-background-timer';
 import {ethers} from 'ethers';
 import {getWalletAddress, getWalletData} from '../services/DataManager';
 import {useTranslation} from 'react-i18next';
+import {
+  getDataSharingOption,
+  getReferralId,
+  get_claim_time,
+  get_reward_status,
+  setDataSharingOption,
+} from '../services/API/APIManager';
 
 const CacheScreen = (props) => {
   const [privacyOpened, setPrivacyOpened] = useState(false);
   const [cacheSettingOpened, setCacheSettingOpened] = useState(false);
   const [walletAddress, setWalletAddress] = useState('');
+  const [walletInfo, setWalletInfo] = useState(null);
+  const [referralId, setReferralId] = useState('');
   const [referralCode, setReferralCode] = useState(
     'cleanapp.io/referral#id:7239G?03$',
   );
+
+  const [rewardStatusList, setRewardStatusList] = useState([]);
+  const [shareDataStatus, setShareDataStatus] = useState('share_data_live');
+  const [totalCache, setTotalCache] = useState({
+    reports: 0,
+    referrals: 0,
+    offchainReports: 0,
+    offchainReferrals: 0,
+    onchainReports: 0,
+    onchainReferrals: 0,
+    onchainTotal: 0,
+    offchainTotal: 0,
+    total: 0,
+  });
+
+  const [nextRunTime, setNextRunTime] = useState(0);
   const navigation = useNavigation();
   const {t} = useTranslation();
+
+  const privacy_values = [
+    {
+      value: t('cachescreen.Mapreportswithavatar'),
+      sub_value: t('cachescreen.Traceable'),
+    },
+    {
+      value: t('cachescreen.Sharereportsanonymously'),
+      sub_value: t('cachescreen.Nodatacollectedwhileflagging'),
+    },
+  ];
 
   const MMSDK = new MetaMaskSDK({
     openDeeplink: (link) => {
@@ -84,38 +120,93 @@ const CacheScreen = (props) => {
   const initWallet = async () => {
     const walletData = await getWalletData();
     setWalletAddress(walletData.publicKey);
+    setWalletInfo(walletData);
   };
 
   useEffect(() => {
     initWallet();
+    getReferralId().then((resp) => {
+      if (resp && resp.result) {
+        setReferralCode(`cleanapp.io/referral#id:${resp.result.referral_id}`);
+      }
+    });
+
+    getDataSharingOption().then((resp) => {
+      if (resp) {
+        setShareDataStatus(
+          resp.data_sharing_option === 'share_data_live' ? 0 : 1,
+        );
+      }
+    });
+
+    get_claim_time().then((resp) => {
+      if (resp && resp.result) {
+        setNextRunTime(resp.result);
+      }
+    });
+
+    get_reward_status().then((resp) => {
+      if (resp && resp.result) {
+        setRewardStatusList(resp);
+        let cacheResult = {
+          reports: 0,
+          referrals: 0,
+          offchainReports: 0,
+          offchainReferrals: 0,
+          onchainReports: 0,
+          onchainReferrals: 0,
+          onchainTotal: 0,
+          offchainTotal: 0,
+          total: 0,
+        };
+        resp.result.forEach((element) => {
+          cacheResult.total += element.reward;
+          if (element.type === 'referral') {
+            if (element.reward_status === 'paid') {
+              cacheResult.onchainReferrals += element.reward;
+            } else {
+              cacheResult.offchainReferrals += element.reward;
+            }
+            cacheResult.referrals += element.reward;
+          } else {
+            if (element.reward_status === 'paid') {
+              cacheResult.onchainReports += element.reward;
+            } else {
+              cacheResult.offchainReports += element.reward;
+            }
+            cacheResult.reports += element.reward;
+          }
+        });
+        setTotalCache(cacheResult);
+      }
+    });
   }, []);
 
-  const PrivacySheet = ({isVisible = false, onClose = () => {}}) => {
-    const test_privacy = [
-      {
-        value: t('cachescreen.Mapreportswithavatar'),
-        sub_value: t('cachescreen.Traceable'),
-      },
-      {
-        value: t('cachescreen.Sharereportsanonymously'),
-        sub_value: t('cachescreen.Nodatacollectedwhileflagging'),
-      },
-    ];
-
-    const [privacySelected, setPrivacySelected] = useState(0);
+  const PrivacySheet = ({
+    isVisible = false,
+    dataSharingOption = 0,
+    onClose = () => {},
+  }) => {
+    const [privacySelected, setPrivacySelected] = useState(dataSharingOption);
 
     const selectPrivacy = (privacy_index) => {
       setPrivacySelected(privacy_index);
     };
 
-    const setPrivacy = () => {};
+    const setPrivacy = async () => {
+      await setDataSharingOption(
+        privacySelected === 0 ? 'not_share_data_live' : 'share_data_live',
+      );
+      setShareDataStatus(privacySelected);
+      onClose();
+    };
 
     return (
       <BottomSheetDialog
         isVisible={isVisible}
         onClose={onClose}
         title={t('cachescreen.Editprivacyselection')}>
-        {test_privacy.map((element, index) => (
+        {privacy_values.map((element, index) => (
           <View
             key={index}
             style={{
@@ -282,13 +373,13 @@ const CacheScreen = (props) => {
               paddingHorizontal: 8,
             }}>
             <View style={styles.row}>
-              <View>
+              <View style={{width: '70%'}}>
                 <Text style={styles.txt12bold}>
                   {t('cachescreen.privatekey')}
                 </Text>
                 <View>
                   <Text style={{...styles.txt12, ...styles.txtBlur}}>
-                    {'40OU4b94caoJBo(&t)inp'}
+                    {walletInfo.privateKey}
                   </Text>
                   {isShowPrivateKey && (
                     <BlurView
@@ -325,13 +416,17 @@ const CacheScreen = (props) => {
           </View>
           <View style={{...styles.blueBorderCard, marginTop: 24}}>
             <View style={styles.row}>
-              <View>
+              <View style={{width: '70%'}}>
                 <Text style={styles.txt12bold}>
                   {t('cachescreen.mnemonicphrase')}
                 </Text>
                 <View>
-                  <Text style={{...styles.txt12, ...styles.txtBlur}}>
-                    {'40OU4b94caoJBo(&t)inp'}
+                  <Text
+                    style={{
+                      ...styles.txt12,
+                      ...styles.txtBlur,
+                    }}>
+                    {walletInfo.seedPhrase}
                   </Text>
                   {isShowMnemonics && (
                     <BlurView
@@ -416,42 +511,49 @@ const CacheScreen = (props) => {
         <View style={styles.container}>
           <Text style={styles.txt12}>{t('cachescreen.mycache')}</Text>
           {/** balance */}
-          <Row style={styles.balanceBlock}>
-            <View>
-              <Text style={styles.txt12}>{t('cachescreen.totalrewards')}</Text>
+          <View style={styles.balanceContainer}>
+            <Row>
               <Text style={styles.txt16}>
-                {'80.00'}
-                <Text style={{...styles.txt12, lineHeight: 24}}>
-                  {t('cachescreen.cats')}
-                </Text>
+                {totalCache.total} <Text style={styles.txt9}>{'$CATS'}</Text>
               </Text>
-            </View>
-            <View style={{alignItems: 'flex-end'}}>
-              <Text style={styles.txt12}>
-                {t('cachescreen.alreadyclaimed')}
-                <Text style={styles.txt9}>{'  87.5%'}</Text>
+              <Text style={styles.txt12}>{'Lifetime XP'}</Text>
+            </Row>
+            <Row>
+              <Text style={styles.txt9}>
+                {totalCache.reports} <Text style={styles.txt9}>{'$CATS'}</Text>
               </Text>
-              <Text style={styles.txt16}>
-                {'70.00'}
-                <Text style={{...styles.txt12, lineHeight: 24}}>
-                  {t('cachescreen.cats')}
-                </Text>
+              <Text style={styles.txt9}>{'Reports'}</Text>
+            </Row>
+            <Row>
+              <Text style={styles.txt9}>
+                {totalCache.referrals} <Text style={styles.txt9}>{'$CATS'}</Text>
               </Text>
-            </View>
-          </Row>
+              <Text style={styles.txt9}>{'Referrals'}</Text>
+            </Row>
+            <Row>
+              <Text style={styles.txt9}>
+                {totalCache.offchainReports} <Text style={styles.txt9}>{'$CATS'}</Text>
+              </Text>
+              <Text style={styles.txt9}>{'Litterbox(offchain) reports'}</Text>
+            </Row>
+            <Row>
+              <Text style={styles.txt9}>
+                {totalCache.offchainReferrals} <Text style={styles.txt9}>{'$CATS'}</Text>
+              </Text>
+              <Text style={styles.txt9}>{'Litterbox(offchain) referrals'}</Text>
+            </Row>
+          </View>
+          <View style={styles.balanceContainer}>
+            <Row>
+              <Text style={styles.txt12}>{'Litterbox(onchain)'}</Text>
+              <Text style={styles.txt12}>{`Emptied in ${Math.ceil(nextRunTime / 3600)}h ${
+                Math.ceil((nextRunTime % 3600) / 60)
+              }mins`}</Text>
+            </Row>
+            <Text style={styles.txt24}>{totalCache.onchainTotal} <Text style={styles.txt16}>{'$CATS'}</Text></Text>
+          </View>
+          
           <View style={styles.block}>
-            <View style={styles.greyCard}>
-              <View style={styles.row}>
-                <Text style={styles.txt12}>{t('cachescreen.litterbox')}</Text>
-                <Text style={styles.txt12}>{t('cachescreen.emptiedin')}</Text>
-              </View>
-              <View style={styles.row}>
-                <Text style={styles.txt24}>
-                  {'-.0 '}
-                  <Text style={styles.txt16}>{t('cachescreen.cats')}</Text>
-                </Text>
-              </View>
-            </View>
             <View style={{...styles.blueCard, marginTop: 8}}>
               <View style={styles.row}>
                 <Text style={styles.txt16bold}>
@@ -473,10 +575,14 @@ const CacheScreen = (props) => {
               <View style={styles.row}>
                 <View>
                   <Text style={styles.txt12thin}>
-                    {t('cachescreen.sharemydatawithlapseoftime')}
+                    {shareDataStatus == 0
+                      ? t('cachescreen.sharemydatawithlapseoftime')
+                      : t('cachescreen.Sharereportsanonymously')}
                   </Text>
                   <Text style={styles.txt12thinitalic}>
-                    {t('cachescreen.unitraceable')}
+                    {shareDataStatus == 0
+                      ? t('cachescreen.unitraceable')
+                      : t('cachescreen.Nodatacollectedwhileflagging')}
                   </Text>
                 </View>
                 <Ripple style={styles.btnBlack} onPress={editPrivacy}>
@@ -534,6 +640,7 @@ const CacheScreen = (props) => {
       </ScrollView>
       <PrivacySheet
         isVisible={privacyOpened}
+        dataSharingOption={shareDataStatus}
         onClose={() => {
           setPrivacyOpened(false);
         }}
@@ -560,6 +667,12 @@ const styles = StyleSheet.create({
   },
   balanceBlock: {
     marginTop: 16,
+  },
+  balanceContainer: {
+    padding: 16,
+    marginTop: 16,
+    borderRadius: 8,
+    backgroundColor: theme.COLORS.PANEL_BG,
   },
   blockHeader: {},
   row: {
@@ -712,6 +825,14 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     fontWeight: '500',
     color: theme.COLORS.TEXT_GREY,
+  },
+  txt18: {
+    fontFamily: fontFamilies.Default,
+    fontSize: 18,
+    lineHeight: 24,
+    fontWeight: '500',
+    color: theme.COLORS.TEXT_GREY,
+
   },
   txt24: {
     fontFamily: fontFamilies.Default,

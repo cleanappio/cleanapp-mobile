@@ -15,6 +15,7 @@ const KEYS = {
   FIRST_RUN_KEY: 'FIRST_RUN_KEY',
   CURRENCY_SETTINGS: 'CURRENCY_SETTINGS',
   HAS_REWARDS: 'HAS_REWARDS',
+  USER_LOCATION: 'USER_LOCATION',
 };
 
 export const setUserInfo = async (userDetails) => {
@@ -295,5 +296,21 @@ export const getRewardState = async () => {
 export const setRewardState = async (hasReward) => {
   try {
     await AsyncStorage.setItem(KEYS.HAS_REWARDS, JSON.stringify(hasReward));
+  } catch (err) {}
+};
+
+export const getUserLocation = async () => {
+  try {
+    const response = await AsyncStorage.getItem(KEYS.USER_LOCATION);
+    if (response) {
+      return JSON.parse(response);
+    }
+  } catch (err) {}
+  return null;
+};
+
+export const setUserLocation = async (location) => {
+  try {
+    await AsyncStorage.setItem(KEYS.USER_LOCATION, JSON.stringify(location));
   } catch (err) {}
 };

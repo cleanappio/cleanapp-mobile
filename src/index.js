@@ -9,8 +9,6 @@ import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import TabComponent from './components/Tab';
 import {StyleSheet, Image, View, Text} from 'react-native';
 import Loading from './screens/Loading';
-import WalletSettings from './screens/WalletSettings';
-import ExtConnections from './screens/ExtConnections';
 import Ripple from './components/Ripple';
 import {theme} from './services/Common/theme';
 import i18n from './languages/i18n';
@@ -21,8 +19,6 @@ import settingIcon from './assets/setting.png';
 import {Onboarding} from './screens/Onboarding';
 import {Leaderboard} from './screens/Leaderboard';
 import {fontFamilies} from './utils/fontFamilies';
-import WalletActions from './screens/WalletActions';
-import {WalletTransactions} from './screens/WalletTransactions';
 import CameraScreen from './screens/CameraScreen';
 import MapScreen from './screens/MapScreen';
 import CacheScreen from './screens/CacheScreen';
@@ -85,100 +81,6 @@ const Header = ({isTransparent = true}, navigation) => ({
   headerLeft: null,
   headerRight: null,
 });
-
-const WalletStack = () => (
-  <Stack.Navigator>
-    <Stack.Screen
-      name="Wallet"
-      component={WalletActions}
-      options={({navigation}) => {
-        return Header(
-          {
-            title: i18n.t('landing.MyWallet'),
-            showBackButton: true,
-            isTransparent: true,
-            showRightButton: true,
-            rightButtonIcon: <Image source={settingIcon} />,
-            rightButtonOnPress: () => navigation.navigate('WalletSettings'),
-          },
-          navigation,
-        );
-      }}
-    />
-    <Stack.Screen
-      name="WalletConnect"
-      component={ExtConnections}
-      options={({navigation}) => {
-        return Header(
-          {
-            title: i18n.t('landing.MyWallet'),
-            showBackButton: true,
-            isTransparent: true,
-            showRightButton: false,
-            rightButtonIcon: <Image source={settingIcon} />,
-            rightButtonOnPress: () => navigation.navigate('WalletSettings'),
-          },
-          navigation,
-        );
-      }}
-    />
-    <Stack.Screen
-      name="WalletTransactions"
-      component={WalletTransactions}
-      options={({navigation}) => {
-        return Header(
-          {
-            title: i18n.t('landing.WalletTransactions'),
-            showBackButton: true,
-            isTransparent: true,
-            showRightButton: false,
-            rightButtonIcon: <Image source={settingIcon} />,
-            rightButtonOnPress: () => navigation.navigate('WalletSettings'),
-          },
-          navigation,
-        );
-      }}
-    />
-    <Stack.Screen
-      name="WalletSettings"
-      component={WalletSettings}
-      options={({navigation}) => {
-        return Header(
-          {
-            title: i18n.t('landing.WalletSetting'),
-            showBackButton: true,
-            isTransparent: true,
-            showRightButton: false,
-            rightButtonIcon: (
-              <MaterialIcon
-                size={25}
-                name="connect-without-contact"
-                color={theme.COLORS.WHITE}
-              />
-            ),
-            rightButtonOnPress: () => navigation.navigate('ExtConnections'),
-          },
-          navigation,
-        );
-      }}
-    />
-    <Stack.Screen
-      name="ExtConnections"
-      component={ExtConnections}
-      options={({navigation}) => {
-        return Header(
-          {
-            title: i18n.t('landing.ExternalConnections'),
-            showBackButton: true,
-            isTransparent: true,
-            showRightButton: true,
-          },
-          navigation,
-        );
-      }}
-    />
-  </Stack.Navigator>
-);
 
 const LeaderboardStack = () => {
   const [{}, dispatch] = useStateValue();

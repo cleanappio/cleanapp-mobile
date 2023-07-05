@@ -1,11 +1,11 @@
-import {MAPBOX_ACCESS_TOKEN} from '../../../env';
+import Config from 'react-native-config';
 
 export const getReverseGeocodingData = async (
   coordinates,
   isReverse = false,
 ) => {
   let searchParams = new URLSearchParams({
-    access_token: MAPBOX_ACCESS_TOKEN,
+    access_token: Config.MAPBOX_ACCESS_TOKEN,
     language: 'en',
     limit: 1,
   });
@@ -23,18 +23,45 @@ export const getReverseGeocodingData = async (
   return result;
 };
 
+export const getCoordinatesFromLocation = async (location) => {
+  let searchParams = new URLSearchParams({
+    access_token: Config.MAPBOX_ACCESS_TOKEN,
+    language: 'en',
+    limit: 1,
+  });
+  try {
+    const response = await fetch(
+      `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
+        location,
+      )}.json?` + searchParams,
+    );
+
+    if (response) {
+      const {features} = await response.json();
+      if (features.length > 0) {
+        const [longitude, latitude] = features[0].center;
+        return [longitude, latitude];
+      }
+    }
+  } catch (err) {}
+  return null;
+};
+
 export const getMapSearchItems = async (text) => {
   try {
     let response = await fetch(
       `https://api.mapbox.com/search/v1/suggest/${text}?` +
         new URLSearchParams({
-          access_token: MAPBOX_ACCESS_TOKEN,
+          access_token: Config.MAPBOX_ACCESS_TOKEN,
           session_token: '',
           language: 'en',
         }),
     );
-    let result = await response.json();
-    return result;
+    const {suggestions} = await response.json();
+    const result = suggestions.map((ele) => {
+      return ele.feature_name;
+    });
+    return result.sort();
   } catch (err) {
     // error on map search item api call
   }
@@ -54,7 +81,7 @@ export const getMapSearchItem = async (item) => {
     let response = await fetch(
       'https://api.mapbox.com/search/v1/retrieve?' +
         new URLSearchParams({
-          access_token: MAPBOX_ACCESS_TOKEN,
+          access_token: Config.MAPBOX_ACCESS_TOKEN,
           session_token: '',
         }),
       options,
