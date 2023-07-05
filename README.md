@@ -2,7 +2,26 @@
 # CleanApp
 CleanApp.app's mobile app to use the platform on mobile phones.
 
+The software is developed using React Native, so if you encounter any issues because of React Native you can search with that additional information.
+
+The first step to run the software is to setup React Native development setup on your machine. React Native has tutorials for different operating systems and mobile platforms here:
+https://reactnative.dev/docs/environment-setup
+
+## iOS development
+
+Please use an iPhone 12 or better in the simulator as this is the minimum requirement right now.
+
+# Installing and Running the app
+
+## Clone this repository
+Change to the directory that you want to clone the code into.
+```
+git clone https://github.com/cleanappio/cleanapp-mobile.git
+cd cleanapp-mobile
+```
+
 ## Available Scripts
+
 ### `npm install` or `yarn`
 It will add all the required components for your project to run inside your node_modules.
 ## Install Pods for iOS
