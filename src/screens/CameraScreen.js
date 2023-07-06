@@ -29,7 +29,7 @@ import {
   request,
   openSettings,
 } from 'react-native-permissions';
-import {CameraRoll} from '@react-native-camera-roll/camera-roll';
+import {Camera} from '@react-native-camera/camera';
 import RadialGradient from 'react-native-radial-gradient';
 import {fontFamilies} from '../utils/fontFamilies';
 import CheckBigIcon from '../assets/ico_check_big.svg';
