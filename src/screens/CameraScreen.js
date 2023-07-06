@@ -24,6 +24,7 @@ import {useNavigation} from '@react-navigation/native';
 import {useStateValue} from '../services/State/State';
 import {actions} from '../services/State/Reducer';
 import {
+  check,
   PERMISSIONS,
   RESULTS,
   request,
@@ -60,6 +61,37 @@ const CameraScreen = (props) => {
   const backCam = devices.back;
   const device = backCam;
 
+  useEffect(() => {
+    check(PERMISSIONS.IOS.CAMERA)
+      .then((result) => {
+        switch (result) {
+          case RESULTS.UNAVAILABLE:
+            console.log('This feature is not available (on this device / in this context)');
+            break;
+          case RESULTS.DENIED:
+            console.log('The permission has not been requested / is denied but requestable');
+            requestCameraPermission();
+            break;
+          case RESULTS.GRANTED:
+            console.log('Permission is granted');
+            break;
+          case RESULTS.BLOCKED:
+            console.log('The permission is denied and not requestable anymore');
+            break;
+        }
+      })
+      .catch((error) => {
+        // handle error
+      });
+  }, []);
+
+  const requestCameraPermission = () => {
+    request(PERMISSIONS.IOS.CAMERA).then((result) => {
+      // handle result
+    });
+  };
+
+  
   const requestPermission = async () => {
     const status = await Camera.requestCameraPermission();
     if (status !== 'authorized') {
