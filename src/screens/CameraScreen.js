@@ -24,12 +24,13 @@ import {useNavigation} from '@react-navigation/native';
 import {useStateValue} from '../services/State/State';
 import {actions} from '../services/State/Reducer';
 import {
+  check,
   PERMISSIONS,
   RESULTS,
   request,
   openSettings,
 } from 'react-native-permissions';
-import {CameraRoll} from '@react-native-camera-roll/camera-roll';
+
 import RadialGradient from 'react-native-radial-gradient';
 import {fontFamilies} from '../utils/fontFamilies';
 import CheckBigIcon from '../assets/ico_check_big.svg';
@@ -37,6 +38,27 @@ import {BlurView} from '@react-native-community/blur';
 import {ActivityIndicator} from 'react-native';
 import {useTranslation} from 'react-i18next';
 import {uploadImage} from '../services/API/APIManager';
+
+check(PERMISSIONS.IOS.CAMERA)
+  .then((result) => {
+    switch (result) {
+      case RESULTS.UNAVAILABLE:
+        console.log('This feature is not available (on this device / in this context)');
+        break;
+      case RESULTS.DENIED:
+        console.log('The permission has not been requested / is denied but requestable');
+        break;
+      case RESULTS.GRANTED:
+        console.log('The permission is granted');
+        break;
+      case RESULTS.BLOCKED:
+        console.log('The permission is denied and not requestable anymore');
+        break;
+    }
+  })
+  .catch((error) => {
+    // …
+  });
 
 const CameraScreen = (props) => {
   const [hasPermission, setHasPermission] = useState(false);
