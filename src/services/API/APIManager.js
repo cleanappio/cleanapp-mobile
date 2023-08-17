@@ -473,3 +473,14 @@ export const get_claim_time = async () => {
   } catch (err) {}
   return null;
 };
+export const update_annotation = async (data) => {
+  try {
+    const response = await postUserData(
+      s.taxonomy.updateAnnotation,
+      data,
+      true,
+    );
+    return response;
+  } catch (err) {}
+  return null;
+}

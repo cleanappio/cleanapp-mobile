@@ -1,40 +1,55 @@
 import Geolocation from 'react-native-geolocation-service';
-import {PermissionsAndroid, Platform} from 'react-native';
+import {Alert, Platform} from 'react-native';
 import {setUserLocation} from '../services/DataManager';
-
+import {getReverseGeocodingData} from '../services/API/MapboxAPI';
+import {
+  PERMISSIONS,
+  RESULTS,
+  check,
+  openSettings,
+  request,
+} from 'react-native-permissions';
+import FlashMessage, {showMessage} from 'react-native-flash-message';
 /**
  * Request permission and get the user's location.
  * Currently settings the result in async storage.
  */
-export const getLocation = async (userData, navigation) => {
+export const getLocation = async () => {
   return new Promise(async (resolve, reject) => {
-    let auth;
+    let permissionCheck = '';
+    let permissionRequest = RESULTS.GRANTED;
 
-    if (Platform.OS === 'android') {
-      auth = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,
-        {
-          message: 'This app needs access to your location',
-          title: 'Location Permission',
-          buttonPositive: '',
-        },
-      );
-    } else if (Platform.OS === 'ios') {
-      auth = await Geolocation.requestAuthorization('whenInUse');
+    if (Platform.OS === 'ios') {
+      permissionCheck = await check(PERMISSIONS.IOS.LOCATION_WHEN_IN_USE);
+
+      if (permissionCheck !== RESULTS.GRANTED) {
+        permissionRequest = await request(PERMISSIONS.IOS.LOCATION_WHEN_IN_USE);
+      }
     }
 
-    if (auth === 'granted') {
-      return Geolocation.getCurrentPosition(
-        (position) => {
-          const {latitude, longitude} = position.coords;
+    if (Platform.OS === 'android') {
+      permissionCheck = await check(PERMISSIONS.ANDROID.ACCESS_COARSE_LOCATION);
 
-          if (navigation) {
-            setUserLocation({longitude: longitude, latitude: latitude});
-            resolve({latitude: latitude, longitude: longitude});
-          } else {
-            setUserLocation({longitude: longitude, latitude: latitude});
-            resolve({latitude: latitude, longitude: longitude});
-          }
+      if (permissionCheck !== RESULTS.GRANTED) {
+        permissionRequest = await request(
+          PERMISSIONS.ANDROID.ACCESS_COARSE_LOCATION,
+        );
+      }
+    }
+
+    if (permissionRequest === RESULTS.GRANTED) {
+      return Geolocation.getCurrentPosition(
+        async (position) => {
+          const {latitude, longitude} = position.coords;
+          
+          const locInfo = {
+            longitude: longitude,
+            latitude: latitude,
+            //location: locationStr,
+            //city: cityStr,
+          };
+          setUserLocation(locInfo);
+          resolve(locInfo);
         },
         (error) => {
           resolve(false);
@@ -51,6 +66,23 @@ export const getLocation = async (userData, navigation) => {
       );
     } else {
       // not granted
+      Alert.alert(
+        'Notice',
+        'Location permission not granted. Will you go to Settings and grant permission?',
+        [
+          {
+            text: 'Cancel',
+            onPress: () => {},
+            style: 'cancel',
+          },
+          {
+            text: 'Confirm',
+            onPress: () => {
+              openSettings();
+            },
+          },
+        ],
+      );
       resolve(false);
     }
   });

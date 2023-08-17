@@ -39,18 +39,9 @@ import RenderStat from '../components/RenderStat';
 import {Chip} from 'react-native-paper';
 import BottomSheetDialog from '../components/BotomSheetDialog';
 import RenderGuildListItem from '../components/RenderGuildListItem';
-import { Row } from '../components/Row';
+import {Row} from '../components/Row';
 
 import MemberIcon from '../assets/ico_member.svg';
-
-const TestGuildProfileImage = require('../assets/test_guild.png');
-const uploadIcon = require('../assets/uploads.png');
-const classificationIcon = require('../assets/verification_white.png');
-const ShareIcon = require('../assets/Share.png');
-const PencilIcon = require('../assets/Pencil.png');
-const referralLink = 'nCight.com/referral%RobinLehmann%';
-
-const colorTable = ['#FFD743', '#F3EFE0', '#C68335'];
 
 const Tab = ({title, icon, value, isSelected, setTab}) => {
   return (
@@ -78,7 +69,6 @@ export const Leaderboard = (props) => {
   const navigation = useNavigation();
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [userName, setName] = useState('');
-  const [selectedOption, setSelectedOption] = useState('nCight Score');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [leaderboardData, setLeaderboardData] = useState([]);
   const [walletAddress, setWalletAddress] = useState('');
@@ -99,12 +89,7 @@ export const Leaderboard = (props) => {
   const [tabIndex, setTabIndex] = useState(0);
   const [bottomSheetOpened, setBottomSheetOpened] = useState(false);
   const [teamStatus, setTeamStatus] = useState(null);
-
-  const bottomSheetRef = useRef(null);
-  const [routes] = useState([
-    {key: 'first', title: 'Players'},
-    {key: 'second', title: 'Guilds'},
-  ]);
+  const [userTeam, setUserTeam] = useState('');
 
   const onOpenMenu = () => {
     setIsMenuOpen(true);
@@ -120,35 +105,43 @@ export const Leaderboard = (props) => {
       setWalletAddress(wallet);
     }
 
-    getTeamStatus().then((teamResponse) => {
-      if (teamResponse && teamResponse.data) {
-        teamResponse.data.forEach((ele) => {
-          if (ele.name === 'blue') setBlueStat(ele.point);
-          if (ele.name === 'green') setGreenStat(ele.point);
-        });
+    getUserRank().then((userrankResponse) => {
+      if (userrankResponse && userrankResponse.length > 0) {
+        setLeaderboardPlayers(userrankResponse);
+        const _index = userrankResponse.findIndex(
+          (user) => user.public_address === wallet,
+        );
+        if (_index !== -1) {
+          setUserIndex(_index);
+        }
       }
     });
 
     getGuildList().then((guildListResponse) => {
       if (guildListResponse && guildListResponse.length > 0) {
         setLeaderboardGuilds(guildListResponse);
-        guildListResponse.forEach((ele, index) => {
-          if (ele.members.findIndex((e) => e === wallet) !== -1) {
-            setUserGuildIndex(index);
-            setJoined(true);
-          }
-        });
+        const _index = guildListResponse.findIndex(
+          (guild) =>
+            guild.members.findIndex((member) => member === wallet) !== -1,
+        );
+        if (_index !== -1) {
+          setUserGuildIndex(_index);
+          setJoined(true);
+        }
       }
     });
+    getTeamStatus().then((teamResponse) => {
+      if (teamResponse) {
+        if (teamResponse.data) {
+          teamResponse.data.forEach((ele) => {
+            if (ele.name === 'blue') setBlueStat(ele.point);
+            if (ele.name === 'green') setGreenStat(ele.point);
+          });
+        }
 
-    getUserRank().then((userrankResponse) => {
-      if (userrankResponse && userrankResponse.length > 0) {
-        setLeaderboardPlayers(userrankResponse);
-        userrankResponse.forEach((ele, index) => {
-          if (ele.public_address === wallet) {
-            setUserIndex(index);
-          }
-        });
+        if (teamResponse.user_data && teamResponse.user_data.team) {
+          setUserTeam(teamResponse.user_data.team);
+        }
       }
     });
 
@@ -163,49 +156,6 @@ export const Leaderboard = (props) => {
       fetchData();
     }, []),
   );
-
-  const sortData = (data) => {
-    const _data = [...data];
-    if (selectedOption === 'nCight Score') {
-      _data.sort((a, b) => b.score - a.score);
-    } else if (selectedOption === 'Accuracy') {
-      _data.sort(
-        (a, b) =>
-          (b.value.classification_accuracy
-            ? b.value.classification_accuracy
-            : 0) -
-          (a.value.classification_accuracy
-            ? a.value.classification_accuracy
-            : 0),
-      );
-    } else if (selectedOption === 'Total Classification') {
-      _data.sort(
-        (a, b) =>
-          (b.value.total_classifications ? b.value.total_classifications : 0) -
-          (a.value.total_classifications ? a.value.total_classifications : 0),
-      );
-    } else if (selectedOption === 'Referrals') {
-      _data.sort(
-        (a, b) =>
-          (b.value.referrals ? b.value.referrals : 0) -
-          (a.value.referrals ? a.value.referrals : 0),
-      );
-    }
-    return _data;
-  };
-
-  useEffect(() => {
-    setLeaderboardData(sortData(leaderboardData));
-  }, [selectedOption]);
-
-  // share action
-  const onPressShare = async () => {
-    const options = {
-      title: 'nCight',
-      message: referralLink,
-    };
-    const result = await Share.open(options);
-  };
 
   const openGuildDetail = () => {
     setBottomSheetOpened(true);
@@ -438,11 +388,11 @@ export const Leaderboard = (props) => {
             }}
           />
           {joined && userGuildIndex > -1 ? (
-              <RenderGuildListItem
-                onToggle={openGuildDetail}
-                index={userGuildIndex}
-                item={leaderboardGuilds[userGuildIndex]}
-              />
+            <RenderGuildListItem
+              onToggle={openGuildDetail}
+              index={userGuildIndex}
+              item={leaderboardGuilds[userGuildIndex]}
+            />
           ) : (
             <Ripple
               style={{
@@ -486,29 +436,6 @@ export const Leaderboard = (props) => {
     );
   };
 
-  const renderTabBar = (props) => (
-    <TabBar
-      {...props}
-      indicatorStyle={{
-        backgroundColor: 'white',
-        height: 3,
-        borderRadius: 3,
-      }}
-      labelStyle={{
-        fontFamily: fontFamilies.Default,
-        textTransform: 'none',
-        fontSize: 12,
-        lineHeight: 20,
-      }}
-      style={{backgroundColor: 'transparent'}}
-    />
-  );
-
-  const renderScene = SceneMap({
-    first: LeaderboardPlayers,
-    second: LeaderboardGuilds,
-  });
-
   return (
     <View style={{flex: 1}}>
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -528,6 +455,7 @@ export const Leaderboard = (props) => {
                 </View>
               )}
             </View>
+            
             <View style={styles.statusContainer}>
               <LinearGradient
                 end={{x: 0, y: 0.5}}
@@ -576,13 +504,17 @@ export const Leaderboard = (props) => {
               paddingBottom: 32,
             }}>
             <View style={styles.statContainer}>
-              <Text style={styles.statTitle}>{t('leaderboard.teamblue')}</Text>
+              <Text style={styles.statTitle}>
+                {t('leaderboard.teamblue')}
+                {userTeam === 'blue' ? `  (Your team)` : ''}
+              </Text>
               <Text style={styles.blueStat}>{`${blueStat} ${t(
                 'leaderboard.cats',
               )}`}</Text>
             </View>
             <View style={styles.statContainer}>
               <Text style={{...styles.statTitle, textAlign: 'right'}}>
+                {userTeam === 'green' ? `(Your team)   ` : ''}
                 {t('leaderboard.teamgreen')}
               </Text>
               <Text

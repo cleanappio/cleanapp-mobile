@@ -12,6 +12,7 @@ export const settings = {
     userStats:
       'api/v1/stats/user-graph?start_date=$[start_date]&end_date=$[end_date]',
     uploadImage: 'api/v1/upload-file',
+    updateAnnotation: 'api/v1/update-annotation',
     annotateImage: 'api/v1/annotate',
     getRomanNumberStats: '/api/v1/stats/tags?bounty=roman-letter-bounty',
     SuccessRate: 'api/v1/stats/success-rate',

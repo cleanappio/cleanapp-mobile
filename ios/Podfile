@@ -1,6 +1,7 @@
 require_relative '../node_modules/react-native/scripts/react_native_pods'
 require_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'
 
+project './CleanApp.xcodeproj'
 platform :ios, '13.0'
 install! 'cocoapods', :deterministic_uuids => false
 $RNMapboxMapsImpl = 'mapbox' # optional as this is the default
@@ -18,10 +19,6 @@ target 'CleanApp' do
 
   pod 'react-native-webview', :path => '../node_modules/react-native-webview'
 
-  pod 'RNBackgroundFetch', :path => '../node_modules/react-native-background-fetch'
-
-  pod 'RNCPushNotificationIOS', :path => '../node_modules/@react-native-community/push-notification-ios'
-
   # React Native Maps dependencies
   # rn_maps_path = '../node_modules/react-native-maps'
   # pod 'react-native-google-maps', :path => rn_maps_path
@@ -30,11 +27,7 @@ target 'CleanApp' do
   
   permissions_path = '../node_modules/react-native-permissions/ios'
   pod 'Permission-LocationWhenInUse', :path => "#{permissions_path}/LocationWhenInUse"
-  pod 'Permission-PhotoLibrary', :path => "#{permissions_path}/PhotoLibrary"
-  pod 'Permission-PhotoLibraryAddOnly', :path => "#{permissions_path}/PhotoLibraryAddOnly"
   pod 'Permission-Camera', :path => "#{permissions_path}/Camera"
-
-  pod 'react-native-cameraroll', :path => '../node_modules/@react-native-camera-roll/camera-roll'
 
   pod 'react-native-config', :path => '../node_modules/react-native-config'
 

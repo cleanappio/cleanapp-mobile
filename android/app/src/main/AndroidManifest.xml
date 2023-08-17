@@ -15,7 +15,6 @@
       </intent>
     </queries>
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.CAMERA" />
@@ -25,10 +24,6 @@
     <uses-feature
         android:name="android.hardware.camera"
         android:required="false" />
-    <!--
-    <uses-permission android:name="android.permission.VIBRATE" />
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
-    -->
     <application
       android:name=".MainApplication"
       android:label="@string/app_name"
@@ -51,27 +46,6 @@
             <category android:name="android.intent.category.LAUNCHER" />
         </intent-filter>
       </activity>
-      <meta-data android:name="google_analytics_adid_collection_enabled" android:value="false" />
-      <meta-data android:name="com.dieam.reactnativepushnotification.notification_channel_name" android:value="nCight"/>
-      <meta-data android:name="com.dieam.reactnativepushnotification.notification_channel_description" android:value="nCight Notifications"/>
-      <meta-data android:name="com.dieam.reactnativepushnotification.notification_color" android:resource="@android:color/white"/>
-
-      <receiver android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationActions" />
-      <receiver android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationPublisher" />
-      <receiver
-        android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationBootEventReceiver"
-        android:exported="false"
-        >
-          <intent-filter>
-              <action android:name="android.intent.action.BOOT_COMPLETED" />
-              <action android:name="android.intent.action.QUICKBOOT_POWERON" />
-              <action android:name="com.htc.intent.action.QUICKBOOT_POWERON"/>
-          </intent-filter>
-      </receiver>
-      <meta-data  android:name="com.dieam.reactnativepushnotification.notification_foreground"
-                  android:value="false"/>
-      <meta-data  android:name="com.dieam.reactnativepushnotification.notification_color"
-                  android:resource="@android:color/white"/>
       <!-- You will only need to add this meta-data tag, but make sure it's a child of application -->
       <meta-data
         android:name="com.google.android.geo.API_KEY"

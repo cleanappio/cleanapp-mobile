@@ -69,7 +69,8 @@ const RenderGuildListItem = (props) => {
         <Ripple
           style={{
             width: '100%',
-            backgroundColor: index % 2 === 0 ? 'transparent' : theme.APP_COLOR_1,
+            backgroundColor:
+              index % 2 === 0 ? 'transparent' : theme.APP_COLOR_1,
             bottomMargin: bottomMargin,
             borderBottomColor: bottomBorderColor,
             marginBottom: marginBottom,
@@ -109,7 +110,7 @@ const RenderGuildListItem = (props) => {
                   width: isRank ? '60%' : '100%',
                   fontWeight: '300',
                   fontFamily: fontFamilies.Default,
-                  textAlign: isRank ? 'center' : 'right',
+                  textAlign: isRank ? 'left' : 'right',
                 }}>
                 {item.name}
               </Text>
@@ -130,9 +131,10 @@ const RenderGuildListItem = (props) => {
               <Text style={styles.txt12italic}>{item.description}</Text>
               <Row style={{marginTop: 16}}>
                 <Text style={styles.txt12}>{`${item.rewards} CATS`}</Text>
-                <Text style={styles.txt12}>{`${item.members.length} Members`}</Text>
+                <Text
+                  style={styles.txt12}>{`${item.members.length} Members`}</Text>
                 <Ripple
-                  onPress={()=>joinGuild(item._id)}
+                  onPress={() => joinGuild(item._id)}
                   containerStyle={{...styles.btnContainerSmall}}
                   style={{...styles.btnSmall}}>
                   <Text style={styles.btnText}>{'Join'}</Text>

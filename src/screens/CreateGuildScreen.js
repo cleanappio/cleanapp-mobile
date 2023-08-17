@@ -1,5 +1,15 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {StyleSheet, View, TextInput, Keyboard, KeyboardAvoidingView, Platform, ScrollView, Alert} from 'react-native';
+import {
+  StyleSheet,
+  View,
+  TextInput,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Alert,
+  ActivityIndicator,
+} from 'react-native';
 import {Text} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import DocumentPicker from 'react-native-document-picker';
@@ -26,6 +36,7 @@ const CreateGuildScreen = () => {
   const [guildDesc, setGuildDesc] = useState('');
   const [guildUsers, setGuildUsers] = useState([]);
   const [currentUser, setCurrentUser] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const guilddescInput = useRef(null);
   const guildnameInput = useRef(null);
@@ -36,6 +47,8 @@ const CreateGuildScreen = () => {
   const navigation = useNavigation();
 
   const onCreateGuild = async () => {
+    if (loading) return;
+
     if (guildName === '') {
       Alert.alert(t('createyourguild.guildnameempty'));
       return;
@@ -49,6 +62,7 @@ const CreateGuildScreen = () => {
     if (imageFile === null) {
       Alert.alert(t('createyourguild.profileimageempty'));
     }
+    setLoading(true);
 
     const guildResponse = await createGuild({
       name: guildName,
@@ -58,8 +72,13 @@ const CreateGuildScreen = () => {
     });
 
     if (guildResponse) {
-      navigation.navigate('Leaderboard');
+      if (guildResponse.messages) {
+        Alert.alert(guildResponse.messages[0]);
+      } else {
+        navigation.navigate('Leaderboard');
+      }
     }
+    setLoading(false);
   };
 
   const addUser = () => {
@@ -237,6 +256,7 @@ const CreateGuildScreen = () => {
             <Ripple
               style={styles.btn}
               containerStyle={styles.btnContainer}
+              disabled={loading}
               onPress={() => {
                 onCreateGuild();
               }}>

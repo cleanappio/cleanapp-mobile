@@ -92,7 +92,7 @@ const RenderStat = (props) => {
                 width: '60%',
                 fontWeight: '300',
                 fontFamily: fontFamilies.Default,
-                textAlign: 'center',
+                textAlign: isSelf ? 'center' : 'left',
               }}>
               {isSelf
                 ? 'You'

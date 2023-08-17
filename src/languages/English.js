@@ -387,11 +387,10 @@ export default {
       mapreportswithavatar: 'Map reports with avatar',
       traceable: 'Traceable',
       sharereportsanonymously: 'Share reports anonymously',
-      nodatacollectedwhileflagging: 'No data collected while flagging',
+      nodatacollectedwhileflagging: 'No data collected',
       donotesharemydata: 'Do not share my data',
-      tocPrefix: 'I agree with the ',
+      tocPrefix: "I agree with CleanApp's ",
       tocLink: 'terms and conditions',
-      tocSuffix: ' of CleanApp',
       skip: 'Skip',
       startTutorial: 'Start Tutorial(10$CAT)',
     },
@@ -445,10 +444,10 @@ export default {
         'Photo library access permission not granted. Will you go to Settings and grant permission?',
       no: 'No',
       yes: 'Yes',
-      saveimage: 'Save Image',
-      failedtosaveimage: 'Failed to save Image: ',
+      saveimage: 'Notice',
+      failedtosaveimage: 'Failed to upload image: ',
       ok: 'OK',
-      newreward: 'New Reward +1 CAT',
+      newreward: '+1 CAT',
       photouploaded: 'Photo Uploaded',
     },
     cachescreen: {
@@ -457,7 +456,7 @@ export default {
       Mapreportswithavatar: 'Map reports with avatar',
       Traceable: 'Traceable',
       Sharereportsanonymously: 'Share reports anonymously',
-      Nodatacollectedwhileflagging: 'No data collected while flagging',
+      Nodatacollectedwhileflagging: 'No data collected',
       Editprivacyselection: 'Edit privacy selection',
       Confirm: 'Confirm',
       remainingcount: '  (1 remaining)',
@@ -547,6 +546,10 @@ export default {
     },
     mapscreen: {
       maps: 'Maps',
+    },
+    location: {
+      locationPermissionNotGranted:
+        'Location permission not granted. Will you go to Settings and grant permission?',
     },
   },
 };

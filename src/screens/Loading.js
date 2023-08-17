@@ -30,26 +30,23 @@ const Loading = ({t, navigation}) => {
   const connector = useWalletConnect();
   const [isConnected, setIsConnected] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
-  const [isMoving, setIsMoving] = useState(false);
 
   const navigateHome = () => {
-    getFirstRun().then((data) => {
-      if (data.firstRun) {
-        navigation.dispatch(
-          CommonActions.reset({
-            index: 0,
-            routes: [{name: 'Home'}],
-          }),
-        );
-      } else {
-        navigation.dispatch(
-          CommonActions.reset({
-            index: 0,
-            routes: [{name: 'Onboarding'}],
-          }),
-        );
-      }
-    });
+    navigation.dispatch(
+      CommonActions.reset({
+        index: 0,
+        routes: [{name: 'Home'}],
+      }),
+    );
+  };
+
+  const navigateOnboarding = () => {
+    navigation.dispatch(
+      CommonActions.reset({
+        index: 0,
+        routes: [{name: 'Onboarding'}],
+      }),
+    );
   };
 
   // function login
@@ -62,56 +59,51 @@ const Loading = ({t, navigation}) => {
   };
 
   const login = async () => {
-    if (connector && connector.accounts) {
-      if (!isConnected) {
-        setIsConnected(true);
+    if (!isConnected) {
+      setIsConnected(true);
 
-        setTimeout(async () => {
-          const token = await refreshTokenAPI();
-          // no auth token set, call LoginProc
-          if (!token || !token.access_token) {
-            const walletType = await getWalletType();
+      setTimeout(async () => {
+        const token = await refreshTokenAPI();
+        // no auth token set, call LoginProc
+        if (!token || !token.access_token) {
+          const walletType = await getWalletType();
 
-            if (walletType === 'WalletConnect') {
-              connector.connect().then((response) => {
-                // if wc connect succussfully, run loginProc
-                if (
-                  response &&
-                  response.accounts &&
-                  response.accounts.length > 0
-                ) {
-                  setIsChecking(true);
-                } else {
-                  // retry wc
-                  setIsConnected(false);
-                }
-              });
-            } else {
-              await LoginProc(web3);
-              navigateHome();
-            }
+          if (walletType === 'WalletConnect') {
+            connector.connect().then((response) => {
+              // if wc connect succussfully, run loginProc
+              if (
+                response &&
+                response.accounts &&
+                response.accounts.length > 0
+              ) {
+                setIsChecking(true);
+              } else {
+                // retry wc
+                setIsConnected(false);
+              }
+            });
           } else {
+            await LoginProc(web3);
             navigateHome();
           }
-        }, 2000);
-      }
+        } else {
+          navigateHome();
+        }
+      }, 2000);
     }
   };
 
   useEffect(() => {
-    if (connector && connector.accounts && !isMoving) {
-      setIsMoving(true);
-      getFirstRun().then((ret) => {
-        if (ret && ret.firstRun) {
-          login();
-        } else {
-          setTimeout(() => {
-            navigateHome();
-          }, 2000);
-        }
-      });
-    }
-  }, [connector]);
+    getFirstRun().then((ret) => {
+      if (ret && ret.firstRun) {
+        login();
+      } else {
+        setTimeout(() => {
+          navigateOnboarding();
+        }, 2000);
+      }
+    });
+  }, []);
 
   useEffect(() => {
     if (isChecking) {

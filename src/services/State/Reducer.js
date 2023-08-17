@@ -19,6 +19,12 @@ export const actions = {
   SET_CURRENCYSETTING: 'SET_CURRENCYSETTING',
   SET_CAMERA_ACTION: 'SET_CAMERA_ACTION',
   SET_USER_LOCATION: 'SET_USER_LOCATION',
+  SET_FAB_SHOW: 'SET_FAB_SHOW',
+  SET_CACHE_VAULT: 'SET_CACHE_VAULT',
+  SET_MAP_LOCATION: 'SET_MAP_LOCATION',
+  SET_REPORTS: 'SET_REPORTS',
+  SET_GUILDS: 'SET_GUILDS',
+  SET_PLAYERS: 'SET_PLAYERS',
 };
 
 export const reducer = (state, action) => {
@@ -131,6 +137,41 @@ export const reducer = (state, action) => {
       return {
         ...state,
         userLocation: action.userLocation,
+      };
+
+    case actions.SET_FAB_SHOW:
+      return {
+        ...state,
+        fabShow: action.fabShow,
+      };
+    case actions.SET_CACHE_VAULT:
+      return {
+        ...state,
+        cacheVault: action.cacheVault,
+      };
+
+    case actions.SET_MAP_LOCATION:
+      return {
+        ...state,
+        mapLocation: action.mapLocation,
+      };
+
+    case actions.SET_REPORTS:
+      return {
+        ...state,
+        reports: action.reports,
+      };
+
+    case actions.SET_GUILDS:
+      return {
+        ...state,
+        guilds: action.guilds,
+      };
+
+    case actions.SET_PLAYERS:
+      return {
+        ...state,
+        players: action.players,
       };
 
     default:

@@ -2,12 +2,12 @@
 import 'react-native-gesture-handler';
 import {enableScreens} from 'react-native-screens';
 enableScreens();
-import React from 'react';
+import React, {useEffect} from 'react';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import TabComponent from './components/Tab';
-import {StyleSheet, Image, View, Text} from 'react-native';
+import {StyleSheet, Image, View, Text, AppState} from 'react-native';
 import Loading from './screens/Loading';
 import Ripple from './components/Ripple';
 import {theme} from './services/Common/theme';
@@ -26,6 +26,8 @@ import BasketBGIcon from './assets/ico_basket_bg.svg';
 import BasketIcon from './assets/ico_basket.svg';
 import CreateGuildScreen from './screens/CreateGuildScreen';
 import GuildScreen from './screens/GuildScreen';
+import {getLocation} from './functions/geolocation';
+import {actions} from './services/State/Reducer';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -224,6 +226,20 @@ const BottomTabs = ({navigation}) => {
     showUploadImagePageWalkthrough ||
     showVerifyImagePageWalkthrough ||
     showAnnotateImagePageWalkthrough;
+
+  useEffect(() => {
+    const handleAppStateChange = (nextAppState) => {
+      if (nextAppState === 'active') {
+        navigation.navigate('Camera');
+      }
+    };
+
+    AppState.addEventListener('change', handleAppStateChange);
+
+    return () => {
+      AppState.removeEventListener('change', handleAppStateChange);
+    };
+  }, []);
 
   return (
     <>

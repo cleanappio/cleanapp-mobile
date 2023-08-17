@@ -146,7 +146,7 @@ android {
         applicationId "com.dataunion.litterbux"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 3
+        versionCode 10
         versionName "1.0.0"
     }
     splits {
@@ -253,8 +253,6 @@ dependencies {
     } else {
         implementation jscFlavor
     }
-    implementation project(':@react-native-camera-roll_camera-roll')
-    //compile project(':@react-native-community_cameraroll')
     //implementation project(':react-native-vision-camera')
     //implementation "androidx.camera:camera-core:1.1.0-alpha08"
 }

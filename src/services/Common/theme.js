@@ -29,7 +29,7 @@ export const theme = {
     SILVER: '#F3EFE0',
     BRONZE: '#C68335',
     WHITE_OPACITY_1P: '#FFFFFF02',
-
+    WHITE_OPACITY_10P: '#FFFFFF10',
     GREEN_ITEM_BG_START: '#25C088',
     GREEN_ITEM_BG_END: '#25C08800',
 

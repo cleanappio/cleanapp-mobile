@@ -36,4 +36,23 @@ export const initialState = {
     location: '',
     city: '',
   },
+  cacheVault: {
+    reports: 0,
+    referrals: 0,
+    offchainReports: 0,
+    offchainReferrals: 0,
+    onchainReports: 0,
+    onchainReferrals: 0,
+    onchainTotal: 0,
+    offchainTotal: 0,
+    total: 0,
+  },
+  mapLocation: {
+    zoomLevel: 17,
+    coordinates: [0, 0],
+  },
+  players: [],
+  guilds: [],
+  reports: [],
+  fabShow: false,
 };

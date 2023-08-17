@@ -16,6 +16,11 @@ const KEYS = {
   CURRENCY_SETTINGS: 'CURRENCY_SETTINGS',
   HAS_REWARDS: 'HAS_REWARDS',
   USER_LOCATION: 'USER_LOCATION',
+  CACHE_VAULT: 'CACHE_VAULT',
+  MAP_LOCATION: 'MAP_LOCATION',
+  REPORTS: 'REPORTS',
+  PLAYERS: 'PLAYERS',
+  GUILDS: 'GUILDS',
 };
 
 export const setUserInfo = async (userDetails) => {
@@ -312,5 +317,96 @@ export const getUserLocation = async () => {
 export const setUserLocation = async (location) => {
   try {
     await AsyncStorage.setItem(KEYS.USER_LOCATION, JSON.stringify(location));
+  } catch (err) {}
+};
+
+//cache vault
+export const getCacheVault = async () => {
+  try {
+    const response = await AsyncStorage.getItem(KEYS.CACHE_VAULT);
+  } catch (err) {}
+  return {
+    reports: 0,
+    referrals: 0,
+    offchainReports: 0,
+    offchainReferrals: 0,
+    onchainReports: 0,
+    onchainReferrals: 0,
+    onchainTotal: 0,
+    offchainTotal: 0,
+    total: 0,
+  };
+};
+
+export const setCacheVault = async (cacheInfo) => {
+  try {
+    await AsyncStorage.setItem(KEYS.CACHE_VAULT, JSON.stringify(cacheInfo));
+  } catch (err) {}
+};
+
+export const getMapLocation = async () => {
+  try {
+    const response = await AsyncStorage.getItem(KEYS.MAP_LOCATION);
+    if (response) {
+      return JSON.parse(response);
+    }
+  } catch (err) {}
+  return {
+    zoomLevel: 17,
+    coordinates: [0, 0],
+  };
+};
+
+export const setMapLocation = async (mapLocation) => {
+  try {
+    await AsyncStorage.setItem(KEYS.MAP_LOCATION, JSON.stringify(mapLocation));
+  } catch (err) {}
+};
+
+export const getReports = async () => {
+  try {
+    const response = await AsyncStorage.getItem(KEYS.REPORTS);
+    if (response) {
+      return JSON.parse(response);
+    }
+  } catch (err) {}
+  return [];
+};
+
+export const setReports = async (reports) => {
+  try {
+    await AsyncStorage.setItem(KEYS.REPORTS, JSON.stringify(reports));
+  } catch (err) {}
+};
+
+export const getPlayers = async () => {
+  try {
+    const response = await AsyncStorage.getItem(KEYS.PLAYERS);
+    if (response) {
+      return JSON.parse(response);
+    }
+  } catch (err) {}
+  return [];
+};
+
+export const setPlayers = async (players) => {
+  try {
+    await AsyncStorage.setItem(KEYS.PLAYERS, JSON.stringify(players));
+  } catch (err) {}
+};
+
+export const getGuilds = async () => {
+  try {
+    const response = await AsyncStorage.getItem(KEYS.GUILDS);
+    if (response) {
+      return JSON.parse(response);
+    }
+  } catch (err) {}
+  return [];
+};
+
+export const setGuilds = async (guilds) => {
+  try {
+    await AsyncStorage.setItem(KEYS.GUILDS, JSON.stringify(guilds));
   } catch (err) {}
 };

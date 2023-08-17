@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import {CommonActions, useNavigation} from '@react-navigation/native';
+import {CommonActions, StackActions, useNavigation} from '@react-navigation/native';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {
@@ -17,6 +17,7 @@ import {
   ImageBackground,
   Linking,
   Alert,
+  Keyboard,
 } from 'react-native';
 import {ExpandingDot, LiquidLike} from 'react-native-animated-pagination-dots';
 import {FlatList, ScrollView} from 'react-native-gesture-handler';
@@ -149,21 +150,24 @@ const WelcomeScreen = ({
 
   const [name, setName] = useState(userName);
   const [referralCode, setReferralCode] = useState('');
+  const [nextBtnDisabled, setNextBtnDisabled] = useState(false);
 
   const nameInput = useRef(null);
   const referralInput = useRef(null);
 
   const gotoNextStep = async () => {
     // check referral
+    setNextBtnDisabled(true);
     const loginRet = await LoginProc(web3, referralCode);
 
-    if (!loginRet) return;
-
-    // check name
-    const setNameRet = await setUserNameProc();
-    if (!setNameRet) return;
-
-    onComplete();
+    if (loginRet) {
+      // check name
+      const setNameRet = await setUserNameProc();
+      if (setNameRet) {
+        onComplete();
+      }
+    }
+    setNextBtnDisabled(false);
   };
 
   const setUserNameProc = async () => {
@@ -259,6 +263,7 @@ const WelcomeScreen = ({
         }}
       />
       <Ripple
+        disabled={nextBtnDisabled}
         style={{...styles.btn, marginTop: 36}}
         onPress={() => {
           gotoNextStep();
@@ -356,7 +361,6 @@ const PrivacyScreen = ({onStartTutorial = () => {}, onComplete = () => {}}) => {
             }}>
             {t('onboarding.tocLink')}
           </Text>
-          {t('onboarding.tocSuffix')}
         </Text>
         <Ripple
           onPress={() => {
@@ -447,12 +451,7 @@ export const Onboarding = (props) => {
 
   const onCompletePrivacy = () => {
     setFirstRun(true);
-    navigation.dispatch(
-      CommonActions.reset({
-        index: 0,
-        routes: [{name: 'Home'}],
-      }),
-    );
+    navigation.dispatch(StackActions.replace('Home'));
   };
 
   const connectWallet = useCallback(async () => {

@@ -28,7 +28,11 @@ import Toast from 'react-native-simple-toast';
 import MetaMaskSDK from '@metamask/sdk';
 import BackgroundTimer from 'react-native-background-timer';
 import {ethers} from 'ethers';
-import {getWalletAddress, getWalletData} from '../services/DataManager';
+import {
+  getWalletAddress,
+  getWalletData,
+  setCacheVault,
+} from '../services/DataManager';
 import {useTranslation} from 'react-i18next';
 import {
   getDataSharingOption,
@@ -37,6 +41,8 @@ import {
   get_reward_status,
   setDataSharingOption,
 } from '../services/API/APIManager';
+import {useStateValue} from '../services/State/State';
+import {actions} from '../services/State/Reducer';
 
 const CacheScreen = (props) => {
   const [privacyOpened, setPrivacyOpened] = useState(false);
@@ -50,7 +56,8 @@ const CacheScreen = (props) => {
 
   const [rewardStatusList, setRewardStatusList] = useState([]);
   const [shareDataStatus, setShareDataStatus] = useState('share_data_live');
-  const [totalCache, setTotalCache] = useState({
+  const [{cacheVault}, dispatch] = useStateValue();
+  /* const [totalCache, setTotalCache] = useState({
     reports: 0,
     referrals: 0,
     offchainReports: 0,
@@ -60,7 +67,7 @@ const CacheScreen = (props) => {
     onchainTotal: 0,
     offchainTotal: 0,
     total: 0,
-  });
+  }); */
 
   const [nextRunTime, setNextRunTime] = useState(0);
   const navigation = useNavigation();
@@ -177,7 +184,12 @@ const CacheScreen = (props) => {
             cacheResult.reports += element.reward;
           }
         });
-        setTotalCache(cacheResult);
+        dispatch({
+          type: actions.SET_CACHE_VAULT,
+          cacheVault: cacheResult,
+        });
+        setCacheVault(cacheResult);
+        //setTotalCache(cacheResult);
       }
     });
   }, []);
@@ -236,12 +248,7 @@ const CacheScreen = (props) => {
           containerStyle={{marginTop: 24}}
           onPress={setPrivacy}
           style={styles.bigBtn}>
-          <Text style={styles.txt16bold}>
-            {t('cachescreen.Confirm')}
-            <Text style={{...styles.txt12thinitalic, lineHeight: 24}}>
-              {t('cachescreen.remainingcount')}
-            </Text>
-          </Text>
+          <Text style={styles.txt16bold}>{t('cachescreen.Confirm')}</Text>
         </Ripple>
       </BottomSheetDialog>
     );
@@ -513,24 +520,24 @@ const CacheScreen = (props) => {
           {/** balance */}
           <View style={styles.balanceContainer}>
             <Row>
-              <Text style={styles.txt16}>
-                {totalCache.total} <Text style={styles.txt9}>{'$CATS'}</Text>
+              <Text style={{...styles.txt16, lineHeight: 16}}>
+                {cacheVault.total || 0} <Text style={styles.txt9}>{'$CATS'}</Text>
               </Text>
               <Text style={styles.txt12}>{'Lifetime XP'}</Text>
             </Row>
             <Row>
               <Text style={styles.txt9}>
-                {totalCache.reports} <Text style={styles.txt9}>{'$CATS'}</Text>
+                {cacheVault.reports || 0} <Text style={styles.txt9}>{'$CATS'}</Text>
               </Text>
               <Text style={styles.txt9}>{'Reports'}</Text>
             </Row>
             <Row>
               <Text style={styles.txt9}>
-                {totalCache.referrals} <Text style={styles.txt9}>{'$CATS'}</Text>
+                {cacheVault.referrals || 0} <Text style={styles.txt9}>{'$CATS'}</Text>
               </Text>
               <Text style={styles.txt9}>{'Referrals'}</Text>
             </Row>
-            <Row>
+            {/* <Row>
               <Text style={styles.txt9}>
                 {totalCache.offchainReports} <Text style={styles.txt9}>{'$CATS'}</Text>
               </Text>
@@ -541,18 +548,20 @@ const CacheScreen = (props) => {
                 {totalCache.offchainReferrals} <Text style={styles.txt9}>{'$CATS'}</Text>
               </Text>
               <Text style={styles.txt9}>{'Litterbox(offchain) referrals'}</Text>
-            </Row>
+            </Row> */}
           </View>
           <View style={styles.balanceContainer}>
             <Row>
               <Text style={styles.txt12}>{'Litterbox(onchain)'}</Text>
-              <Text style={styles.txt12}>{`Emptied in ${Math.ceil(nextRunTime / 3600)}h ${
+              {/*  <Text style={styles.txt12}>{`Emptied in ${Math.ceil(nextRunTime / 3600)}h ${
                 Math.ceil((nextRunTime % 3600) / 60)
-              }mins`}</Text>
+              }mins`}</Text> */}
             </Row>
-            <Text style={styles.txt24}>{totalCache.onchainTotal} <Text style={styles.txt16}>{'$CATS'}</Text></Text>
+            <Text style={styles.txt24}>
+              {`${cacheVault.offchainTotal || 0} `}
+              <Text style={styles.txt16}>{'$CATS'}</Text>
+            </Text>
           </View>
-          
           <View style={styles.block}>
             <View style={{...styles.blueCard, marginTop: 8}}>
               <View style={styles.row}>

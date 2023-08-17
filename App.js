@@ -22,6 +22,10 @@ import {
   getDataUsageFlag,
   isPrivacyAndTermsAccepted,
   getCurrencySettings,
+  getCacheVault,
+  getMapLocation,
+  getPlayers,
+  getGuilds,
 } from './src/services/DataManager';
 import {store} from './src/store/store.js';
 import {getWeb3_} from './src/web3/getWeb3';
@@ -33,11 +37,6 @@ import {I18nextProvider} from 'react-i18next';
 import {MenuProvider} from 'react-native-popup-menu';
 import {ethers} from 'ethers';
 import {NftProvider} from 'use-nft';
-
-// 1. Import the modules.
-import BackgroundFetch from 'react-native-background-fetch';
-import {getNotifications} from './src/services/API/APIManager';
-import NotifService from './NotifService';
 import {WalletConnectProvider} from '@walletconnect/react-native-dapp/dist/providers';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import MapboxGL from '@rnmapbox/maps';
@@ -45,6 +44,8 @@ import {PERMISSIONS, RESULTS, check, request} from 'react-native-permissions';
 import Config from 'react-native-config';
 import {getLocation} from './src/functions/geolocation';
 import {getReverseGeocodingData} from './src/services/API/MapboxAPI';
+import {useFocusEffect} from '@react-navigation/native';
+import {FABCameraButton} from './src/components/FABCameraButton';
 
 getWeb3_.catch((err) => {
   //console.warn('Error in web3 initialization.', err));
@@ -54,130 +55,21 @@ MapboxGL.setAccessToken(Config.MAPBOX_ACCESS_TOKEN);
 const persistor = persistStore(store);
 
 const RootNavigator = () => {
-  const onRegister = (token) => {};
-
-  const onNotif = (notif) => {};
-
-  const notif = new NotifService(onRegister, onNotif);
-
   useEffect(() => {
     checkLanguage();
     checkStatus();
     checkDataUsageSettings();
     checkVerifySettings();
-    fetchNotification();
-    fetchTask();
-
-    checkUserLocation();
-    //handleLocationPermission();
+    checkCacheVault();
+    checkMapLocation();
+    checkPlayers();
+    checkGuilds();
   }, []);
 
-  const checkUserLocation = async () => {
-    const location = await getLocation();
-    let locationStr = '';
-    let cityStr = '';
-    if (location && location.latitude) {
-      const locStr = await getReverseGeocodingData(
-        [location.longitude, location.latitude],
-        true,
-      );
-      if (locStr && locStr.features) {
-        const features = locStr.features;
-        if (features.length > 0) {
-          locationStr = features[0].context.find((context) =>
-            context.id.startsWith('locality.'),
-          ).text;
-          cityStr = features[0].context.find((context) =>
-            context.id.startsWith('place.'),
-          ).text;
-        }
-      }
-    }
-
-    dispatch({
-      type: actions.SET_USER_LOCATION,
-      userLocation: {...location, location: locationStr, city: cityStr},
-    });
-  };
-
-  const handleLocationPermission = async () => {
-    let permissionCheck = '';
-    if (Platform.OS === 'ios') {
-      permissionCheck = await check(PERMISSIONS.IOS.LOCATION_WHEN_IN_USE);
-
-      if (
-        permissionCheck === RESULTS.BLOCKED ||
-        permissionCheck === RESULTS.DENIED
-      ) {
-        const permissionRequest = await request(
-          PERMISSIONS.IOS.LOCATION_WHEN_IN_USE,
-        );
-        permissionRequest === RESULTS.GRANTED
-          ? console.warn('Location permission granted.')
-          : console.warn('location permission denied.');
-      }
-    }
-
-    if (Platform.OS === 'android') {
-      permissionCheck = await check(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION);
-
-      if (
-        permissionCheck === RESULTS.BLOCKED ||
-        permissionCheck === RESULTS.DENIED
-      ) {
-        const permissionRequest = await request(
-          PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION,
-        );
-        permissionRequest === RESULTS.GRANTED
-          ? console.warn('Location permission granted.')
-          : console.warn('location permission denied.');
-      }
-    }
-  };
-
-  const [{progressSettings, alertSettings}, dispatch] = useStateValue();
+  const [{progressSettings, alertSettings, fabShow}, dispatch] =
+    useStateValue();
   const {show = false} = progressSettings || {};
   const {settings} = alertSettings || {};
-
-  const fetchTask = async () => {
-    const notifications = await getNotifications({mark_as_read: true});
-
-    if (notifications && notifications.length > 0) {
-      // 4. Send a push notification
-      notifications.forEach((ele) => {
-        let title = ele.data.title;
-        let message = ele.data.message;
-        if (ele.type === 'rank_updated') {
-          message = `Your Rank updated from ${ele.data['old-rank']}th to ${ele.data['new-rank']}th`;
-        }
-
-        notif.localNotif('', title, message);
-      });
-    }
-  };
-
-  const fetchNotificationTask = async (taskId) => {
-    fetchTask();
-
-    // Call finish upon completion of the background task
-    BackgroundFetch.finish(taskId);
-  };
-
-  const fetchNotification = async () => {
-    BackgroundFetch.configure(
-      {
-        minimumFetchInterval: 15, // in minutes
-      },
-      fetchNotificationTask,
-      (error) => {
-        // console.error('RNBackgroundFetch failed to start.');
-      },
-    );
-
-    setInterval(() => {
-      fetchTask();
-    }, 1000 * 60 * 15);
-  };
 
   const checkDataUsageSettings = async () => {
     let isDataUsageAvailable = await getDataUsageFlag();
@@ -229,6 +121,38 @@ const RootNavigator = () => {
     } catch (err) {}
   };
 
+  const checkCacheVault = async () => {
+    const cacheVault = await getCacheVault();
+    dispatch({
+      type: actions.SET_CACHE_VAULT,
+      cacheVault: cacheVault,
+    });
+  };
+
+  const checkMapLocation = async () => {
+    const mapLocation = await getMapLocation();
+    dispatch({
+      type: actions.SET_MAP_LOCATION,
+      mapLocation: mapLocation,
+    });
+  };
+
+  const checkPlayers = async () => {
+    const players = await getPlayers();
+    dispatch({
+      type: actions.SET_PLAYERS,
+      players: players,
+    });
+  };
+
+  const checkGuilds = async () => {
+    const guilds = await getGuilds();
+    dispatch({
+      type: actions.SET_GUILDS,
+      guilds: guilds,
+    });
+  };
+
   const getAlertSettings = () => {
     const onConfirmPressed =
         settings && settings.onConfirmPressed
@@ -268,6 +192,7 @@ const RootNavigator = () => {
         <AppAlert {...getAlertSettings()} />
         <ModalActivityIndicator modalVisible={show} />
         <CreateRootNavigator />
+        {fabShow && <FABCameraButton dispatch={dispatch} />}
       </SafeAreaView>
     </>
   );

@@ -1,18 +1,12 @@
 /* eslint-disable react-native/no-inline-styles */
 import React, {useRef} from 'react';
-import {Image, View, StyleSheet} from 'react-native';
+import {Image, View, StyleSheet, TouchableHighlight} from 'react-native';
 import styled from 'styled-components/native';
 import {theme} from '../services/Common/theme';
 import {Transition, Transitioning} from 'react-native-reanimated';
-import LinearGradient from 'react-native-linear-gradient';
-
 import LeaderboardIcon from '../assets/ico_leaderboard.svg';
-import CameraIcon from '../assets/ico_camera.svg';
 import MapIcon from '../assets/ico_map.svg';
-import CameraShootIcon from '../assets/ico_camera_shoot.svg';
-import CameraTakenIcon from '../assets/ico_camera_taken.svg';
-
-import Ripple from './Ripple';
+const CleanAppIcon = require('../assets/CleanApp_Logo.png');
 import {actions} from '../services/State/Reducer';
 
 const styles = StyleSheet.create({
@@ -26,11 +20,36 @@ const styles = StyleSheet.create({
     height: 4,
     width: 4,
   },
+  cameraWrapper: {
+    marginTop: -40,
+  },
+  cameraContainer: {
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    backgroundColor: theme.COLORS.WHITE,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  fabContainer: {
+    borderWidth: 2,
+    borderColor: theme.APP_COLOR_2,
+    borderRadius: 40,
+    width: 80,
+    height: 80,
+    backgroundColor: 'transparent',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cameraIcon: {
+    width: 60,
+    height: 60,
+  },
 });
 
 const icons = {
   Leaderboard: <LeaderboardIcon />,
-  Camera: <CameraIcon />,
+  Camera: <Image source={CleanAppIcon} style={styles.cameraIcon} />,
   Map: <MapIcon />,
 };
 
@@ -76,13 +95,27 @@ function Tab({
 
   const DrawCameraIcon = () => {
     return (
-      <Ripple onPress={onPressCamera}>
-        {cameraAction.requestCameraShot ? (
-          <CameraTakenIcon />
-        ) : (
-          <CameraShootIcon />
-        )}
-      </Ripple>
+      <View style={styles.cameraWrapper}>
+        <TouchableHighlight
+          onPress={onPressCamera}
+          style={styles.cameraContainer}>
+          <View style={styles.fabContainer}>
+            {cameraAction.requestCameraShot ? (
+              <Image
+                source={CleanAppIcon}
+                resizeMode="cover"
+                style={styles.cameraIcon}
+              />
+            ) : (
+              <Image
+                source={CleanAppIcon}
+                resizeMode="cover"
+                style={styles.cameraIcon}
+              />
+            )}
+          </View>
+        </TouchableHighlight>
+      </View>
     );
   };
 
@@ -99,29 +132,18 @@ function Tab({
         transition={transition}>
         <View
           style={{
-            width: 45,
-            height: 3,
-            backgroundColor:
-              isCamera && focused ? theme.COLORS.TEXT_GREY : 'transparent',
-            marginBottom: 8,
-            borderRadius: 3,
-          }}
-        />
-        <View
-          style={{
-            width: 45,
-            height: 45,
+            width: 90,
+            height: 90,
             borderRadius: 45,
             justifyContent: 'center',
             alignItems: 'center',
-            borderWidth: isCamera && !focused ? 2 : 0,
-            borderColor: isCamera && !focused ? '#F3EFE0' : 'transparent',
           }}>
-          {isCamera && focused ? <DrawCameraIcon /> : <>{icon}</>}
+          {focused && label === 'Camera' ? <>{icon}</> : <>{icon}</>}
           <View style={styles.indicatorContainer}>
             {focused && label !== 'Camera' && (
               <View
                 style={{
+                  marginTop: -45,
                   width: 4,
                   height: 4,
                   borderRadius: 4,

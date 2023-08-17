@@ -29,7 +29,6 @@ import {
   request,
   openSettings,
 } from 'react-native-permissions';
-import {CameraRoll} from '@react-native-camera-roll/camera-roll';
 import RadialGradient from 'react-native-radial-gradient';
 import {fontFamilies} from '../utils/fontFamilies';
 import CheckBigIcon from '../assets/ico_check_big.svg';
@@ -37,6 +36,8 @@ import {BlurView} from '@react-native-community/blur';
 import {ActivityIndicator} from 'react-native';
 import {useTranslation} from 'react-i18next';
 import {uploadImage} from '../services/API/APIManager';
+import {getLocation} from '../functions/geolocation';
+import {getReverseGeocodingData} from '../services/API/MapboxAPI';
 
 const CameraScreen = (props) => {
   const [hasPermission, setHasPermission] = useState(false);
@@ -48,9 +49,10 @@ const CameraScreen = (props) => {
   const [torchEnabled, setTorchEnabled] = useState(false);
   const camera = useRef(null);
   const [photoPath, setPhotoPath] = useState('');
-  const [{cameraAction, userLocation}, dispatch] = useStateValue();
+  const [{cameraAction}, dispatch] = useStateValue();
   const [phototaken, setPhototaken] = useState(false);
   const [animatedValue] = useState(new Animated.Value(0));
+  const [flashVisible, setFlashVisible] = useState(false);
   const {t} = useTranslation();
 
   const navigation = useNavigation();
@@ -82,34 +84,8 @@ const CameraScreen = (props) => {
       );
       return;
     }
-    let retPhoto = RESULTS.GRANTED;
-    if (Platform.OS === 'ios') {
-      retPhoto = await request(PERMISSIONS.IOS.PHOTO_LIBRARY);
-      if (retPhoto !== RESULTS.GRANTED) {
-        Alert.alert(
-          t('camerascreen.alert'),
-          t('camerascreen.photolibraryaccesspermissionnotgranted'),
-          [
-            {
-              text: t('camerascreen.no'),
-              onPress: () => {},
-              style: 'cancel',
-            },
-            {
-              text: t('camerascreen.yes'),
-              onPress: () => {
-                openSettings();
-              },
-            },
-          ],
-        );
-        return;
-      }
-    } else {
-      // android Photo Storage Permission enabled by default
-    }
 
-    setHasPermission(status === 'authorized' && retPhoto === RESULTS.GRANTED);
+    setHasPermission(status === 'authorized');
   };
 
   const format = React.useMemo(() => {
@@ -149,7 +125,7 @@ const CameraScreen = (props) => {
     if (phototaken) {
       Animated.timing(animatedValue, {
         toValue: 1,
-        duration: 1000,
+        duration: 50,
         useNativeDriver: false,
       }).start();
 
@@ -158,7 +134,7 @@ const CameraScreen = (props) => {
           type: actions.SET_CAMERA_ACTION,
           cameraAction: {requestCameraShot: false},
         });
-      }, 3000);
+      }, 5000);
     } else {
       Animated.timing(animatedValue, {
         toValue: 0,
@@ -169,7 +145,18 @@ const CameraScreen = (props) => {
   }, [phototaken]);
 
   useEffect(() => {
+    dispatch({
+      type: actions.SET_FAB_SHOW,
+      fabShow: true,
+    });
     requestPermission();
+
+    return () => {
+      dispatch({
+        type: actions.SET_FAB_SHOW,
+        fabShow: false,
+      });
+    };
   }, []);
 
   const takePhotoOptions = useMemo(() => ({
@@ -180,17 +167,43 @@ const CameraScreen = (props) => {
   }));
 
   const uploadPhoto = async (file) => {
-    const formData = new FormData();
-    formData.append('file', file);
+    const userLocation = await getLocation();
     if (userLocation && userLocation.latitude && userLocation.longitude) {
+      if (userLocation.longitude === 0 && userLocation.latitude === 0) {
+        Alert.alert(
+          'Notice',
+          'User Location is invalid. Will you go to Settings and check for Location Setting?',
+        );
+        return null;
+      }
+      let locationStr = '';
+      let cityStr = '';
+      const locStr = await getReverseGeocodingData(
+        [userLocation.longitude, userLocation.latitude],
+        true,
+      );
+      if (locStr && locStr.features) {
+        const features = locStr.features;
+        if (features.length > 0) {
+          locationStr = features[0].context.find((context) =>
+            context?.id?.startsWith('locality.'),
+          )?.text;
+          cityStr = features[0].context.find((context) =>
+            context?.id?.startsWith('place.'),
+          )?.text;
+        }
+      }
+
+      const formData = new FormData();
+      formData.append('file', file);
       formData.append('latitude', userLocation.latitude);
       formData.append('longitude', userLocation.longitude);
-      formData.append('locality', userLocation.location);
-      formData.append('city', userLocation.city);
+      formData.append('locality', locationStr);
+      formData.append('city', cityStr);
+      const res = await uploadImage(formData);
+      return res;
     }
-    const res = await uploadImage(formData);
-    if (res) {
-    }
+    return null;
   };
 
   const takePhoto = async () => {
@@ -198,17 +211,26 @@ const CameraScreen = (props) => {
       try {
         if (camera.current === null) throw new Error('Camera is null!');
         const photo = await camera.current.takePhoto(takePhotoOptions);
-        setPhotoPath(photo.path);
+        setFlashVisible(true);
+        setTimeout(() => {
+          setFlashVisible(false);
+        }, 500);
+
         uploadPhoto({
           uri:
             Platform.OS === 'ios'
               ? photo.path.replace('file://', '')
-          : 'file://' + photo.path,
+              : 'file://' + photo.path,
           type: 'image/jpeg',
           name: 'photo.jpg',
         })
           .then((data) => {
-            setPhotoPath('');
+            if (data) {
+              setFlashVisible(true);
+              setTimeout(() => {
+                setFlashVisible(false);
+              }, 500);
+            }
           })
           .catch((err) => {
             Alert.alert(
@@ -227,33 +249,30 @@ const CameraScreen = (props) => {
   const animateStyleTop = {
     top: animatedValue.interpolate({
       inputRange: [0, 1],
-      outputRange: [-200, -100],
+      outputRange: [-200, Platform.OS === 'ios' ? -100 : -150],
     }),
   };
 
   const animateStyleBottom = {
     bottom: animatedValue.interpolate({
       inputRange: [0, 1],
-      outputRange: [-200, 0],
+      outputRange: [-200, Platform.OS === 'ios' ? 0 : 0],
     }),
   };
 
   const animateStyleLeft = {
     left: animatedValue.interpolate({
       inputRange: [0, 1],
-      outputRange: [-200, -100],
+      outputRange: [-200, Platform.OS === 'ios' ? -100 : -150],
     }),
   };
 
   const animateStyleRight = {
     right: animatedValue.interpolate({
       inputRange: [0, 1],
-      outputRange: [-200, -100],
+      outputRange: [-200, Platform.OS === 'ios' ? -100 : -150],
     }),
   };
-  if (device == null) {
-    //return <ActivityIndicator size={20} color={'red'} />;
-  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -261,6 +280,8 @@ const CameraScreen = (props) => {
         {hasPermission && (
           <Camera
             ref={camera}
+            hdr={true}
+            enableZoomGesture={true}
             style={StyleSheet.absoluteFill}
             device={useFront ? frontCam : backCam}
             isActive={isActive}
@@ -269,7 +290,17 @@ const CameraScreen = (props) => {
             torch={torchEnabled ? 'on' : 'off'}
           />
         )}
-        <View style={styles.gradientContainer}>
+        {/* flashVisible && (
+          <View style={styles.flashOverlay}>
+            <BlurView style={styles.blurview} blurType="light" blurAmount={6}>
+              <CheckBigIcon width={72} height={72} />
+              <Text style={styles.bottomText}>
+                {t('camerascreen.newreward')}
+              </Text>
+            </BlurView>
+          </View>
+        ) */}
+        <View style={styles.gradientContainer} pointerEvents="box-none">
           <Animated.View
             style={{
               position: 'absolute',
@@ -314,18 +345,37 @@ const CameraScreen = (props) => {
               radius={100}
             />
           </Animated.View>
-          {phototaken && (
-            <Text style={styles.topText}>{t('camerascreen.newreward')}</Text>
-          )}
-          {phototaken && (
-            <BlurView style={styles.blurview} blurType="light" blurAmount={6}>
-              <CheckBigIcon width={72} height={72} />
-              <Text style={styles.bottomText}>
-                {t('camerascreen.photouploaded')}
-              </Text>
-            </BlurView>
-          )}
-        </View>
+          {phototaken &&
+            (Platform.OS === 'ios' ? (
+              <BlurView style={styles.blurview} blurType="light" blurAmount={6}>
+                <CheckBigIcon
+                  style={{
+                    width: 72,
+                    height: 72,
+                  }}
+                  width={72}
+                  height={72}
+                />
+                <Text style={styles.bottomText}>
+                  {t('camerascreen.newreward')}
+                </Text>
+              </BlurView>
+            ) : (
+              <View style={styles.blurview2}>
+                <CheckBigIcon
+                  style={{
+                    width: 72,
+                    height: 72,
+                  }}
+                  width={72}
+                  height={72}
+                />
+                <Text style={styles.bottomText}>
+                  {t('camerascreen.newreward')}
+                </Text>
+              </View>
+            ))}
+       </View>
       </View>
     </SafeAreaView>
   );
@@ -363,6 +413,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  blurview2: {
+    borderRadius: 20,
+    backgroundColor: theme.COLORS.WHITE_OPACITY_10P,
+    width: 221,
+    height: 191,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   topText: {
     fontFamily: fontFamilies.Default,
     color: theme.COLORS.TEXT_GREY,
@@ -374,6 +432,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: fontFamilies.Default,
     color: theme.COLORS.TEXT_GREY,
+  },
+  flashOverlay: {
+    flex: 1,
+    backgroundColor: '#00FF0080',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 
