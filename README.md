@@ -20,6 +20,14 @@ git clone https://github.com/cleanappio/cleanapp-mobile.git
 cd cleanapp-mobile
 ```
 
+## Dependencies:
+### Mapbox
+
+Please signup to Mapbox and create a correct .netrc file so you can install the CocoaPods package for Mapbox. Here are tutorials that help to do that:
+https://github.com/mapbox/mapbox-gl-native-ios/blob/d89e7139e5f6a9a3ea5ad57782b41579b8a0bbb1/platform/ios/INSTALL.md#cocoapods
+Discussion about this on GitHub:
+https://github.com/mapbox/mapbox-gl-native/issues/16581
+
 ## Available Scripts
 
 ### `npm install` or `yarn`
