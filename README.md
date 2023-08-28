@@ -28,6 +28,13 @@ https://github.com/mapbox/mapbox-gl-native-ios/blob/d89e7139e5f6a9a3ea5ad57782b4
 Discussion about this on GitHub:
 https://github.com/mapbox/mapbox-gl-native/issues/16581
 
+Here is a schema for the .netrc file:
+```
+machine api.mapbox.com
+    login mapbox
+    password sk.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+```
+
 ## Available Scripts
 
 ### `npm install` or `yarn`
