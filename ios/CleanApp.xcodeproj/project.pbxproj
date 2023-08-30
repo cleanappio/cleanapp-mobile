@@ -13,20 +13,19 @@
 		13B07FBC1A68108700A75B9A /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.m */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		181D037226E74EF500149412 /* main.jsbundle in Resources */ = {isa = PBXBuildFile; fileRef = 181D037126E74EF500149412 /* main.jsbundle */; };
+		187BB5C92A9F717C00968AC4 /* TSBackgroundFetch.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 187BB5C82A9F717C00968AC4 /* TSBackgroundFetch.xcframework */; };
 		1DB7B2A2F6A7427CA4BFCD97 /* PlusJakartaSans-ExtraBoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 63E1F156AD764C6784ABF8FA /* PlusJakartaSans-ExtraBoldItalic.ttf */; };
 		3A7852E3115949AD852DFDA0 /* PlusJakartaSans-LightItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B83C65FDF060421EB37EB5D3 /* PlusJakartaSans-LightItalic.ttf */; };
 		484AF22937A64C1C9FC1194C /* PlusJakartaSans-ExtraLightItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 155C6FF7856E4F32B305FB56 /* PlusJakartaSans-ExtraLightItalic.ttf */; };
+		55E2BE82150E50134363FC6B /* Pods_CleanApp_CleanAppTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E36FD4D257A2C295E5664483 /* Pods_CleanApp_CleanAppTests.framework */; };
 		6048681AC0A64C688A2139DE /* PlusJakartaSans-SemiBoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0A0D3EDE29944502817342EE /* PlusJakartaSans-SemiBoldItalic.ttf */; };
 		7797F21ED909481A9E83EFF5 /* PlusJakartaSans-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 96185FDE701D487280E89EDF /* PlusJakartaSans-ExtraBold.ttf */; };
+		7858E7BEB64B665F23DA7943 /* Pods_CleanApp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0FCE459EA7EB47A858EEAEA3 /* Pods_CleanApp.framework */; };
 		7AD7394C96914A89AAF191D5 /* PlusJakartaSans-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B0D40C26E51F445188B1FB0D /* PlusJakartaSans-Regular.ttf */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
-		86641BBB4A3E969090BAEAFE /* libPods-CleanApp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6C1BB2178422B879281F97AE /* libPods-CleanApp.a */; };
 		9308E8F4297A2B6F00891021 /* RNBackgroundFetch+AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 9308E8F3297A2B6F00891021 /* RNBackgroundFetch+AppDelegate.m */; };
-		937726892A49C5E9009AF748 /* Mapbox in Frameworks */ = {isa = PBXBuildFile; productRef = B6518B10257A44C2C58879EE /* Mapbox */; };
-		9377268A2A49C5E9009AF748 /* Mapbox in Frameworks */ = {isa = PBXBuildFile; productRef = D2166EC21731F4D4294E31B3 /* Mapbox */; };
 		937C2463287CF63F00D5D553 /* assets in Resources */ = {isa = PBXBuildFile; fileRef = 937C2462287CF63F00D5D553 /* assets */; };
 		93D5052D28625BDF00C3692E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 93D5052C28625BDF00C3692E /* Assets.xcassets */; };
-		A12D5D6AB3D6CE4475DB9B8A /* libPods-CleanApp-CleanAppTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 32FA4C4E29720913B35A0186 /* libPods-CleanApp-CleanAppTests.a */; };
 		A75CA56829764731B0859EA7 /* PlusJakartaSans-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 86FF6BCD131048188F1F90A4 /* PlusJakartaSans-Light.ttf */; };
 		B42B16029A504B14BBD9825C /* PlusJakartaSans-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = DB7D92C38C734E73B0BE5426 /* PlusJakartaSans-Bold.ttf */; };
 		B7AB3F915A424DD1B4609032 /* PlusJakartaSans-ExtraLight.ttf in Resources */ = {isa = PBXBuildFile; fileRef = DC444D9FD8AC4B6F8A9C98D1 /* PlusJakartaSans-ExtraLight.ttf */; };
@@ -55,6 +54,7 @@
 		0431E30A268A58D000C81C8F /* CleanApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CleanApp.swift; path = CleanApp/CleanApp.swift; sourceTree = "<group>"; };
 		0A0D3EDE29944502817342EE /* PlusJakartaSans-SemiBoldItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "PlusJakartaSans-SemiBoldItalic.ttf"; path = "../src/assets/fonts/PlusJakartaSans-SemiBoldItalic.ttf"; sourceTree = "<group>"; };
 		0ED12937AAC7412B9E284A6E /* FontAwesome5_Solid.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome5_Solid.ttf; path = "../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Solid.ttf"; sourceTree = "<group>"; };
+		0FCE459EA7EB47A858EEAEA3 /* Pods_CleanApp.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_CleanApp.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07F961A680F5B00A75B9A /* CleanApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CleanApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = CleanApp/AppDelegate.h; sourceTree = "<group>"; };
 		13B07FB01A68108700A75B9A /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AppDelegate.m; path = CleanApp/AppDelegate.m; sourceTree = "<group>"; };
@@ -62,16 +62,15 @@
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = CleanApp/main.m; sourceTree = "<group>"; };
 		155C6FF7856E4F32B305FB56 /* PlusJakartaSans-ExtraLightItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "PlusJakartaSans-ExtraLightItalic.ttf"; path = "../src/assets/fonts/PlusJakartaSans-ExtraLightItalic.ttf"; sourceTree = "<group>"; };
 		181D037126E74EF500149412 /* main.jsbundle */ = {isa = PBXFileReference; lastKnownFileType = text; path = main.jsbundle; sourceTree = "<group>"; };
+		187BB5C82A9F717C00968AC4 /* TSBackgroundFetch.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = TSBackgroundFetch.xcframework; path = "../node_modules/react-native-background-fetch/ios/RNBackgroundFetch/TSBackgroundFetch.xcframework"; sourceTree = "<group>"; };
 		1E94791E4DDA4974BE05DCC0 /* Fontisto.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Fontisto.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Fontisto.ttf"; sourceTree = "<group>"; };
 		228D1305366B49B290881A60 /* PlusJakartaSans-Italic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "PlusJakartaSans-Italic.ttf"; path = "../src/assets/fonts/PlusJakartaSans-Italic.ttf"; sourceTree = "<group>"; };
-		32FA4C4E29720913B35A0186 /* libPods-CleanApp-CleanAppTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-CleanApp-CleanAppTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		3F3ED775635D4F04B85571E6 /* Foundation.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Foundation.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Foundation.ttf"; sourceTree = "<group>"; };
 		4C09DD44BE9643688163709D /* Entypo.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Entypo.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Entypo.ttf"; sourceTree = "<group>"; };
 		522F27C1E6494953BDCCD902 /* Feather.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Feather.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Feather.ttf"; sourceTree = "<group>"; };
 		63DCEA1857AE445F9F194488 /* MaterialIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = MaterialIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/MaterialIcons.ttf"; sourceTree = "<group>"; };
 		63E1F156AD764C6784ABF8FA /* PlusJakartaSans-ExtraBoldItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "PlusJakartaSans-ExtraBoldItalic.ttf"; path = "../src/assets/fonts/PlusJakartaSans-ExtraBoldItalic.ttf"; sourceTree = "<group>"; };
 		6B7569F9820C47079E57C03D /* Ionicons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Ionicons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Ionicons.ttf"; sourceTree = "<group>"; };
-		6C1BB2178422B879281F97AE /* libPods-CleanApp.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-CleanApp.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		7E1FC5A29B8641E9B6B1D614 /* PlusJakartaSans-BoldItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "PlusJakartaSans-BoldItalic.ttf"; path = "../src/assets/fonts/PlusJakartaSans-BoldItalic.ttf"; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = CleanApp/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		86FF6BCD131048188F1F90A4 /* PlusJakartaSans-Light.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "PlusJakartaSans-Light.ttf"; path = "../src/assets/fonts/PlusJakartaSans-Light.ttf"; sourceTree = "<group>"; };
@@ -101,6 +100,7 @@
 		DB7D92C38C734E73B0BE5426 /* PlusJakartaSans-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "PlusJakartaSans-Bold.ttf"; path = "../src/assets/fonts/PlusJakartaSans-Bold.ttf"; sourceTree = "<group>"; };
 		DC444D9FD8AC4B6F8A9C98D1 /* PlusJakartaSans-ExtraLight.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "PlusJakartaSans-ExtraLight.ttf"; path = "../src/assets/fonts/PlusJakartaSans-ExtraLight.ttf"; sourceTree = "<group>"; };
 		E0F20CA006AF44D7AFD32850 /* PlusJakartaSans-MediumItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "PlusJakartaSans-MediumItalic.ttf"; path = "../src/assets/fonts/PlusJakartaSans-MediumItalic.ttf"; sourceTree = "<group>"; };
+		E36FD4D257A2C295E5664483 /* Pods_CleanApp_CleanAppTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_CleanApp_CleanAppTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		EB8675C86D354161AC64DE28 /* FontAwesome5_Brands.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome5_Brands.ttf; path = "../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Brands.ttf"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F277B8226E03BBD9122A8760 /* Pods-CleanApp-CleanAppTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CleanApp-CleanAppTests.release.xcconfig"; path = "Target Support Files/Pods-CleanApp-CleanAppTests/Pods-CleanApp-CleanAppTests.release.xcconfig"; sourceTree = "<group>"; };
@@ -112,8 +112,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9377268A2A49C5E9009AF748 /* Mapbox in Frameworks */,
-				A12D5D6AB3D6CE4475DB9B8A /* libPods-CleanApp-CleanAppTests.a in Frameworks */,
+				55E2BE82150E50134363FC6B /* Pods_CleanApp_CleanAppTests.framework in Frameworks */,
+				187BB5C92A9F717C00968AC4 /* TSBackgroundFetch.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -121,8 +121,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				937726892A49C5E9009AF748 /* Mapbox in Frameworks */,
-				86641BBB4A3E969090BAEAFE /* libPods-CleanApp.a in Frameworks */,
+				7858E7BEB64B665F23DA7943 /* Pods_CleanApp.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -181,9 +180,10 @@
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				187BB5C82A9F717C00968AC4 /* TSBackgroundFetch.xcframework */,
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				6C1BB2178422B879281F97AE /* libPods-CleanApp.a */,
-				32FA4C4E29720913B35A0186 /* libPods-CleanApp-CleanAppTests.a */,
+				0FCE459EA7EB47A858EEAEA3 /* Pods_CleanApp.framework */,
+				E36FD4D257A2C295E5664483 /* Pods_CleanApp_CleanAppTests.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -271,7 +271,6 @@
 				00E356EA1AD99517003FC87E /* Sources */,
 				00E356EB1AD99517003FC87E /* Frameworks */,
 				00E356EC1AD99517003FC87E /* Resources */,
-				65BF2D9CD964A07AB84BF506 /* [CP] Copy Pods Resources */,
 				BDF0A0F0B24C4D028D69BD5C /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
@@ -281,7 +280,6 @@
 			);
 			name = CleanAppTests;
 			packageProductDependencies = (
-				D2166EC21731F4D4294E31B3 /* Mapbox */,
 			);
 			productName = CleanAppTests;
 			productReference = 00E356EE1AD99517003FC87E /* CleanAppTests.xctest */;
@@ -297,7 +295,6 @@
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
-				415343D5DDEC084BA1333702 /* [CP] Copy Pods Resources */,
 				C8A276B2C76A2F813F108B5D /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
@@ -306,7 +303,6 @@
 			);
 			name = CleanApp;
 			packageProductDependencies = (
-				B6518B10257A44C2C58879EE /* Mapbox */,
 			);
 			productName = CleanApp;
 			productReference = 13B07F961A680F5B00A75B9A /* CleanApp.app */;
@@ -339,7 +335,6 @@
 			);
 			mainGroup = 83CBB9F61A601CBA00E9B192;
 			packageReferences = (
-				F656DBBCDA5390E9E90233B8 /* XCRemoteSwiftPackageReference "maplibre-gl-native-distribution" */,
 			);
 			productRefGroup = 83CBBA001A601CBA00E9B192 /* Products */;
 			projectDirPath = "";
@@ -400,40 +395,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "set -e\n\nexport NODE_BINARY=\"node ../node_modules/react-native/scripts/react-native-xcode.sh\"\n";
-		};
-		415343D5DDEC084BA1333702 /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-CleanApp/Pods-CleanApp-resources-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Copy Pods Resources";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-CleanApp/Pods-CleanApp-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-CleanApp/Pods-CleanApp-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		65BF2D9CD964A07AB84BF506 /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-CleanApp-CleanAppTests/Pods-CleanApp-CleanAppTests-resources-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Copy Pods Resources";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-CleanApp-CleanAppTests/Pods-CleanApp-CleanAppTests-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-CleanApp-CleanAppTests/Pods-CleanApp-CleanAppTests-resources.sh\"\n";
-			showEnvVarsInLog = 0;
 		};
 		945EEE2ADA342A14AEE83525 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -629,6 +590,90 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 43LAV2W923;
 				ENABLE_BITCODE = NO;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/BVLinearGradient/BVLinearGradient.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/Charts/Charts.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/DoubleConversion/DoubleConversion.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/FBReactNativeSpec/FBReactNativeSpec.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/MapboxMaps/MapboxMaps.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/Permission-Camera/Permission_Camera.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/Permission-LocationWhenInUse/Permission_LocationWhenInUse.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/RCT-Folly/folly.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/RCTTypeSafety/RCTTypeSafety.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/RNBackgroundFetch/RNBackgroundFetch.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/RNCAsyncStorage/RNCAsyncStorage.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/RNCClipboard/RNCClipboard.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/RNCMaskedView/RNCMaskedView.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/RNCPicker/RNCPicker.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/RNCPushNotificationIOS/RNCPushNotificationIOS.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/RNFS/RNFS.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/RNGestureHandler/RNGestureHandler.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/RNOS/RNOS.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/RNPermissions/RNPermissions.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/RNReanimated/RNReanimated.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/RNSVG/RNSVG.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/RNScreens/RNScreens.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/RNShare/RNShare.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/RNVectorIcons/RNVectorIcons.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/React-Core/React.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/React-CoreModules/CoreModules.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/React-RCTAnimation/RCTAnimation.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/React-RCTBlob/RCTBlob.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/React-RCTImage/RCTImage.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/React-RCTLinking/RCTLinking.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/React-RCTNetwork/RCTNetwork.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/React-RCTSettings/RCTSettings.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/React-RCTText/RCTText.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/React-RCTVibration/RCTVibration.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/React-cxxreact/cxxreact.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/React-jsi/jsi.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/React-jsiexecutor/jsireact.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/React-jsinspector/jsinspector.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/React-perflogger/reactperflogger.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon/ReactCommon.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/SRSRadialGradient/SRSRadialGradient.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/SwiftAlgorithms/Algorithms.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/SwiftyJSON/SwiftyJSON.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/TcpSockets/TcpSockets.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/Toast/Toast.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/Turf/Turf.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/VisionCamera/VisionCamera.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/Yoga/yoga.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/glog/glog.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/react-native-background-timer/react_native_background_timer.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/react-native-biometrics/react_native_biometrics.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/react-native-blur/react_native_blur.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/react-native-charts-wrapper/react_native_charts_wrapper.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/react-native-config/react_native_config.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/react-native-document-picker/react_native_document_picker.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/react-native-geolocation-service/react_native_geolocation_service.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/react-native-get-random-values/react_native_get_random_values.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/react-native-image-picker/react_native_image_picker.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/react-native-pager-view/react_native_pager_view.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/react-native-randombytes/react_native_randombytes.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/react-native-safe-area-context/react_native_safe_area_context.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/react-native-segmented-control/react_native_segmented_control.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/react-native-simple-toast/react_native_simple_toast.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/react-native-udp/react_native_udp.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/react-native-webview/react_native_webview.framework/Headers\"",
+					"\"${PODS_CONFIGURATION_BUILD_DIR}/rnmapbox-maps/rnmapbox_maps.framework/Headers\"",
+					"\"${PODS_ROOT}/Headers/Public\"",
+					"\"${PODS_ROOT}/Headers/Public/FBLazyVector\"",
+					"\"${PODS_ROOT}/Headers/Public/RCTRequired\"",
+					"\"${PODS_ROOT}/Headers/Public/React-callinvoker\"",
+					"\"${PODS_ROOT}/Headers/Public/React-runtimeexecutor\"",
+					"\"$(PODS_ROOT)/boost-for-react-native\"",
+					"\"$(PODS_ROOT)/boost\"",
+					"\"$(PODS_ROOT)/boost-for-react-native\"",
+					"\"$(PODS_ROOT)/glog\"",
+					"\"$(PODS_ROOT)/RCT-Folly\"",
+					"\"${PODS_ROOT}/Headers/Public/React-hermes\"",
+					"\"${PODS_ROOT}/Headers/Public/hermes-engine\"",
+					"\"$(PODS_ROOT)/Headers/Private/React-Core\"",
+					"${PODS_CONFIGURATION_BUILD_DIR}/react-native-background-fetch/**",
+					"${PODS_CONFIGURATION_BUILD_DIR}/react-native-background-fetch/ios/RNBackgroundFetch/TSBackgroundFetch.xcframework/ios-arm64_i386_x86_64-simulator/TSBackgroundFetch.framework/Headers/",
+				);
 				INFOPLIST_FILE = CleanApp/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Literbux;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
@@ -687,7 +732,7 @@
 		83CBBA201A601CBA00E9B192 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
+				ALWAYS_SEARCH_USER_PATHS = YES;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
@@ -733,6 +778,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/../node_modules/react-native-background-fetch/ios/**";
 				IPHONEOS_DEPLOYMENT_TARGET = 12.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					/usr/lib/swift,
@@ -745,13 +791,14 @@
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				"USER_HEADER_SEARCH_PATHS[arch=*]" = "$(PROJECT_DIR)/../node_modules/react-native-background-fetch/ios/**";
 			};
 			name = Debug;
 		};
 		83CBBA211A601CBA00E9B192 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
+				ALWAYS_SEARCH_USER_PATHS = YES;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
@@ -790,6 +837,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/../node_modules/react-native-background-fetch/ios/**";
 				IPHONEOS_DEPLOYMENT_TARGET = 12.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					/usr/lib/swift,
@@ -836,30 +884,6 @@
 			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		F656DBBCDA5390E9E90233B8 /* XCRemoteSwiftPackageReference "maplibre-gl-native-distribution" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/maplibre/maplibre-gl-native-distribution";
-			requirement = {
-				kind = exactVersion;
-				version = 5.12.1;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		B6518B10257A44C2C58879EE /* Mapbox */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = F656DBBCDA5390E9E90233B8 /* XCRemoteSwiftPackageReference "maplibre-gl-native-distribution" */;
-			productName = Mapbox;
-		};
-		D2166EC21731F4D4294E31B3 /* Mapbox */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = F656DBBCDA5390E9E90233B8 /* XCRemoteSwiftPackageReference "maplibre-gl-native-distribution" */;
-			productName = Mapbox;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 83CBB9F71A601CBA00E9B192 /* Project object */;
 }

@@ -62,7 +62,7 @@
     "react-i18next": "^11.11.1",
     "react-native": "0.64.4",
     "react-native-animated-pagination-dots": "^0.1.73",
-    "react-native-background-fetch": "^4.1.7",
+    "react-native-background-fetch": "^4.2.1",
     "react-native-background-timer": "^2.4.1",
     "react-native-biometrics": "^3.0.1",
     "react-native-bip39": "^2.3.0",
@@ -119,6 +119,7 @@
     "react-native-wheel-color-picker": "^1.1.0",
     "react-native-youtube-iframe": "^2.0.1",
     "react-redux": "^7.2.0",
+    "react-zlib-js": "^1.0.5",
     "readable-stream": "^1.0.33",
     "redux": "^4.0.5",
     "redux-logger": "^3.0.6",
@@ -158,7 +159,7 @@
     "preset": "react-native"
   },
   "react-native": {
-    "zlib": "browserify-zlib",
+    "zlib": "browserify",
     "console": "console-browserify",
     "constants": "constants-browserify",
     "crypto": "react-native-crypto",
@@ -184,7 +185,7 @@
     "tls": false
   },
   "browser": {
-    "zlib": "browserify-zlib",
+    "zlib": "browserify",
     "console": "console-browserify",
     "constants": "constants-browserify",
     "crypto": "react-native-crypto",

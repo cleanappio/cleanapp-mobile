@@ -1,3 +1,5 @@
+source 'https://github.com/CocoaPods/Specs.git'
+
 require_relative '../node_modules/react-native/scripts/react_native_pods'
 require_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'
 
@@ -6,6 +8,7 @@ platform :ios, '13.0'
 install! 'cocoapods', :deterministic_uuids => false
 $RNMapboxMapsImpl = 'mapbox' # optional as this is the default
 #$RNMapboxMapsVersion = 'exactVersion 5.12.1'
+use_frameworks!
 
 target 'CleanApp' do
   config = use_native_modules!
@@ -55,4 +58,6 @@ target 'CleanApp' do
   end
 
  #pod 'react-native-mapbox-gl', :path => '../node_modules/@react-native-mapbox-gl/maps'
+
+  #pod 'MapboxMaps', '10.15.0'
 end
