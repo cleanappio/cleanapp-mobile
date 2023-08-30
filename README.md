@@ -54,6 +54,23 @@ You will see the build errors and lint warnings in the console.
 ## User Guide
 You can find detailed instructions on using React Native and many tips in [its documentation](https://reactnative.dev/docs/getting-started).
 
+# tips for building on Macbook m1/2
+
+If you encounter problems to install because of brewlite, please use nvm to set your nodejs version e.g. to nvm install 16.17.0 works for the author.
+
+For m1/m2 architecture users, please be aware that you have to install the arm64 versions of ffi and cocoapods to install the pods.
+
+If you have an issue with npx pod-install like this:
+CDN: trunk URL couldn't be downloaded: https://cdn.cocoapods.org/CocoaPods-version.yml
+This can fix it:
+1- At the top of the Podfile add this line
+source 'https://github.com/CocoaPods/Specs.git' 
+2- Remove the Podfile.lock file
+3- pod repo remove trunk
+4- pod install
+
+If you are building the main.jsbundle and you get an error, replace the zlib library with browserify-zlib - that fixed it.
+
 # Commands to run the iOS version on Mac
 
 Requirements:
