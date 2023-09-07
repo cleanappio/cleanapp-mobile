@@ -1,7 +1,7 @@
 PODS:
   - boost-for-react-native (1.63.0)
-  - BVLinearGradient (2.6.2):
-    - React-Core
+  - BVLinearGradient (2.5.6):
+    - React
   - Charts (4.1.0):
     - Charts/Core (= 4.1.0)
   - Charts/Core (4.1.0):
@@ -16,18 +16,18 @@ PODS:
     - React-jsi (= 0.64.4)
     - ReactCommon/turbomodule/core (= 0.64.4)
   - glog (0.3.5)
-  - MapboxCommon (23.5.0)
-  - MapboxCoreMaps (10.13.1):
-    - MapboxCommon (~> 23.5)
-  - MapboxMaps (10.13.1):
-    - MapboxCommon (= 23.5.0)
-    - MapboxCoreMaps (= 10.13.1)
+  - MapboxCommon (23.7.0)
+  - MapboxCoreMaps (10.15.0):
+    - MapboxCommon (~> 23.7)
+  - MapboxMaps (10.15.0):
+    - MapboxCommon (= 23.7.0)
+    - MapboxCoreMaps (= 10.15.0)
     - MapboxMobileEvents (= 1.0.10)
     - Turf (~> 2.0)
   - MapboxMobileEvents (1.0.10)
-  - Permission-Camera (3.8.0):
+  - Permission-Camera (3.8.4):
     - RNPermissions
-  - Permission-LocationWhenInUse (3.8.0):
+  - Permission-LocationWhenInUse (3.8.4):
     - RNPermissions
   - RCT-Folly (2020.01.13.00):
     - boost-for-react-native
@@ -236,28 +236,28 @@ PODS:
     - react-native-config/App (= 1.5.1)
   - react-native-config/App (1.5.1):
     - React-Core
-  - react-native-document-picker (5.3.0):
+  - react-native-document-picker (5.2.0):
     - React-Core
   - react-native-geolocation-service (5.3.1):
     - React
-  - react-native-get-random-values (1.9.0):
+  - react-native-get-random-values (1.7.2):
     - React-Core
   - react-native-image-picker (5.3.1):
     - React-Core
-  - react-native-pager-view (6.2.0):
+  - react-native-pager-view (6.2.1):
     - React-Core
-  - react-native-randombytes (3.6.1):
+  - react-native-randombytes (3.5.3):
+    - React
+  - react-native-safe-area-context (3.2.0):
     - React-Core
-  - react-native-safe-area-context (3.4.1):
-    - React-Core
-  - react-native-segmented-control (2.4.1):
+  - react-native-segmented-control (2.4.2):
     - React-Core
   - react-native-simple-toast (1.1.4):
     - React-Core
     - Toast (~> 4.0.0)
   - react-native-udp (2.7.0):
     - React
-  - react-native-webview (11.26.1):
+  - react-native-webview (11.22.7):
     - React-Core
   - React-perflogger (0.64.4)
   - React-RCTActionSheet (0.64.4):
@@ -323,36 +323,36 @@ PODS:
     - React-cxxreact (= 0.64.4)
     - React-jsi (= 0.64.4)
     - React-perflogger (= 0.64.4)
-  - RNBackgroundFetch (4.1.10):
+  - RNBackgroundFetch (4.2.1):
     - React-Core
-  - RNCAsyncStorage (1.18.1):
+  - RNCAsyncStorage (1.15.17):
     - React-Core
-  - RNCClipboard (1.11.2):
+  - RNCClipboard (1.8.5):
     - React-Core
   - RNCMaskedView (0.1.11):
     - React
   - RNCPicker (1.16.8):
     - React-Core
-  - RNCPushNotificationIOS (1.11.0):
+  - RNCPushNotificationIOS (1.10.1):
     - React-Core
-  - RNFS (2.20.0):
-    - React-Core
+  - RNFS (2.18.0):
+    - React
   - RNGestureHandler (1.10.3):
     - React-Core
-  - rnmapbox-maps (10.0.7-rc.1):
-    - MapboxMaps (~> 10.13.1)
+  - rnmapbox-maps (10.0.13):
+    - MapboxMaps (~> 10.15.0)
     - React
     - React-Core
-    - rnmapbox-maps/DynamicLibrary (= 10.0.7-rc.1)
+    - rnmapbox-maps/DynamicLibrary (= 10.0.13)
     - Turf
-  - rnmapbox-maps/DynamicLibrary (10.0.7-rc.1):
-    - MapboxMaps (~> 10.13.1)
+  - rnmapbox-maps/DynamicLibrary (10.0.13):
+    - MapboxMaps (~> 10.15.0)
     - React
     - React-Core
     - Turf
   - RNOS (1.2.6):
     - React
-  - RNPermissions (3.8.0):
+  - RNPermissions (3.8.4):
     - React-Core
   - RNReanimated (2.2.4):
     - DoubleConversion
@@ -392,14 +392,14 @@ PODS:
     - React
   - RNVectorIcons (8.1.0):
     - React-Core
-  - SRSRadialGradient (1.1.2):
+  - SRSRadialGradient (1.1.3):
     - React
   - SwiftAlgorithms (1.0.0)
   - SwiftyJSON (5.0.0)
   - TcpSockets (3.3.2):
     - React
   - Toast (4.0.0)
-  - Turf (2.6.1)
+  - Turf (2.7.0)
   - VisionCamera (2.3.0):
     - React
     - React-callinvoker
@@ -477,7 +477,7 @@ DEPENDENCIES:
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
-  trunk:
+  https://github.com/CocoaPods/Specs.git:
     - boost-for-react-native
     - Charts
     - MapboxCommon
@@ -625,18 +625,18 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   boost-for-react-native: 39c7adb57c4e60d6c5479dd8623128eb5b3f0f2c
-  BVLinearGradient: 34a999fda29036898a09c6a6b728b0b4189e1a44
+  BVLinearGradient: e3aad03778a456d77928f594a649e96995f1c872
   Charts: ce0768268078eee0336f122c3c4ca248e4e204c5
   DoubleConversion: cf9b38bf0b2d048436d9a82ad2abe1404f11e7de
   FBLazyVector: fa8275d5086566e22a26ddc385ab5772e7f9b1bd
-  FBReactNativeSpec: e01f8f2f05b38566bd61b363590063db8972d17f
+  FBReactNativeSpec: a5187e3395565ec6f6f197e4ff389efdf4a03bbd
   glog: 73c2498ac6884b13ede40eda8228cb1eee9d9d62
-  MapboxCommon: fdf7fd31c90b7b607cd9c63e37797f023c01d860
-  MapboxCoreMaps: 24270c7c6b8cb71819fc2f3c549db9620ee4d019
-  MapboxMaps: cb76511b98d3b95c74b0771ed105bc69f30ace6b
+  MapboxCommon: dcbdb86acbcfc1a23efd341ed097c6c63ab532a9
+  MapboxCoreMaps: bcbaac14467616940187f79bba49ca491cd37906
+  MapboxMaps: 1fd9d97d0e8eceb7a45b9ac8bf87a8922da881a8
   MapboxMobileEvents: de50b3a4de180dd129c326e09cd12c8adaaa46d6
-  Permission-Camera: e6d142d7d8b714afe0a83e5e6ae17eb949f1e3e9
-  Permission-LocationWhenInUse: 1c80e4797ae587642a83125e80b86686cefeba53
+  Permission-Camera: 7ec9ee99704766ff9b90198183387a7f5d82b0c1
+  Permission-LocationWhenInUse: 24d97eeb25d8ff9f2232e070f792eeb1360ccaf0
   RCT-Folly: ec7a233ccc97cc556cf7237f0db1ff65b986f27c
   RCTRequired: f85fa00af016059cf88b90b8f8ff9a6af9e4b6c3
   RCTTypeSafety: 5279aaf0fb1ad715cbbbbee32d5c98c72598bc9c
@@ -653,17 +653,17 @@ SPEC CHECKSUMS:
   react-native-blur: cfdad7b3c01d725ab62a8a729f42ea463998afa2
   react-native-charts-wrapper: 4461b72f48e737a490e968bf2468cc0fd2281681
   react-native-config: 86038147314e2e6d10ea9972022aa171e6b1d4d8
-  react-native-document-picker: 226068006be4c52f8ef7f32d855ee025a12e9e64
+  react-native-document-picker: f1b5398801b332c77bc62ae0eae2116f49bdff26
   react-native-geolocation-service: 608e1da71a1ac31b4de64d9ef2815f697978c55b
-  react-native-get-random-values: dee677497c6a740b71e5612e8dbd83e7539ed5bb
+  react-native-get-random-values: 30b3f74ca34e30e2e480de48e4add2706a40ac8f
   react-native-image-picker: ec9b713e248760bfa0f879f0715391de4651a7cb
-  react-native-pager-view: 0ccb8bf60e2ebd38b1f3669fa3650ecce81db2df
-  react-native-randombytes: 421f1c7d48c0af8dbcd471b0324393ebf8fe7846
-  react-native-safe-area-context: 9e40fb181dac02619414ba1294d6c2a807056ab9
-  react-native-segmented-control: 0e4b5d93911e2234f110057df2b41738b326ab3e
+  react-native-pager-view: d211379f61895b6349bd7e571b44a26d005c2975
+  react-native-randombytes: 3638d24759d67c68f6ccba60c52a7a8a8faa6a23
+  react-native-safe-area-context: f0906bf8bc9835ac9a9d3f97e8bde2a997d8da79
+  react-native-segmented-control: 2221962f5073e2e809aa3691e8e410fc10b60578
   react-native-simple-toast: 8ee5d23f0b92b935ab7434cdb65159ce12dfb4b7
   react-native-udp: ff9d13e523f2b58e6bc5d4d32321ac60671b5dc9
-  react-native-webview: 9f111dfbcfc826084d6c507f569e5e03342ee1c1
+  react-native-webview: 227ba9205abb8579116b69ea5774d9744267c65a
   React-perflogger: 5a890ca0911669421b7611661e9b58f91c805f5c
   React-RCTActionSheet: bd180e0879f8424a73650c5c28fbef4f3b5b27fb
   React-RCTAnimation: 1004d2b4be1f2cedfdc4cb2326adc95b989e6c6b
@@ -676,31 +676,31 @@ SPEC CHECKSUMS:
   React-RCTVibration: 761849eea2a1abc99d5e4171bae17ab3da3143ac
   React-runtimeexecutor: 5b441857030bb6c3abaa7517f333cb01875ae499
   ReactCommon: b4a65d2d6e9eeffd4b32dde1245962b3f43907d0
-  RNBackgroundFetch: 9fcdeee8aa00e1e1b3895ff9bbaaf10275288a87
-  RNCAsyncStorage: b90b71f45b8b97be43bc4284e71a6af48ac9f547
-  RNCClipboard: 3f0451a8100393908bea5c5c5b16f96d45f30bfc
+  RNBackgroundFetch: 501c34ad6e880818ba17e7840b23f20a2d112923
+  RNCAsyncStorage: 6bd5a7ba3dde1c3facba418aa273f449bdc5437a
+  RNCClipboard: cc054ad1e8a33d2a74cd13e565588b4ca928d8fd
   RNCMaskedView: 0e1bc4bfa8365eba5fbbb71e07fbdc0555249489
   RNCPicker: 0991c56da7815c0cf946d6f63cf920b25296e5f6
-  RNCPushNotificationIOS: 64218f3c776c03d7408284a819b2abfda1834bc8
-  RNFS: 4ac0f0ea233904cb798630b3c077808c06931688
+  RNCPushNotificationIOS: 87b8d16d3ede4532745e05b03c42cff33a36cc45
+  RNFS: 3ab21fa6c56d65566d1fb26c2228e2b6132e5e32
   RNGestureHandler: a479ebd5ed4221a810967000735517df0d2db211
-  rnmapbox-maps: c5efd8f12d9abbb5a407564a03e451a0e320796e
+  rnmapbox-maps: d9026150191bd0af18721335bb9ea0082f7ca27d
   RNOS: 6f2f9a70895bbbfbdad7196abd952e7b01d45027
-  RNPermissions: 215c54462104b3925b412b0fb3c9c497b21c358b
+  RNPermissions: f1b49dd05fa9b83993cd05a9ee115247944d8f1a
   RNReanimated: 024eff8202342abf4b24e11575a16afc441dabfe
   RNScreens: d6da2b9e29cf523832c2542f47bf1287318b1868
   RNShare: a5dc3b9c53ddc73e155b8cd9a94c70c91913c43c
   RNSVG: a53a5de0d90ec96a6502cc3a4534dfcc0c130622
   RNVectorIcons: 31cebfcf94e8cf8686eb5303ae0357da64d7a5a4
-  SRSRadialGradient: f88dfa41215854bfb721dfe926bd9bf09338a602
+  SRSRadialGradient: 6cb74f9a531a3c843566c7f5836e6a14f7c5f31f
   SwiftAlgorithms: 38dda4731d19027fdeee1125f973111bf3386b53
   SwiftyJSON: 36413e04c44ee145039d332b4f4e2d3e8d6c4db7
   TcpSockets: 14306fb79f9750ea7d2ddd02d8bed182abb01797
   Toast: 91b396c56ee72a5790816f40d3a94dd357abc196
-  Turf: 469ce2c3d22e5e8e4818d5a3b254699a5c89efa4
+  Turf: 13d1a92d969ca0311bbc26e8356cca178ce95da2
   VisionCamera: aa5a3c3fd9f32a3d9836872b4aea04b600dddd75
   Yoga: d1fc3575b8b68891ff5ef3c276daa855e841eb32
 
-PODFILE CHECKSUM: eaa8088eae84b307a75caf2aa81e3cb58d331be9
+PODFILE CHECKSUM: fe88855e0362edd5add3940950cff6d30c5057ea
 
 COCOAPODS: 1.12.1
