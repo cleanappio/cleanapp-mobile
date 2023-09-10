@@ -222,7 +222,7 @@ export default {
           <p>During the first challenge, <b>all data that complies with the rules is fine to upload.</b>
           <p>However, to <b>earn royalties from your data in the long-term, the data also has to be bought on the <a href="https://port.oceanprotocol.com/t/dataunion-app-oceandao-round-7/694">Data Portal</a>. On the Data Portal, we will make it visible how often each data item is being sold, to indicate which data is in demand and which isn't.</p>
           <p>Based on existing business dynamics, we already have some insights regarding which image data is valuable - <b>object data</b> is very valuable.</p>
-          <p>If there are one or more objects clearly visible in your image, this increases the chance that businesses will be interested in buying your data. Another factor which adds value to your images, is <b>the presence of objects in unexpected forms and in interesting situations</b> (e.g. a traffic sign with a graffiti on it, roadkill, kissing cats or a duck sitting on a car). Diversity of data is very important in Computer Vision, because companies want to build algorithms that can detect objects in a wide variety of situations. So get creative, and figure out your niche to fill!</p>
+          <p>If there are one or more objects clearly visible in your image, this increases the chance that businesses will be interested in buying your data. Another factor which adds value to your images, is <b>the presence of objects in unexpected forms and in interesting situations</b> (e.g. a traffic sign with a graffiti on it, roadkill, kissing kitn or a duck sitting on a car). Diversity of data is very important in Computer Vision, because companies want to build algorithms that can detect objects in a wide variety of situations. So get creative, and figure out your niche to fill!</p>
           <p>Another way to get rewards after the challenges, are <b>data bounties</b>. (see below) To take part in a data bounty, you have to upload an image that fits one of the data bounties, and then add the appropriate tag through the checkboxes.</p>
           <p>To test which types of data are in-demand, we are adding a number of data bounties during the challenges. This gives us insight into how well these bounties can be fullfilled and also will fuel algorithms that we want to develop/improve. Additionally we chose data bounty categories that can highlight the diversity and global present of our community.
           `,
@@ -470,28 +470,28 @@ export default {
       privatekey: 'Private Key',
       taptoreveal: 'Tap to reveal  ',
       taptohide: 'Tap to hide  ',
-      keepyourcatssafe:
-        'Keep your CATS safe!  Write down your Mnemonic phrase and DO NOT share it with anyone!',
+      keepyourkitnsafe:
+        'Keep your KITN safe!  Write down your Mnemonic phrase and DO NOT share it with anyone!',
       mnemonicphrase: 'Mnemonic Phrase',
       connectMM: 'Connect MM',
       comingsoon: '(Coming Soon)',
       cachesettings: 'Cache Settings',
       mycache: 'My Cache',
       totalrewards: 'Total Rewards',
-      cats: '  $CATS',
+      kitn: '  $KITN',
       alreadyclaimed: 'Already Claimed',
       litterbox: 'Litterbox',
       emptiedin: 'Emptied in 23h 59mins',
-      earnmorecats: 'Earn more $CATS',
+      earnmorekitn: 'Earn more $KITN',
       privacy: 'Privacy',
       sharemydatawithlapseoftime: 'Share my data with lapse of time',
       unitraceable: 'Untraceable',
       edit: 'Edit',
-      earn10catsperreferral: 'Earn 10 $CATS per referral',
+      earn10kitnperreferral: 'Earn 10 $KITN per referral',
       comingsoon2: 'Coming Soon',
       swap: 'Swap',
-      swapyourcatsintodogsor:
-        'Swap your cats into dogs or whatever you want :)',
+      swapyourkitnintodogsor:
+        'Swap your kitn into dogs or whatever you want :)',
     },
     createyourguild: {
       createyourguild: 'Create your Guild',
@@ -535,7 +535,7 @@ export default {
       social: 'Social',
       teamblue: 'Team Blue',
       teamgreen: 'Team Green',
-      cats: 'CATS',
+      kitn: 'KITN',
       leaderboard: 'Leaderboards',
       global: 'Global',
       joinaguild: 'Join a Guild',

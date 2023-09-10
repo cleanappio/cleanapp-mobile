@@ -419,7 +419,7 @@ const CacheScreen = (props) => {
           <View
             style={{ ...styles.blue30Card, marginTop: 24, paddingHorizontal: 8 }}>
             <Text style={styles.txt12}>
-              {t('cachescreen.keepyourcatssafe')}
+              {t('cachescreen.keepyourkitnsafe')}
             </Text>
           </View>
           <View style={{ ...styles.blueBorderCard, marginTop: 24 }}>
@@ -526,31 +526,31 @@ const CacheScreen = (props) => {
           <View style={styles.balanceContainer}>
             <Row>
               <Text style={{ ...styles.txt16, lineHeight: 16 }}>
-                {cacheVault.total || 0} <Text style={styles.txt9}>{'$CATS'}</Text>
+                {cacheVault.total || 0} <Text style={styles.txt9}>{'$KITN'}</Text>
               </Text>
               <Text style={styles.txt12}>{'Lifetime XP'}</Text>
             </Row>
             <Row>
               <Text style={styles.txt9}>
-                {cacheVault.reports || 0} <Text style={styles.txt9}>{'$CATS'}</Text>
+                {cacheVault.reports || 0} <Text style={styles.txt9}>{'$KITN'}</Text>
               </Text>
               <Text style={styles.txt9}>{'Reports'}</Text>
             </Row>
             <Row>
               <Text style={styles.txt9}>
-                {cacheVault.referrals || 0} <Text style={styles.txt9}>{'$CATS'}</Text>
+                {cacheVault.referrals || 0} <Text style={styles.txt9}>{'$KITN'}</Text>
               </Text>
               <Text style={styles.txt9}>{'Referrals'}</Text>
             </Row>
             {/* <Row>
               <Text style={styles.txt9}>
-                {totalCache.offchainReports} <Text style={styles.txt9}>{'$CATS'}</Text>
+                {totalCache.offchainReports} <Text style={styles.txt9}>{'$KITN'}</Text>
               </Text>
               <Text style={styles.txt9}>{'Litterbox(offchain) reports'}</Text>
             </Row>
             <Row>
               <Text style={styles.txt9}>
-                {totalCache.offchainReferrals} <Text style={styles.txt9}>{'$CATS'}</Text>
+                {totalCache.offchainReferrals} <Text style={styles.txt9}>{'$KITN'}</Text>
               </Text>
               <Text style={styles.txt9}>{'Litterbox(offchain) referrals'}</Text>
             </Row> */}
@@ -564,14 +564,14 @@ const CacheScreen = (props) => {
             </Row>
             <Text style={styles.txt24}>
               {`${cacheVault.offchainTotal || 0} `}
-              <Text style={styles.txt16}>{'$CATS'}</Text>
+              <Text style={styles.txt16}>{'$KITN'}</Text>
             </Text>
           </View>
           <View style={styles.block}>
             <View style={{ ...styles.blueCard, marginTop: 8 }}>
               <View style={styles.row}>
                 <Text style={styles.txt16bold}>
-                  {t('cachescreen.earnmorecats')}
+                  {t('cachescreen.earnmorekitn')}
                 </Text>
                 <Ripple onPress={openCamera}>
                   <CameraIcon />
@@ -619,7 +619,7 @@ const CacheScreen = (props) => {
           <View style={styles.block}>
             <View style={styles.row}>
               <Text style={styles.txt12}>
-                {t('cachescreen.earn10catsperreferral')}
+                {t('cachescreen.earn10kitnperreferral')}
               </Text>
               <View style={styles.border} />
             </View>
@@ -645,7 +645,7 @@ const CacheScreen = (props) => {
               <View style={styles.row}>
                 <Text style={styles.txt16bold}>{t('cachescreen.swap')}</Text>
                 <Text style={styles.txt9}>
-                  {t('cachescreen.swapyourcatsintodogsor')}
+                  {t('cachescreen.swapyourkitnintodogsor')}
                 </Text>
               </View>
             </View>

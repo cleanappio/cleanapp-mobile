@@ -122,7 +122,7 @@ const RenderGuildListItem = (props) => {
                     fontWeight: '300',
                     fontSize: nameSize,
                     fontFamily: fontFamilies.Default,
-                  }}>{`${item.rewards} CATS`}</Text>
+                  }}>{`${item.rewards} KITN`}</Text>
               )}
             </View>
           </View>
@@ -130,7 +130,7 @@ const RenderGuildListItem = (props) => {
             <View style={{marginTop: 16}}>
               <Text style={styles.txt12italic}>{item.description}</Text>
               <Row style={{marginTop: 16}}>
-                <Text style={styles.txt12}>{`${item.rewards} CATS`}</Text>
+                <Text style={styles.txt12}>{`${item.rewards} KITN`}</Text>
                 <Text
                   style={styles.txt12}>{`${item.members.length} Members`}</Text>
                 <Ripple
