@@ -477,12 +477,12 @@ const CacheScreen = (props) => {
                   {t('cachescreen.comingsoon')}
                 </Text>
               </Text>
-              {/* <Ripple
+              <Ripple
                 onPress={() => {
-                  switchStep('connectMM');
+                  // switchStep('connectMM');
                 }}>
                 <MMIcon />
-              </Ripple> */}
+              </Ripple>
             </View>
           </View>
           <Ripple
