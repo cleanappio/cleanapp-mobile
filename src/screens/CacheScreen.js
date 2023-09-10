@@ -636,7 +636,7 @@ const CacheScreen = (props) => {
             </View>
           </View>
           {/** Coming Soon */}
-          <View style={styles.block}>
+          {/* <View style={styles.block}>
             <View style={styles.row}>
               <Text style={styles.txt12}>{t('cachescreen.comingsoon2')}</Text>
               <View style={styles.border} />
@@ -649,7 +649,7 @@ const CacheScreen = (props) => {
                 </Text>
               </View>
             </View>
-          </View>
+          </View> */}
         </View>
       </ScrollView>
       <PrivacySheet
