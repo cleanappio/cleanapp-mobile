@@ -705,7 +705,7 @@
 					"${PODS_CONFIGURATION_BUILD_DIR}/react-native-background-fetch/ios/RNBackgroundFetch/TSBackgroundFetch.xcframework/ios-arm64_i386_x86_64-simulator/TSBackgroundFetch.framework/Headers/",
 				);
 				INFOPLIST_FILE = CleanApp/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Literbux;
+				INFOPLIST_KEY_CFBundleDisplayName = CleanApp;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -738,7 +738,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 43LAV2W923;
 				INFOPLIST_FILE = CleanApp/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Literbux;
+				INFOPLIST_KEY_CFBundleDisplayName = CleanApp;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
