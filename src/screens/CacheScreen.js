@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, View, Text, Linking } from 'react-native';
+import { ScrollView, StyleSheet, View, Text, Linking, ToastAndroid, Alert, Platform } from 'react-native';
 import { fontFamilies } from '../utils/fontFamilies';
 import { theme } from '../services/Common/theme';
 import Ripple from '../components/Ripple';
@@ -352,6 +352,15 @@ const CacheScreen = (props) => {
     //   );
     // };
 
+    const onCopyWalletAddress = (address) => {
+      Clipboard.setString(address);
+      if (Platform.OS === 'ios') {
+        Alert.alert('Copied to clipboard');
+      } else {
+        ToastAndroid.show('Copied to clipboard', ToastAndroid.SHORT);
+      }
+    };
+
     const CacheSettingView = () => {
       return (
         <>
@@ -367,9 +376,9 @@ const CacheScreen = (props) => {
                 <Text style={styles.txt12bold}>
                   {t('cachescreen.youraddress')}
                 </Text>
-                <Text style={styles.txt12}>{walletAddress}</Text>
+                <Text style={styles.txt12} >{walletAddress}</Text>
               </View>
-              <Ripple>
+              <Ripple onPress={() => onCopyWalletAddress(walletAddress)}>
                 <CopySmallIcon />
               </Ripple>
             </View>
@@ -463,7 +472,7 @@ const CacheScreen = (props) => {
               </View>
             </View>
           </View>
-          <View
+          {/* <View
             style={{
               ...styles.blackCard,
               marginTop: 24,
@@ -484,7 +493,7 @@ const CacheScreen = (props) => {
                 <MMIcon />
               </Ripple>
             </View>
-          </View>
+          </View> */}
           <Ripple
             containerStyle={{ marginTop: 24 }}
             style={styles.bigBtnBlack}
@@ -526,45 +535,45 @@ const CacheScreen = (props) => {
           <View style={styles.balanceContainer}>
             <Row>
               <Text style={{ ...styles.txt16, lineHeight: 16 }}>
-                {cacheVault.total || 0} <Text style={styles.txt9}>{'$KITN'}</Text>
+                {cacheVault.total || 0} <Text style={styles.txt9}>{'KITN'}</Text>
               </Text>
               <Text style={styles.txt12}>{'Lifetime XP'}</Text>
             </Row>
             <Row>
               <Text style={styles.txt9}>
-                {cacheVault.reports || 0} <Text style={styles.txt9}>{'$KITN'}</Text>
+                {cacheVault.reports || 0} <Text style={styles.txt9}>{'KITN'}</Text>
               </Text>
               <Text style={styles.txt9}>{'Reports'}</Text>
             </Row>
             <Row>
               <Text style={styles.txt9}>
-                {cacheVault.referrals || 0} <Text style={styles.txt9}>{'$KITN'}</Text>
+                {cacheVault.referrals || 0} <Text style={styles.txt9}>{'KITN'}</Text>
               </Text>
               <Text style={styles.txt9}>{'Referrals'}</Text>
             </Row>
             {/* <Row>
               <Text style={styles.txt9}>
-                {totalCache.offchainReports} <Text style={styles.txt9}>{'$KITN'}</Text>
+                {totalCache.offchainReports} <Text style={styles.txt9}>{'KITN'}</Text>
               </Text>
-              <Text style={styles.txt9}>{'Litterbox(offchain) reports'}</Text>
+              <Text style={styles.txt9}>{'LitterBux(offchain) reports'}</Text>
             </Row>
             <Row>
               <Text style={styles.txt9}>
-                {totalCache.offchainReferrals} <Text style={styles.txt9}>{'$KITN'}</Text>
+                {totalCache.offchainReferrals} <Text style={styles.txt9}>{'KITN'}</Text>
               </Text>
-              <Text style={styles.txt9}>{'Litterbox(offchain) referrals'}</Text>
+              <Text style={styles.txt9}>{'LitterBux(offchain) referrals'}</Text>
             </Row> */}
           </View>
           <View style={styles.balanceContainer}>
             <Row>
-              <Text style={styles.txt12}>{'Litterbox(onchain)'}</Text>
+              <Text style={styles.txt12}>{'LitterBux(onchain)'}</Text>
               {/*  <Text style={styles.txt12}>{`Emptied in ${Math.ceil(nextRunTime / 3600)}h ${
                 Math.ceil((nextRunTime % 3600) / 60)
               }mins`}</Text> */}
             </Row>
             <Text style={styles.txt24}>
               {`${cacheVault.offchainTotal || 0} `}
-              <Text style={styles.txt16}>{'$KITN'}</Text>
+              <Text style={styles.txt16}>{'KITN'}</Text>
             </Text>
           </View>
           <View style={styles.block}>
