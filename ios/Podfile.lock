@@ -339,13 +339,13 @@ PODS:
     - React
   - RNGestureHandler (1.10.3):
     - React-Core
-  - rnmapbox-maps (10.0.13):
+  - rnmapbox-maps (10.0.14):
     - MapboxMaps (~> 10.15.0)
     - React
     - React-Core
-    - rnmapbox-maps/DynamicLibrary (= 10.0.13)
+    - rnmapbox-maps/DynamicLibrary (= 10.0.14)
     - Turf
-  - rnmapbox-maps/DynamicLibrary (10.0.13):
+  - rnmapbox-maps/DynamicLibrary (10.0.14):
     - MapboxMaps (~> 10.15.0)
     - React
     - React-Core
@@ -629,7 +629,7 @@ SPEC CHECKSUMS:
   Charts: ce0768268078eee0336f122c3c4ca248e4e204c5
   DoubleConversion: cf9b38bf0b2d048436d9a82ad2abe1404f11e7de
   FBLazyVector: fa8275d5086566e22a26ddc385ab5772e7f9b1bd
-  FBReactNativeSpec: a4ce9e0e0e36da3eea0df57df100ac45377a326c
+  FBReactNativeSpec: 5efba348a6836c7395c39b4a29aadd72e1f62b93
   glog: 73c2498ac6884b13ede40eda8228cb1eee9d9d62
   MapboxCommon: dcbdb86acbcfc1a23efd341ed097c6c63ab532a9
   MapboxCoreMaps: bcbaac14467616940187f79bba49ca491cd37906
@@ -684,7 +684,7 @@ SPEC CHECKSUMS:
   RNCPushNotificationIOS: 87b8d16d3ede4532745e05b03c42cff33a36cc45
   RNFS: 3ab21fa6c56d65566d1fb26c2228e2b6132e5e32
   RNGestureHandler: a479ebd5ed4221a810967000735517df0d2db211
-  rnmapbox-maps: d9026150191bd0af18721335bb9ea0082f7ca27d
+  rnmapbox-maps: bf91ca56e25c0f4f2a7c63aef47bbaed7d6cf169
   RNOS: 6f2f9a70895bbbfbdad7196abd952e7b01d45027
   RNPermissions: f1b49dd05fa9b83993cd05a9ee115247944d8f1a
   RNReanimated: 024eff8202342abf4b24e11575a16afc441dabfe
