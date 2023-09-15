@@ -100,3 +100,84 @@ npx react-native run-ios
 yarn install --check-files
 react-native run-android
 ```
+
+# Latest Notes
+
+## Pre-requisites
+
+Common:
+```
+nvm use 18.17.1
+```
+
+Android:
+
+Have Android studio installed
+
+iOS:
+
+Make sure you installed XCode and Simulator
+
+## Run iOS Simulator
+
+Build dependencies
+```
+yarn install
+
+yarn react-native link
+
+```
+
+Build pods
+```
+npx pod-install
+```
+
+Pun ios build in 
+
+### Build apk
+
+Pre-requisite:
+
+```
+npx jetify
+```
+
+Debug:
+
+**Generate keystore for release**
+
+Build APK:
+```
+yarn run build:android-debug
+
+cd android
+
+./gradlew clean
+./gradlew app:assembleDebug
+
+cd ../
+```
+
+
+Release:
+
+**Generate keystore for release**
+
+Build APK:
+```
+yarn run build:android-release
+
+cd android
+
+./gradlew clean
+./gradlew app:assembleRelease
+
+cd ../
+```
+
+Find APKs in directories:
+
+Debug: /app/build/outputs/apk/debug/app-debug.apk
+
+Release: /app/build/outputs/apk/release/app-release.apk
