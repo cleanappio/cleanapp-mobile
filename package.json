@@ -11,7 +11,8 @@
     "lint": "eslint .",
     "postinstall": "patch-package & rn-nodeify --install fs,dgram,process,path,console,stream,events,crypto --hack",
     "build:ios": "react-native bundle --entry-file='index.js' --bundle-output='./ios/main.jsbundle' --dev=false --platform='ios' --assets-dest ./ios",
-    "build:android": "NODE_OPTIONS=--openssl-legacy-provider react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res/",
+    "build:android-debug": "NODE_OPTIONS=--openssl-legacy-provider react-native bundle --platform android --dev true --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res/",
+    "build:android-release": "NODE_OPTIONS=--openssl-legacy-provider react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res/",
     "reverse": "adb reverse tcp:8081 tcp:8081"
   },
   "dependencies": {
