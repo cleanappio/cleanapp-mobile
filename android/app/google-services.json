@@ -1,39 +1,40 @@
 {
-    "project_info": {
-      "project_number": "339730007837",
-      "project_id": "datanation-f3693",
-      "storage_bucket": "datanation-f3693.appspot.com"
-    },
-    "client": [
-      {
-        "client_info": {
-          "mobilesdk_app_id": "1:339730007837:android:37dc7f0e781c458f5583f4",
-          "android_client_info": {
-            "package_name": "com.dataunion.cleanapp"
-          }
-        },
-        "oauth_client": [
-          {
-            "client_id": "339730007837-rhel7jm6oq3lv6jp355c65iilvsoe0t4.apps.googleusercontent.com",
-            "client_type": 3
-          }
-        ],
-        "api_key": [
-          {
-            "current_key": "AIzaSyBD_O8Pvulqray2b5CYyB5wSvPk4nsB5HA"
-          }
-        ],
-        "services": {
-          "appinvite_service": {
-            "other_platform_oauth_client": [
-              {
-                "client_id": "339730007837-rhel7jm6oq3lv6jp355c65iilvsoe0t4.apps.googleusercontent.com",
-                "client_type": 3
-              }
-            ]
-          }
+  "project_info": {
+    "project_number": "632059588281",
+    "firebase_url": "https://cleanapp-9de98.firebaseio.com",
+    "project_id": "cleanapp-9de98",
+    "storage_bucket": "cleanapp-9de98.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:632059588281:android:c0f334bb366d14f7e83568",
+        "android_client_info": {
+          "package_name": "com.cleanapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "632059588281-s55hs95j0451vgqeriefhqf8fnihqgbh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDgCRUxXnLUYkGSHFhS8J--DqYiLFtD-ZE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "632059588281-8i5rr9v5aob4sqp77ph5ea5a5rb4qeip.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
-    ],
-    "configuration_version": "1"
-  }
+    }
+  ],
+  "configuration_version": "1"
+}

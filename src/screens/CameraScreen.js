@@ -277,7 +277,7 @@ const CameraScreen = (props) => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.container}>
-        {hasPermission && (
+        {hasPermission && (useFront ? !!frontCam : !!backCam) && (
           <Camera
             ref={camera}
             hdr={true}

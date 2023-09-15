@@ -17,10 +17,8 @@
 		1DB7B2A2F6A7427CA4BFCD97 /* PlusJakartaSans-ExtraBoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 63E1F156AD764C6784ABF8FA /* PlusJakartaSans-ExtraBoldItalic.ttf */; };
 		3A7852E3115949AD852DFDA0 /* PlusJakartaSans-LightItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B83C65FDF060421EB37EB5D3 /* PlusJakartaSans-LightItalic.ttf */; };
 		484AF22937A64C1C9FC1194C /* PlusJakartaSans-ExtraLightItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 155C6FF7856E4F32B305FB56 /* PlusJakartaSans-ExtraLightItalic.ttf */; };
-		55E2BE82150E50134363FC6B /* Pods_CleanApp_CleanAppTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E36FD4D257A2C295E5664483 /* Pods_CleanApp_CleanAppTests.framework */; };
 		6048681AC0A64C688A2139DE /* PlusJakartaSans-SemiBoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0A0D3EDE29944502817342EE /* PlusJakartaSans-SemiBoldItalic.ttf */; };
 		7797F21ED909481A9E83EFF5 /* PlusJakartaSans-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 96185FDE701D487280E89EDF /* PlusJakartaSans-ExtraBold.ttf */; };
-		7858E7BEB64B665F23DA7943 /* Pods_CleanApp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0FCE459EA7EB47A858EEAEA3 /* Pods_CleanApp.framework */; };
 		7AD7394C96914A89AAF191D5 /* PlusJakartaSans-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B0D40C26E51F445188B1FB0D /* PlusJakartaSans-Regular.ttf */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		9308E8F4297A2B6F00891021 /* RNBackgroundFetch+AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 9308E8F3297A2B6F00891021 /* RNBackgroundFetch+AppDelegate.m */; };
@@ -29,7 +27,9 @@
 		A75CA56829764731B0859EA7 /* PlusJakartaSans-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 86FF6BCD131048188F1F90A4 /* PlusJakartaSans-Light.ttf */; };
 		B42B16029A504B14BBD9825C /* PlusJakartaSans-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = DB7D92C38C734E73B0BE5426 /* PlusJakartaSans-Bold.ttf */; };
 		B7AB3F915A424DD1B4609032 /* PlusJakartaSans-ExtraLight.ttf in Resources */ = {isa = PBXBuildFile; fileRef = DC444D9FD8AC4B6F8A9C98D1 /* PlusJakartaSans-ExtraLight.ttf */; };
+		BA85E8392CCA77B072236F05 /* libPods-CleanApp-CleanAppTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E0C500641947CBB0FC6CA59D /* libPods-CleanApp-CleanAppTests.a */; };
 		DE7D764EA15A47A189D4BAEB /* PlusJakartaSans-BoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 7E1FC5A29B8641E9B6B1D614 /* PlusJakartaSans-BoldItalic.ttf */; };
+		E1C326F6257B6BCB5FD14817 /* libPods-CleanApp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 76709BD847FBDD3D8F82853E /* libPods-CleanApp.a */; };
 		F3ABC3F97C404F11BB45202B /* PlusJakartaSans-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C0999DF654604D36BD3C4F13 /* PlusJakartaSans-Medium.ttf */; };
 		F3B6269A4DD94BAF8C679C06 /* PlusJakartaSans-MediumItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E0F20CA006AF44D7AFD32850 /* PlusJakartaSans-MediumItalic.ttf */; };
 		F6C531DE7D574B60BEE491BD /* PlusJakartaSans-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C3AE20D39BF840CAAAC74B60 /* PlusJakartaSans-SemiBold.ttf */; };
@@ -54,7 +54,6 @@
 		0431E30A268A58D000C81C8F /* CleanApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CleanApp.swift; path = CleanApp/CleanApp.swift; sourceTree = "<group>"; };
 		0A0D3EDE29944502817342EE /* PlusJakartaSans-SemiBoldItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "PlusJakartaSans-SemiBoldItalic.ttf"; path = "../src/assets/fonts/PlusJakartaSans-SemiBoldItalic.ttf"; sourceTree = "<group>"; };
 		0ED12937AAC7412B9E284A6E /* FontAwesome5_Solid.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome5_Solid.ttf; path = "../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Solid.ttf"; sourceTree = "<group>"; };
-		0FCE459EA7EB47A858EEAEA3 /* Pods_CleanApp.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_CleanApp.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07F961A680F5B00A75B9A /* CleanApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CleanApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = CleanApp/AppDelegate.h; sourceTree = "<group>"; };
 		13B07FB01A68108700A75B9A /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AppDelegate.m; path = CleanApp/AppDelegate.m; sourceTree = "<group>"; };
@@ -71,6 +70,7 @@
 		63DCEA1857AE445F9F194488 /* MaterialIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = MaterialIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/MaterialIcons.ttf"; sourceTree = "<group>"; };
 		63E1F156AD764C6784ABF8FA /* PlusJakartaSans-ExtraBoldItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "PlusJakartaSans-ExtraBoldItalic.ttf"; path = "../src/assets/fonts/PlusJakartaSans-ExtraBoldItalic.ttf"; sourceTree = "<group>"; };
 		6B7569F9820C47079E57C03D /* Ionicons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Ionicons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Ionicons.ttf"; sourceTree = "<group>"; };
+		76709BD847FBDD3D8F82853E /* libPods-CleanApp.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-CleanApp.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		7E1FC5A29B8641E9B6B1D614 /* PlusJakartaSans-BoldItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "PlusJakartaSans-BoldItalic.ttf"; path = "../src/assets/fonts/PlusJakartaSans-BoldItalic.ttf"; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = CleanApp/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		86FF6BCD131048188F1F90A4 /* PlusJakartaSans-Light.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "PlusJakartaSans-Light.ttf"; path = "../src/assets/fonts/PlusJakartaSans-Light.ttf"; sourceTree = "<group>"; };
@@ -99,8 +99,8 @@
 		CB98467E7B7942329C6F681E /* FontAwesome5_Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome5_Regular.ttf; path = "../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Regular.ttf"; sourceTree = "<group>"; };
 		DB7D92C38C734E73B0BE5426 /* PlusJakartaSans-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "PlusJakartaSans-Bold.ttf"; path = "../src/assets/fonts/PlusJakartaSans-Bold.ttf"; sourceTree = "<group>"; };
 		DC444D9FD8AC4B6F8A9C98D1 /* PlusJakartaSans-ExtraLight.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "PlusJakartaSans-ExtraLight.ttf"; path = "../src/assets/fonts/PlusJakartaSans-ExtraLight.ttf"; sourceTree = "<group>"; };
+		E0C500641947CBB0FC6CA59D /* libPods-CleanApp-CleanAppTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-CleanApp-CleanAppTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E0F20CA006AF44D7AFD32850 /* PlusJakartaSans-MediumItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "PlusJakartaSans-MediumItalic.ttf"; path = "../src/assets/fonts/PlusJakartaSans-MediumItalic.ttf"; sourceTree = "<group>"; };
-		E36FD4D257A2C295E5664483 /* Pods_CleanApp_CleanAppTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_CleanApp_CleanAppTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		EB8675C86D354161AC64DE28 /* FontAwesome5_Brands.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome5_Brands.ttf; path = "../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Brands.ttf"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F277B8226E03BBD9122A8760 /* Pods-CleanApp-CleanAppTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CleanApp-CleanAppTests.release.xcconfig"; path = "Target Support Files/Pods-CleanApp-CleanAppTests/Pods-CleanApp-CleanAppTests.release.xcconfig"; sourceTree = "<group>"; };
@@ -112,8 +112,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				55E2BE82150E50134363FC6B /* Pods_CleanApp_CleanAppTests.framework in Frameworks */,
 				187BB5C92A9F717C00968AC4 /* TSBackgroundFetch.xcframework in Frameworks */,
+				BA85E8392CCA77B072236F05 /* libPods-CleanApp-CleanAppTests.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -121,7 +121,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				7858E7BEB64B665F23DA7943 /* Pods_CleanApp.framework in Frameworks */,
+				E1C326F6257B6BCB5FD14817 /* libPods-CleanApp.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -182,8 +182,8 @@
 			children = (
 				187BB5C82A9F717C00968AC4 /* TSBackgroundFetch.xcframework */,
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				0FCE459EA7EB47A858EEAEA3 /* Pods_CleanApp.framework */,
-				E36FD4D257A2C295E5664483 /* Pods_CleanApp_CleanAppTests.framework */,
+				76709BD847FBDD3D8F82853E /* libPods-CleanApp.a */,
+				E0C500641947CBB0FC6CA59D /* libPods-CleanApp-CleanAppTests.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -272,6 +272,7 @@
 				00E356EB1AD99517003FC87E /* Frameworks */,
 				00E356EC1AD99517003FC87E /* Resources */,
 				BDF0A0F0B24C4D028D69BD5C /* [CP] Embed Pods Frameworks */,
+				20933751E4CABE4FAA1BD8A7 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -279,8 +280,6 @@
 				00E356F51AD99517003FC87E /* PBXTargetDependency */,
 			);
 			name = CleanAppTests;
-			packageProductDependencies = (
-			);
 			productName = CleanAppTests;
 			productReference = 00E356EE1AD99517003FC87E /* CleanAppTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -296,14 +295,13 @@
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				C8A276B2C76A2F813F108B5D /* [CP] Embed Pods Frameworks */,
+				9FA035244398C1052213A788 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			name = CleanApp;
-			packageProductDependencies = (
-			);
 			productName = CleanApp;
 			productReference = 13B07F961A680F5B00A75B9A /* CleanApp.app */;
 			productType = "com.apple.product-type.application";
@@ -334,8 +332,6 @@
 				Base,
 			);
 			mainGroup = 83CBB9F61A601CBA00E9B192;
-			packageReferences = (
-			);
 			productRefGroup = 83CBBA001A601CBA00E9B192 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -396,6 +392,23 @@
 			shellPath = /bin/sh;
 			shellScript = "set -e\n\nexport NODE_BINARY=\"node ../node_modules/react-native/scripts/react-native-xcode.sh\"\n";
 		};
+		20933751E4CABE4FAA1BD8A7 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-CleanApp-CleanAppTests/Pods-CleanApp-CleanAppTests-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-CleanApp-CleanAppTests/Pods-CleanApp-CleanAppTests-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-CleanApp-CleanAppTests/Pods-CleanApp-CleanAppTests-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 		945EEE2ADA342A14AEE83525 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -416,6 +429,23 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		9FA035244398C1052213A788 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-CleanApp/Pods-CleanApp-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-CleanApp/Pods-CleanApp-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-CleanApp/Pods-CleanApp-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		BDF0A0F0B24C4D028D69BD5C /* [CP] Embed Pods Frameworks */ = {
@@ -587,8 +617,8 @@
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = CleanApp/CleanAppDebug.entitlements;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 43LAV2W923;
+				CURRENT_PROJECT_VERSION = 3;
+				DEVELOPMENT_TEAM = UW5SVT28YL;
 				ENABLE_BITCODE = NO;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
@@ -675,19 +705,19 @@
 					"${PODS_CONFIGURATION_BUILD_DIR}/react-native-background-fetch/ios/RNBackgroundFetch/TSBackgroundFetch.xcframework/ios-arm64_i386_x86_64-simulator/TSBackgroundFetch.framework/Headers/",
 				);
 				INFOPLIST_FILE = CleanApp/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Literbux;
+				INFOPLIST_KEY_CFBundleDisplayName = CleanApp;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.dataunion.CleanApp;
+				PRODUCT_BUNDLE_IDENTIFIER = io.cleanapp;
 				PRODUCT_NAME = CleanApp;
 				SWIFT_OBJC_BRIDGING_HEADER = "CleanApp-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -705,22 +735,22 @@
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = CleanApp/CleanAppRelease.entitlements;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 43LAV2W923;
+				CURRENT_PROJECT_VERSION = 3;
+				DEVELOPMENT_TEAM = UW5SVT28YL;
 				INFOPLIST_FILE = CleanApp/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Literbux;
+				INFOPLIST_KEY_CFBundleDisplayName = CleanApp;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.dataunion.CleanApp;
+				PRODUCT_BUNDLE_IDENTIFIER = io.cleanapp;
 				PRODUCT_NAME = CleanApp;
 				SWIFT_OBJC_BRIDGING_HEADER = "CleanApp-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
@@ -762,7 +792,7 @@
 				COPY_PHASE_STRIP = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "arm64 ";
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -828,7 +858,7 @@
 				COPY_PHASE_STRIP = YES;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "arm64 ";
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;

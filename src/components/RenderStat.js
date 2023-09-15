@@ -107,7 +107,7 @@ const RenderStat = (props) => {
                 fontWeight: '300',
                 fontSize: nameSize,
                 fontFamily: fontFamilies.Default,
-              }}>{`${item.rewards} CATS`}</Text>
+              }}>{`${item.rewards} KITN`}</Text>
           </View>
         </View>
       )}
