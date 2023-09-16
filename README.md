@@ -171,7 +171,7 @@ yarn react-native link
         ***You have to set a full path like /home/... or /Users/..., without variables like $HOME etc.***
 
 ### Install and test on the device
-1.  Make sure the developer mode is enabled, https://developer.android.com/studio/debug/dev-options?authuser=3
+1.  Make sure the developer mode on teh devise is enabled, https://developer.android.com/studio/debug/dev-options?authuser=3
 1.  Connect the device to your computer by USB
 1.  build the APK
     ```
@@ -186,10 +186,13 @@ yarn react-native link
     adb install android/app/build/outputs/apk/release/app-release.apk
     ```
 
-Find APKs in the directory:
-
-Release: app/build/outputs/apk/release/app-release.apk
-
 ### Push on PlayStore
-
-TBD
+1.  build the .aab
+    ```
+    $ yarn android:bundle
+    $ cd android
+    $ ./gradlew clean
+    $ ./gradlew bundleRelease -x bundleReleaseJsAndAssets
+    $ cd ../
+    ```
+1. The bundle release android/app/build/outputs/bundle/release/app-release.aab is ready for upload to PlayStore
