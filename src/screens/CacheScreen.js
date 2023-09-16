@@ -555,18 +555,18 @@ const CacheScreen = (props) => {
               <Text style={styles.txt9}>
                 {totalCache.offchainReports} <Text style={styles.txt9}>{'KITN'}</Text>
               </Text>
-              <Text style={styles.txt9}>{'LitterBux(offchain) reports'}</Text>
+              <Text style={styles.txt9}>{'Litterbox(offchain) reports'}</Text>
             </Row>
             <Row>
               <Text style={styles.txt9}>
                 {totalCache.offchainReferrals} <Text style={styles.txt9}>{'KITN'}</Text>
               </Text>
-              <Text style={styles.txt9}>{'LitterBux(offchain) referrals'}</Text>
+              <Text style={styles.txt9}>{'Litterbox(offchain) referrals'}</Text>
             </Row> */}
           </View>
           <View style={styles.balanceContainer}>
             <Row>
-              <Text style={styles.txt12}>{'LitterBux(onchain)'}</Text>
+              <Text style={styles.txt12}>{'Litterbox(offchain)'}</Text>
               {/*  <Text style={styles.txt12}>{`Emptied in ${Math.ceil(nextRunTime / 3600)}h ${
                 Math.ceil((nextRunTime % 3600) / 60)
               }mins`}</Text> */}
