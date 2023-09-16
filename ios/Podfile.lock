@@ -16,12 +16,12 @@ PODS:
     - React-jsi (= 0.64.4)
     - ReactCommon/turbomodule/core (= 0.64.4)
   - glog (0.3.5)
-  - MapboxCommon (23.7.0)
-  - MapboxCoreMaps (10.15.0):
-    - MapboxCommon (~> 23.7)
-  - MapboxMaps (10.15.0):
-    - MapboxCommon (= 23.7.0)
-    - MapboxCoreMaps (= 10.15.0)
+  - MapboxCommon (23.8.0)
+  - MapboxCoreMaps (10.16.0):
+    - MapboxCommon (~> 23.8)
+  - MapboxMaps (10.16.0):
+    - MapboxCommon (= 23.8.0)
+    - MapboxCoreMaps (= 10.16.0)
     - MapboxMobileEvents (= 1.0.10)
     - Turf (~> 2.0)
   - MapboxMobileEvents (1.0.10)
@@ -339,14 +339,14 @@ PODS:
     - React
   - RNGestureHandler (1.10.3):
     - React-Core
-  - rnmapbox-maps (10.0.14):
-    - MapboxMaps (~> 10.15.0)
+  - rnmapbox-maps (10.0.15):
+    - MapboxMaps (~> 10.16.0)
     - React
     - React-Core
-    - rnmapbox-maps/DynamicLibrary (= 10.0.14)
+    - rnmapbox-maps/DynamicLibrary (= 10.0.15)
     - Turf
-  - rnmapbox-maps/DynamicLibrary (10.0.14):
-    - MapboxMaps (~> 10.15.0)
+  - rnmapbox-maps/DynamicLibrary (10.0.15):
+    - MapboxMaps (~> 10.16.0)
     - React
     - React-Core
     - Turf
@@ -629,11 +629,11 @@ SPEC CHECKSUMS:
   Charts: ce0768268078eee0336f122c3c4ca248e4e204c5
   DoubleConversion: cf9b38bf0b2d048436d9a82ad2abe1404f11e7de
   FBLazyVector: fa8275d5086566e22a26ddc385ab5772e7f9b1bd
-  FBReactNativeSpec: 5efba348a6836c7395c39b4a29aadd72e1f62b93
+  FBReactNativeSpec: aadc4b95b99c0eb4f85eec7fe271d1f90c59b6eb
   glog: 73c2498ac6884b13ede40eda8228cb1eee9d9d62
-  MapboxCommon: dcbdb86acbcfc1a23efd341ed097c6c63ab532a9
-  MapboxCoreMaps: bcbaac14467616940187f79bba49ca491cd37906
-  MapboxMaps: 1fd9d97d0e8eceb7a45b9ac8bf87a8922da881a8
+  MapboxCommon: 8592a003eae487508461d452d62cfc5906a9682a
+  MapboxCoreMaps: faa14a797417dc32088c98019a3ce72e46cda5cd
+  MapboxMaps: f10aecadbfb7cf96368852ca313101eb4171da53
   MapboxMobileEvents: de50b3a4de180dd129c326e09cd12c8adaaa46d6
   Permission-Camera: 7ec9ee99704766ff9b90198183387a7f5d82b0c1
   Permission-LocationWhenInUse: 24d97eeb25d8ff9f2232e070f792eeb1360ccaf0
@@ -684,7 +684,7 @@ SPEC CHECKSUMS:
   RNCPushNotificationIOS: 87b8d16d3ede4532745e05b03c42cff33a36cc45
   RNFS: 3ab21fa6c56d65566d1fb26c2228e2b6132e5e32
   RNGestureHandler: a479ebd5ed4221a810967000735517df0d2db211
-  rnmapbox-maps: bf91ca56e25c0f4f2a7c63aef47bbaed7d6cf169
+  rnmapbox-maps: b6219b7432508ae2cea169365116a811f822612e
   RNOS: 6f2f9a70895bbbfbdad7196abd952e7b01d45027
   RNPermissions: f1b49dd05fa9b83993cd05a9ee115247944d8f1a
   RNReanimated: 024eff8202342abf4b24e11575a16afc441dabfe

@@ -7,44 +7,12 @@ The software is developed using React Native, so if you encounter any issues bec
 The first step to run the software is to setup React Native development setup on your machine. React Native has tutorials for different operating systems and mobile platforms here:
 https://reactnative.dev/docs/environment-setup
 
-## iOS development
-
-Please use an iPhone 12 or better in the simulator as this is the minimum requirement right now.
-
 # Installing and Running the app
-
-## Clone this repository
-Change to the directory that you want to clone the code into.
-```
-git clone https://github.com/cleanappio/cleanapp-mobile.git
-cd cleanapp-mobile
-```
 
 ## Dependencies:
 
 ## User Guide
 You can find detailed instructions on using React Native and many tips in [its documentation](https://reactnative.dev/docs/getting-started).
-
-# tips for building on Macbook m1/2
-
-If you encounter problems to install because of brewlite, please use nvm to set your nodejs version e.g. to nvm install 16.17.0 works for the author.
-
-For m1/m2 architecture users, please be aware that you have to install the arm64 versions of ffi and cocoapods to install the pods.
-
-If you have an issue with npx pod-install like this:
-CDN: trunk URL couldn't be downloaded: https://cdn.cocoapods.org/CocoaPods-version.yml
-This can fix it:
-1- At the top of the Podfile add this line
-source 'https://github.com/CocoaPods/Specs.git' 
-2- Remove the Podfile.lock file
-3- pod repo remove trunk
-4- pod install
-
-If you are building the main.jsbundle and you get an error, replace the zlib library with browserify-zlib - that fixed it.
-
-# Latest Notes
-
-# Pre-requisites
 
 Common:
 pod --version => >= 1.10.1
@@ -70,14 +38,23 @@ iOS:
 
 Make sure you installed XCode and Simulator
 
-# Configure Environment
+Please use an iPhone 12 or better in the simulator as this is the minimum requirement right now.
 
-## Prepare .env File
+## Clone this repository
+Change to the directory that you want to clone the code into.
+```
+git clone https://github.com/cleanappio/cleanapp-mobile.git
+cd cleanapp-mobile
+```
+
+## Configure Environment
+
+### Prepare .env File
 All environment variables are stored in the .env file in the project directory. The .env file is never to be pushed to git.
 
 Take a local copy of .env and put into a project root directory.
 
-## Configure Mapbox
+### Configure Mapbox
 
 Please signup to Mapbox and create a correct .netrc file so you can install the CocoaPods package for Mapbox. Here are tutorials that help to do that:
 https://github.com/mapbox/mapbox-gl-native-ios/blob/d89e7139e5f6a9a3ea5ad57782b41579b8a0bbb1/platform/ios/INSTALL.md#cocoapods
@@ -91,9 +68,9 @@ machine api.mapbox.com
     password sk.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
 
-# iOS
+## iOS
 
-## Before any build
+### Before any build
 
 Build dependencies
 ```
@@ -108,7 +85,7 @@ Build pods
 npx pod-install
 ```
 
-## Run app on iOS simulator
+### Run app on iOS simulator
 
 *There is no way to build and run on simulator fro the command line due to* ***error:0308010C:digital envelope routines::unsupported***
 
@@ -124,14 +101,26 @@ npx pod-install
 
 The application will run on the chosen simulator.
 
-## Deploy on TestFlight
+### Deploy on TestFlight
 
 1.  Make sure you have Apple Developer account fully set. If you use org account you have to have dev privileges there.
+1.  Run Metro
+    *  Open a new terminal window
+    *  Run command ```yarn run start```
+1.  Open Xcode
+1.  In menu: File -> Open...
+1.  Click the ios/CleanApp.xcworkspace. The project will open
+1.  On the left panel click CleanApp, make sure General tab is opened.
+1.  Increment Build by 1
+1.  Choose CleanApp > Any iOS Device (arm64) on top of Xcode window in the center
+1.  In menu: Product / Clean build folder...
+1.  In menu: Product > Archive
+1.  After build is done, an Archives window will be opened. Click Distribute App button. Follow prompts.
+1.  Go to https://appstoreconnect.apple.com in browser, login and monitor build rollout.
 
+## Android
 
-# Android
-
-**Before any build**
+### Before any build
 
 Build dependencies
 ```
@@ -141,16 +130,16 @@ yarn react-native link
 
 ```
 
-## Run app on Android simulator
+### Run app on Android simulator
 
 1.  Run Metro
     *  Open a new terminal window
     *  Run command ```yarn run start```
 2.  Run ```yarn run android```
 
-## Build release
+### Build release
 
-### Configure release keystore
+#### Configure release keystore
 
 1.  Create the signing directory in your home directory.
     ```
@@ -170,7 +159,7 @@ yarn react-native link
         
         ***You have to set a full path like /home/... or /Users/..., without variables like $HOME etc.***
 
-### Install and test on the device
+#### Install and test on the device
 1.  Make sure the developer mode on teh devise is enabled, https://developer.android.com/studio/debug/dev-options?authuser=3
 1.  Connect the device to your computer by USB
 1.  build the APK
@@ -186,7 +175,7 @@ yarn react-native link
     adb install android/app/build/outputs/apk/release/app-release.apk
     ```
 
-### Push on PlayStore
+#### Push on PlayStore
 1.  build the .aab
     ```
     $ yarn android:bundle
@@ -196,3 +185,20 @@ yarn react-native link
     $ cd ../
     ```
 1. The bundle release android/app/build/outputs/bundle/release/app-release.aab is ready for upload to PlayStore
+
+# Tips for building on Macbook m1/2
+
+If you encounter problems to install because of brewlite, please use nvm to set your nodejs version e.g. to nvm install 16.17.0 works for the author.
+
+For m1/m2 architecture users, please be aware that you have to install the arm64 versions of ffi and cocoapods to install the pods.
+
+If you have an issue with npx pod-install like this:
+CDN: trunk URL couldn't be downloaded: https://cdn.cocoapods.org/CocoaPods-version.yml
+This can fix it:
+1- At the top of the Podfile add this line
+source 'https://github.com/CocoaPods/Specs.git' 
+2- Remove the Podfile.lock file
+3- pod repo remove trunk
+4- pod install
+
+If you are building the main.jsbundle and you get an error, replace the zlib library with browserify-zlib - that fixed it.
