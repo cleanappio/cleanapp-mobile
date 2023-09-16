@@ -118,7 +118,14 @@ iOS:
 
 Make sure you installed XCode and Simulator
 
-## Run iOS Simulator
+Make sure Jetifier is installed.
+```
+npx jetify
+```
+
+# iOS
+
+## Before any build
 
 Build dependencies
 ```
@@ -133,51 +140,82 @@ Build pods
 npx pod-install
 ```
 
-Pun ios build in 
+## Run app on iOS simulator
 
-### Build apk
+*There is no way to build and run on simulator fro the command line due to* ***error:0308010C:digital envelope routines::unsupported***
 
-Pre-requisite:
+1.  Run Metro
+    *  Open a new terminal window
+    *  Run command ```yarn run start```
+1.  Open Xcode
+1.  In menu: File -> Open...
+1.  Click the ios/CleanApp.xcworkspace. The project will open
+1.  In menu: Product / Clean build folder...
+1.  Choose CleanApp > iPhone 14 or any desired simulator on top of Xcode window in the center
+1.  In menu: Product > Run
+
+The application will run on the chosen simulator.
+
+## Deploy on TestFlight
+
+1.  Make sure you have Apple Developer account fully set. If you use org account you have to have dev privileges there.
+
+
+# Android
+
+**Before any build**
+
+Build dependencies
+```
+yarn install
+
+yarn react-native link
 
 ```
-npx jetify
+
+## Run app on Android simulator
+
+1.  Run Metro
+    *  Open a new terminal window
+    *  Run command ```yarn run start```
+2.  Run ```yarn run android```
+
+## Build release apk
+
+### Configure release keystore
+
+1.  Create the signing directory in your home directory.
+    ```
+    $ mkdir $HOME/.signing
+    ```
+1.  Create the keystore file in the $HOME/.signing directory. File name should be "release.keystore".
+
+    See e.g. https://instamobile.io/android-development/generate-react-native-release-build-android/
+
+1. Create the properties file pointing to the keystore and containing password.
+    ```
+    $ echo "keystore=<your homedir>/.signing/release.keystore\nkeystore.password=<your keystore password>" > $HOME/.signing/cleanapp.properties
+    ```
+1. Modify the file ```android/gradle.properties```.
+    *   Find the line ```CleanApp.properties=...```
+    *   Set the actual path to your cleanapp.properties file generated on previous step.
+        
+        ***You have to set a full path like /home/... or /Users/..., without variables like $HOME etc.***
+
+### Build APK
 ```
-
-Debug:
-
-**Generate keystore for release**
-
-Build APK:
-```
-yarn run build:android-debug
-
 cd android
 
 ./gradlew clean
-./gradlew app:assembleDebug
+./gradlew assembleRelease -x bundleReleaseJsAndAssets
 
 cd ../
 ```
 
+Find APKs in the directory:
 
-Release:
+Release: app/build/outputs/apk/release/app-release.apk
 
-**Generate keystore for release**
+### Push on PlayStore
 
-Build APK:
-```
-yarn run build:android-release
-
-cd android
-
-./gradlew clean
-./gradlew app:assembleRelease
-
-cd ../
-```
-
-Find APKs in directories:
-
-Debug: /app/build/outputs/apk/debug/app-debug.apk
-
-Release: /app/build/outputs/apk/release/app-release.apk
+TBD
