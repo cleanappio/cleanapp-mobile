@@ -148,7 +148,7 @@ yarn react-native link
     *  Run command ```yarn run start```
 2.  Run ```yarn run android```
 
-## Build release apk
+## Build release
 
 ### Configure release keystore
 
@@ -162,7 +162,7 @@ yarn react-native link
 
 1. Create the properties file pointing to the keystore and containing password.
     ```
-    $ echo "keystore=<your homedir>/.signing/release.keystore\nkeystore.password=<your keystore password>" > $HOME/.signing/cleanapp.properties
+    $ echo "keystore=<your homedir>/.signing/release.keystore\nkeystore.password=<your keystore password>\nkeystore.alias=<your keystore alias>" > $HOME/.signing/cleanapp.properties
     ```
 1. Modify the file ```android/gradle.properties```.
     *   Find the line ```CleanApp.properties=...```
@@ -170,15 +170,21 @@ yarn react-native link
         
         ***You have to set a full path like /home/... or /Users/..., without variables like $HOME etc.***
 
-### Build APK
-```
-cd android
-
-./gradlew clean
-./gradlew assembleRelease -x bundleReleaseJsAndAssets
-
-cd ../
-```
+### Install and test on the device
+1.  Make sure the developer mode is enabled, https://developer.android.com/studio/debug/dev-options?authuser=3
+1.  Connect the device to your computer by USB
+1.  build the APK
+    ```
+    $ yarn android:bundle
+    $ cd android
+    $ ./gradlew clean
+    $ ./gradlew assembleRelease -x bundleReleaseJsAndAssets
+    $ cd ../
+    ```
+1.  Install apk to the device
+    ```
+    adb install android/app/build/outputs/apk/release/app-release.apk
+    ```
 
 Find APKs in the directory:
 

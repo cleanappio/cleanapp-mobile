@@ -146,7 +146,7 @@ android {
         applicationId "com.cleanapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 2
+        versionCode 4
         versionName "1.0.0"
     }
     splits {
@@ -170,7 +170,7 @@ android {
                 props.load(new FileInputStream(file(project.property("CleanApp.properties"))))
                 storeFile file(props['keystore'])
                 storePassword props['keystore.password']
-                keyAlias 'release'
+                keyAlias props['keystore.alias']
                 keyPassword props['keystore.password']
             }
         }

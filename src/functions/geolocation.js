@@ -28,11 +28,11 @@ export const getLocation = async () => {
     }
 
     if (Platform.OS === 'android') {
-      permissionCheck = await check(PERMISSIONS.ANDROID.ACCESS_COARSE_LOCATION);
+      permissionCheck = await check(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION);
 
       if (permissionCheck !== RESULTS.GRANTED) {
         permissionRequest = await request(
-          PERMISSIONS.ANDROID.ACCESS_COARSE_LOCATION,
+          PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION,
         );
       }
     }
