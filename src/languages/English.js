@@ -392,7 +392,7 @@ export default {
       tocPrefix: "I agree with CleanApp's ",
       tocLink: 'terms and conditions',
       skip: 'Skip',
-      startTutorial: 'Start Tutorial(10$CAT)',
+      startTutorial: 'Start Tutorial(10 KITN)',
     },
     referral: {
       content:
@@ -487,7 +487,7 @@ export default {
       sharemydatawithlapseoftime: 'Share my data with lapse of time',
       unitraceable: 'Untraceable',
       edit: 'Edit',
-      earn10kitnperreferral: 'WIN MORE KITNs per referral',
+      earn10kitnperreferral: 'WIN MORE KITNs with referrals',
       comingsoon2: 'Coming Soon',
       swap: 'Swap',
       swapyourkitnintodogsor:
