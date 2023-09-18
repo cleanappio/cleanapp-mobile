@@ -447,7 +447,7 @@ export default {
       saveimage: 'Notice',
       failedtosaveimage: 'Failed to upload image: ',
       ok: 'OK',
-      newreward: '+1 CAT',
+      newreward: '+1 KITN',
       photouploaded: 'Photo Uploaded',
     },
     cachescreen: {
