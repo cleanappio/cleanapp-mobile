@@ -203,7 +203,7 @@ const App = () => {
 
   return (
     <Provider store={store}>
-      <PersistGate loading={null} persistor={persistor}>
+      {/* <PersistGate loading={null} persistor={persistor}> */}
         <NftProvider fetcher={fetcher}>
           <StateProvider initialState={initialState} reducer={reducer}>
             <WalletConnectProvider
@@ -223,7 +223,7 @@ const App = () => {
             </WalletConnectProvider>
           </StateProvider>
         </NftProvider>
-      </PersistGate>
+      {/* </PersistGate> */}
     </Provider>
   );
 };

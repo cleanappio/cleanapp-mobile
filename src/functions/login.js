@@ -169,6 +169,7 @@ export const LoginProc = async (web3, referralCode = '') => {
       }
     }
   } catch (err) {
+    console.error(err)
     // error occur while login
   }
   return null;

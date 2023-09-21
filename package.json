@@ -8,7 +8,9 @@
     "start": "NODE_OPTIONS=--openssl-legacy-provider react-native start",
     "test": "jest",
     "lint": "eslint .",
-    "clean": "rm -rf node_modules yarn.lock",
+    "clean-modules": "rm -rf node_modules yarn.lock",
+    "clean-android": "rm -rf android/.gradle android/app/build android/app/src/main/assets/index.android.bundle android/app/src/main/res/drawable-* android/app/src/main/res/raw",
+    "clean-ios": "rm -rf ios/Pods",
     "android:bundle": "NODE_OPTIONS=--openssl-legacy-provider react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res/",
     "reverse": "adb reverse tcp:8081 tcp:8081"
   },
