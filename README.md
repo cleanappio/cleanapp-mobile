@@ -9,10 +9,10 @@ https://reactnative.dev/docs/environment-setup
 
 # Installing and Running the app
 
-## Dependencies:
-
 ## User Guide
 You can find detailed instructions on using React Native and many tips in [its documentation](https://reactnative.dev/docs/getting-started).
+
+## Dependencies:
 
 Common:
 pod --version => >= 1.10.1
@@ -43,7 +43,7 @@ Please use an iPhone 12 or better in the simulator as this is the minimum requir
 ## Clone this repository
 Change to the directory that you want to clone the code into.
 ```
-git clone https://github.com/cleanappio/cleanapp-mobile.git
+git clone https://github.com/cleanappio/cleanapp-mobile.git &&
 cd cleanapp-mobile
 ```
 
@@ -70,19 +70,13 @@ machine api.mapbox.com
 
 ## iOS
 
-### Before any build
-
-Build dependencies
-```
-yarn install
-
-yarn react-native link
+### Pre-build
 
 ```
-
-Build pods
-```
-npx pod-install
+yarn install &&
+yarn react-native link &&
+npx pod-install &&
+yarn ios:bundle
 ```
 
 ### Run app on iOS simulator
@@ -91,7 +85,7 @@ npx pod-install
 
 1.  Run Metro
     *  Open a new terminal window
-    *  Run command ```yarn run start```
+    *  Run command ```yarn start```
 1.  Open Xcode
 1.  In menu: File -> Open...
 1.  Click the ios/CleanApp.xcworkspace. The project will open
@@ -106,7 +100,7 @@ The application will run on the chosen simulator.
 1.  Make sure you have Apple Developer account fully set. If you use org account you have to have dev privileges there.
 1.  Run Metro
     *  Open a new terminal window
-    *  Run command ```yarn run start```
+    *  Run command ```yarn start```
 1.  Open Xcode
 1.  In menu: File -> Open...
 1.  Click the ios/CleanApp.xcworkspace. The project will open
@@ -120,13 +114,9 @@ The application will run on the chosen simulator.
 
 ## Android
 
-### Before any build
-
-Build dependencies
+### Pre-build
 ```
-yarn install
-
-yarn react-native link
+yarn install && yarn react-native link
 
 ```
 
@@ -164,11 +154,11 @@ yarn react-native link
 1.  Connect the device to your computer by USB
 1.  build the APK
     ```
-    $ yarn android:bundle
-    $ cd android
-    $ ./gradlew clean
-    $ ./gradlew assembleRelease -x bundleReleaseJsAndAssets
-    $ cd ../
+    yarn android:bundle &&
+    cd android &&
+    ./gradlew clean &&
+    ./gradlew assembleRelease -x bundleReleaseJsAndAssets &&
+    cd ../
     ```
 1.  Install apk to the device
     ```
@@ -178,11 +168,11 @@ yarn react-native link
 #### Push on PlayStore
 1.  build the .aab
     ```
-    $ yarn android:bundle
-    $ cd android
-    $ ./gradlew clean
-    $ ./gradlew bundleRelease -x bundleReleaseJsAndAssets
-    $ cd ../
+    yarn android:bundle &&
+    cd android &&
+    ./gradlew clean &&
+    ./gradlew bundleRelease -x bundleReleaseJsAndAssets &&
+    cd ../
     ```
 1. The bundle release android/app/build/outputs/bundle/release/app-release.aab is ready for upload to PlayStore
 

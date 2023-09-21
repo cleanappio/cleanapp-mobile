@@ -39,7 +39,7 @@ index.android.bundle
 
 # node.js
 #
-node_modules/
+**/node_modules/
 npm-debug.log
 yarn-error.log
 yarn.lock
@@ -57,7 +57,7 @@ yarn.lock
 **/fastlane/test_output
 
 # Bundle artifact
-*.jsbundle
+ios/main.jsbundle
 
 # Ruby / CocoaPods
 /ios/Pods/
