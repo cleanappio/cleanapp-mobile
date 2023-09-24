@@ -255,6 +255,8 @@ PODS:
   - react-native-simple-toast (1.1.4):
     - React-Core
     - Toast (~> 4.0.0)
+  - react-native-splash-screen (3.3.0):
+    - React-Core
   - react-native-udp (2.7.0):
     - React
   - react-native-webview (11.22.7):
@@ -441,6 +443,7 @@ DEPENDENCIES:
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - "react-native-segmented-control (from `../node_modules/@react-native-segmented-control/segmented-control`)"
   - react-native-simple-toast (from `../node_modules/react-native-simple-toast`)
+  - react-native-splash-screen (from `../node_modules/react-native-splash-screen`)
   - react-native-udp (from `../node_modules/react-native-udp`)
   - react-native-webview (from `../node_modules/react-native-webview`)
   - React-perflogger (from `../node_modules/react-native/ReactCommon/reactperflogger`)
@@ -554,6 +557,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-segmented-control/segmented-control"
   react-native-simple-toast:
     :path: "../node_modules/react-native-simple-toast"
+  react-native-splash-screen:
+    :path: "../node_modules/react-native-splash-screen"
   react-native-udp:
     :path: "../node_modules/react-native-udp"
   react-native-webview:
@@ -662,6 +667,7 @@ SPEC CHECKSUMS:
   react-native-safe-area-context: f0906bf8bc9835ac9a9d3f97e8bde2a997d8da79
   react-native-segmented-control: 2221962f5073e2e809aa3691e8e410fc10b60578
   react-native-simple-toast: 8ee5d23f0b92b935ab7434cdb65159ce12dfb4b7
+  react-native-splash-screen: 4312f786b13a81b5169ef346d76d33bc0c6dc457
   react-native-udp: ff9d13e523f2b58e6bc5d4d32321ac60671b5dc9
   react-native-webview: 227ba9205abb8579116b69ea5774d9744267c65a
   React-perflogger: 5a890ca0911669421b7611661e9b58f91c805f5c

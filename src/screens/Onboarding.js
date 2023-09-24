@@ -3,21 +3,23 @@ import {CommonActions, StackActions, useNavigation} from '@react-navigation/nati
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {
+  ActivityIndicator,
+  Alert,
+  Animated,
+  Dimensions,
+  Image,
+  ImageBackground,
+  Keyboard,
+  KeyboardAvoidingView,
+  Linking,
+  Modal,
+  Platform,
+  Pressable,
+  StatusBar,
   StyleSheet,
   Text,
   TextInput,
   View,
-  Animated,
-  Image,
-  Dimensions,
-  StatusBar,
-  KeyboardAvoidingView,
-  ActivityIndicator,
-  Platform,
-  ImageBackground,
-  Linking,
-  Alert,
-  Keyboard,
 } from 'react-native';
 import {ExpandingDot, LiquidLike} from 'react-native-animated-pagination-dots';
 import {FlatList, ScrollView} from 'react-native-gesture-handler';
@@ -46,7 +48,8 @@ import {useStateValue} from '../services/State/State';
 import {fontFamilies} from '../utils/fontFamilies';
 import {useWalletConnect} from '@walletconnect/react-native-dapp';
 import Swiper from 'react-native-swiper';
-//import {theme} from '../services/Common/theme';
+import { InProgress } from '../components/InProgress';
+
 const background = require('../assets/onboard_background.jpg');
 
 import CheckIcon from '../assets/btn_check.svg';
@@ -150,14 +153,13 @@ const WelcomeScreen = ({
 
   const [name, setName] = useState(userName);
   const [referralCode, setReferralCode] = useState('');
-  const [nextBtnDisabled, setNextBtnDisabled] = useState(false);
+  const [inProgress, setInProgress] = useState(false)
 
   const nameInput = useRef(null);
   const referralInput = useRef(null);
 
   const gotoNextStep = async () => {
-    // check referral
-    setNextBtnDisabled(true);
+    setInProgress(true);
     const loginRet = await LoginProc(web3, referralCode);
 
     if (loginRet) {
@@ -167,7 +169,7 @@ const WelcomeScreen = ({
         onComplete();
       }
     }
-    setNextBtnDisabled(false);
+    setInProgress(false);
   };
 
   const setUserNameProc = async () => {
@@ -207,6 +209,10 @@ const WelcomeScreen = ({
     }
     return true;
   };
+
+  const isInputCorrect = () => {
+    return name === ''
+  }
 
   return (
     <View style={styles.slideBlock}>
@@ -262,14 +268,17 @@ const WelcomeScreen = ({
           gotoNextStep();
         }}
       />
-      <Ripple
-        disabled={nextBtnDisabled}
-        style={{...styles.btn, marginTop: 36}}
+      <Pressable
+        disabled={isInputCorrect() && !inProgress}
+        style={isInputCorrect() ? styles.disabledBtn : styles.btn}
         onPress={() => {
           gotoNextStep();
         }}>
-        <Text style={styles.btnText}>{t('onboarding.next')}</Text>
-      </Ripple>
+        <Text style={isInputCorrect() ? styles.disabledBtnText : styles.btnText}>
+          {t('onboarding.next')}
+        </Text>
+      </Pressable>
+      <InProgress isVisible={inProgress} />
     </View>
   );
 };
@@ -278,6 +287,7 @@ const PrivacyScreen = ({onStartTutorial = () => {}, onComplete = () => {}}) => {
   const {t} = useTranslation();
   const [privacy, setPrivacy] = useState(0);
   const [agreeTOC, setAgreeTOC] = useState(true);
+  const [inProgress, setInProgress] = useState(false)
 
   const switchPrivacy = (_privacy) => {
     setPrivacy(_privacy);
@@ -302,9 +312,11 @@ const PrivacyScreen = ({onStartTutorial = () => {}, onComplete = () => {}}) => {
     doCompleteAction();
   };
 
-  const onPressStartTutorial = async () => {
+  const onPressStartCleanup = async () => {
+    setInProgress(true);
     await startTutorial();
     await doCompleteAction();
+    setInProgress(false);
   };
 
   return (
@@ -370,20 +382,15 @@ const PrivacyScreen = ({onStartTutorial = () => {}, onComplete = () => {}}) => {
         </Ripple>
       </View>
 
-      <View style={styles.btns}>
-        <Ripple style={{...styles.skipbtn}} onPress={onPressNext}>
-          <Text style={styles.btnText}>{t('onboarding.skip')}</Text>
-        </Ripple>
-        <Ripple
-          containerStyle={{
-            flex: 1,
-            marginLeft: 16,
-          }}
-          style={{...styles.btn}}
-          onPress={onPressStartTutorial}>
-          <Text style={styles.btnText}>{t('onboarding.startTutorial')}</Text>
-        </Ripple>
-      </View>
+      <Pressable
+        disabled={!agreeTOC && !inProgress}
+        style={agreeTOC ? styles.btn : styles.disabledBtn}
+        onPress={onPressStartCleanup}>
+        <Text style={agreeTOC ? styles.btnText : styles.disabledBtnText }>
+          {t('onboarding.startCleanup')}
+        </Text>
+      </Pressable>
+      <InProgress isVisible={inProgress} />
     </View>
   );
 };
@@ -438,7 +445,9 @@ export const Onboarding = (props) => {
   };
 
   useEffect(() => {
+    console.log(new Date().toLocaleString(), '>>> initData start');
     initData();
+    console.log(new Date().toLocaleString(), '<<< initData end');
   }, []);
 
   const onWalletConnect = () => {
@@ -503,9 +512,6 @@ export const Onboarding = (props) => {
                   : t('onboarding.letssetupyourprofile')
               }
             />
-            {step === 'walletSelect' && (
-              <WalletSelect onComplete={onWalletConnect} />
-            )}
             {step === 'name' && (
               <WelcomeScreen
                 walletAddress={walletAddress}
@@ -600,27 +606,17 @@ export const styles = StyleSheet.create({
     borderTopLeftRadius: 8,
     borderTopRightRadius: 8,
   },
-  btnContainer: {
-    backgroundColor: 'yellow',
-    width: '100%',
-    borderRadius: 8,
-    justifyContent: 'center',
-    marginVertical: 5,
-  },
   btn: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 8,
     backgroundColor: theme.COLORS.BTN_BG_BLUE,
-    paddingVertical: 14,
-  },
-  skipbtn: {
-    justifyContent: 'center',
-    alignItems: 'center',
     borderRadius: 8,
-    backgroundColor: theme.COLORS.BTN_BG_GREY,
     paddingVertical: 14,
-    width: 82,
+    marginTop: 30,
+  },
+  disabledBtn: {
+    backgroundColor: theme.COLORS.BTN_BG_DISABLE,
+    borderRadius: 8,
+    paddingVertical: 14,
+    marginTop: 30,
   },
   btnText: {
     textAlign: 'center',
@@ -628,7 +624,15 @@ export const styles = StyleSheet.create({
     fontWeight: '500',
     fontSize: 16,
     lineHeight: 24,
-    color: 'white',
+    color: theme.COLORS.WHITE,
+  },
+  disabledBtnText: {
+    textAlign: 'center',
+    fontFamily: fontFamilies.Default,
+    fontWeight: '500',
+    fontSize: 16,
+    lineHeight: 24,
+    color: theme.COLORS.WHITE_OPACITY_40P,
   },
   textInput: {
     borderRadius: 8,
@@ -637,6 +641,15 @@ export const styles = StyleSheet.create({
     borderColor: theme.COLORS.BORDER,
     fontFamily: fontFamilies.Default,
     marginTop: 6,
+  },
+  centeredView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  inProgressImage: {
+    width: 60,
+    height: 60,
   },
   indicator: {
     width: 10,
@@ -709,10 +722,8 @@ export const styles = StyleSheet.create({
     fontFamily: fontFamilies.Default,
   },
   btns: {
-    marginTop: 36,
-    //justifyContent: 'space-between',
+    marginTop: 30,
     alignItems: 'center',
-    flexDirection: 'row',
   },
   background: {
     width: '100%',

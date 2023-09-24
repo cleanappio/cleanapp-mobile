@@ -2,13 +2,12 @@
 import 'react-native-gesture-handler';
 import {enableScreens} from 'react-native-screens';
 enableScreens();
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import TabComponent from './components/Tab';
 import {StyleSheet, Image, View, Text, AppState} from 'react-native';
-import Loading from './screens/Loading';
 import Ripple from './components/Ripple';
 import {theme} from './services/Common/theme';
 import i18n from './languages/i18n';
@@ -28,6 +27,18 @@ import CreateGuildScreen from './screens/CreateGuildScreen';
 import GuildScreen from './screens/GuildScreen';
 import {getLocation} from './functions/geolocation';
 import {actions} from './services/State/Reducer';
+
+import {CommonActions} from '@react-navigation/native';
+import {useSelector} from 'react-redux';
+import {LoginFromWalletConnect, LoginProc} from './functions/login';
+import {
+  getFirstRun,
+  getWalletType,
+} from './services/DataManager';
+import {refreshTokenAPI} from './services/API/CoreAPICalls';
+import {
+  useWalletConnect,
+} from '@walletconnect/react-native-dapp';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -228,6 +239,18 @@ const BottomTabs = ({navigation}) => {
     showAnnotateImagePageWalkthrough;
 
   useEffect(() => {
+    
+    getFirstRun().then((ret) => {
+      if (ret && ret.firstRun) {
+        console.log(new Date().toLocaleString(), '>>> Login start');
+        login();
+        console.log(new Date().toLocaleString(), '<<< Login end');
+      } else {
+        console.log(new Date().toLocaleString(), '>>> navigateOnboarding start');
+        navigateOnboarding();
+        console.log(new Date().toLocaleString(), '<<< navigateOnboarding end');
+      }
+    });
     const handleAppStateChange = (nextAppState) => {
       if (nextAppState === 'active') {
         navigation.navigate('Camera');
@@ -241,6 +264,63 @@ const BottomTabs = ({navigation}) => {
     };
   }, []);
 
+  const web3 = useSelector((state) => state.web3);
+  const connector = useWalletConnect();
+  const [isConnected, setIsConnected] = useState(false);
+  const [isChecking, setIsChecking] = useState(false);
+
+  const navigateOnboarding = () => {
+    navigation.dispatch(
+      CommonActions.reset({
+        index: 0,
+        routes: [{name: 'Onboarding'}],
+      }),
+    );
+  };
+
+  // function login
+  // if authtoken already set, then use them
+  // else call LoginProc
+  const wclogin = async () => {
+    await LoginFromWalletConnect(connector, web3);
+  };
+
+  const login = async () => {
+    if (!isConnected) {
+      setIsConnected(true);
+
+      const token = await refreshTokenAPI();
+      // no auth token set, call LoginProc
+      if (!token || !token.access_token) {
+        const walletType = await getWalletType();
+
+        if (walletType === 'WalletConnect') {
+          connector.connect().then((response) => {
+            // if wc connect succussfully, run loginProc
+            if (
+              response &&
+              response.accounts &&
+              response.accounts.length > 0
+            ) {
+              setIsChecking(true);
+            } else {
+              // retry wc
+              setIsConnected(false);
+            }
+          });
+        } else {
+          await LoginProc(web3);
+        }
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (isChecking) {
+      wclogin();
+    }
+  }, [isChecking]);
+  
   return (
     <>
       <Tab.Navigator
@@ -313,8 +393,8 @@ const RootStack = () => {
   return (
     <Stack.Navigator>
       <Stack.Screen
-        name="Loading"
-        component={Loading}
+        name="Home"
+        component={BottomTabs}
         options={{headerShown: false}}
       />
       <Stack.Screen
@@ -331,11 +411,6 @@ const RootStack = () => {
             navigation,
           );
         }}
-      />
-      <Stack.Screen
-        name="Home"
-        component={BottomTabs}
-        options={{headerShown: false}}
       />
     </Stack.Navigator>
   );

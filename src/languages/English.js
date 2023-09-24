@@ -392,7 +392,7 @@ export default {
       tocPrefix: "I agree with CleanApp's ",
       tocLink: 'terms and conditions',
       skip: 'Skip',
-      startTutorial: 'Start Tutorial(10 KITN)',
+      startCleanup: 'Start Cleanup! (10 KITN)',
     },
     referral: {
       content:

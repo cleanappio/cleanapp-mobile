@@ -4,6 +4,8 @@
 #import <React/RCTBundleURLProvider.h>
 #import <React/RCTRootView.h>
 
+#import "RNSplashScreen.h"
+
 //#import <TSBackgrounFetch/TSBackgroundFetch.h>
 
 #ifdef FB_SONARKIT_ENABLED
@@ -53,6 +55,8 @@ static void InitializeFlipper(UIApplication *application) {
   // [Required] Register BackgroundFetch
   // [[TSBackgroundFetch sharedInstance] didFinishLaunching];
 
+  // Set the splash screen to show by default.
+  [RNSplashScreen show];
   return YES;
 }
 

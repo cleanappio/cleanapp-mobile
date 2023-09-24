@@ -122,10 +122,39 @@ yarn install && yarn react-native link
 
 ### Run app on Android simulator
 
+1.  Clean the previous Android build
+    ```
+    yarn clean-android
+    ```
 1.  Run Metro
-    *  Open a new terminal window
-    *  Run command ```yarn run start```
-2.  Run ```yarn run android```
+    *   Open a new terminal window
+    *   Run metro command
+        ```
+        yarn run start
+        ```
+2.  Run the Android
+    ```
+    yarn run android
+    ```
+
+### Run debug app on the device
+
+1.  Remove the CleanApp appliocation from the device if any was previously installed.
+1.  Connect the device to the computer via USB.
+1.  Do port reversing
+    ```
+    adb reverse tcp:8081 tcp:8081
+    ```
+1.  Run Metro
+    *   Open a new terminal window
+    *   Run metro command
+        ```
+        yarn run start
+        ```
+2.  Run the Android
+    ```
+    yarn run android
+    ```
 
 ### Build release
 
@@ -149,8 +178,9 @@ yarn install && yarn react-native link
         
         ***You have to set a full path like /home/... or /Users/..., without variables like $HOME etc.***
 
-#### Install and test on the device
-1.  Make sure the developer mode on teh devise is enabled, https://developer.android.com/studio/debug/dev-options?authuser=3
+#### Install and test the release version on the device
+1.  Make sure the developer mode on the devise is enabled, https://developer.android.com/studio/debug/dev-options?authuser=3
+1.  Uninstall any existing CleanApp applicationon teh device
 1.  Connect the device to your computer by USB
 1.  build the APK
     ```
@@ -165,7 +195,7 @@ yarn install && yarn react-native link
     adb install android/app/build/outputs/apk/release/app-release.apk
     ```
 
-#### Push on PlayStore
+#### Push the release on PlayStore
 1.  build the .aab
     ```
     yarn android:bundle &&

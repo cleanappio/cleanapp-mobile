@@ -7,13 +7,12 @@ import {
   NativeModules,
   Platform,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect} from 'react';
 import CreateRootNavigator from './src/index';
 import {StateProvider} from './src/services/State/State';
 import {initialState} from './src/services/State/InitialState';
 import {reducer, actions} from './src/services/State/Reducer';
 import {useStateValue} from './src/services/State/State';
-import ModalActivityIndicator from './src/components/ModalActivityIndicator';
 import AppAlert from './src/components/AppAlert';
 import {theme} from './src/services/Common/theme';
 import {
@@ -21,7 +20,6 @@ import {
   getUserInfo,
   getDataUsageFlag,
   isPrivacyAndTermsAccepted,
-  getCurrencySettings,
   getCacheVault,
   getMapLocation,
   getPlayers,
@@ -31,7 +29,6 @@ import {store} from './src/store/store.js';
 import {getWeb3_} from './src/web3/getWeb3';
 import {Provider} from 'react-redux';
 import {persistStore} from 'redux-persist';
-import {PersistGate} from 'redux-persist/integration/react';
 import i18next from 'i18next';
 import {I18nextProvider} from 'react-i18next';
 import {MenuProvider} from 'react-native-popup-menu';
@@ -40,12 +37,9 @@ import {NftProvider} from 'use-nft';
 import {WalletConnectProvider} from '@walletconnect/react-native-dapp/dist/providers';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import MapboxGL from '@rnmapbox/maps';
-import {PERMISSIONS, RESULTS, check, request} from 'react-native-permissions';
 import Config from 'react-native-config';
-import {getLocation} from './src/functions/geolocation';
-import {getReverseGeocodingData} from './src/services/API/MapboxAPI';
-import {useFocusEffect} from '@react-navigation/native';
 import {FABCameraButton} from './src/components/FABCameraButton';
+import SplashScreen from 'react-native-splash-screen';
 
 getWeb3_.catch((err) => {
   //console.warn('Error in web3 initialization.', err));
@@ -56,6 +50,7 @@ const persistor = persistStore(store);
 
 const RootNavigator = () => {
   useEffect(() => {
+    console.log(new Date().toLocaleString(), '>>> RootNavigator checks start')
     checkLanguage();
     checkStatus();
     checkDataUsageSettings();
@@ -64,6 +59,7 @@ const RootNavigator = () => {
     checkMapLocation();
     checkPlayers();
     checkGuilds();
+    console.log(new Date().toLocaleString(), '<<< RootNavigator checks end')
   }, []);
 
   const [{progressSettings, alertSettings, fabShow}, dispatch] =
@@ -190,7 +186,6 @@ const RootNavigator = () => {
           backgroundColor={theme.APP_COLOR_1}
         />
         <AppAlert {...getAlertSettings()} />
-        <ModalActivityIndicator modalVisible={show} />
         <CreateRootNavigator />
         {fabShow && <FABCameraButton dispatch={dispatch} />}
       </SafeAreaView>
@@ -201,29 +196,30 @@ const RootNavigator = () => {
 const App = () => {
   const fetcher = ['ethers', {ethers, provider: ethers.getDefaultProvider()}];
 
+  useEffect(() => {
+    SplashScreen.hide();
+  })
   return (
     <Provider store={store}>
-      {/* <PersistGate loading={null} persistor={persistor}> */}
-        <NftProvider fetcher={fetcher}>
-          <StateProvider initialState={initialState} reducer={reducer}>
-            <WalletConnectProvider
+      <NftProvider fetcher={fetcher}>
+        <StateProvider initialState={initialState} reducer={reducer}>
+          <WalletConnectProvider
+            // @ts-ignore
+            redirectUrl={
+              Platform.OS === 'web' ? window.location.origin : 'cleanapp://'
+            }
+            storageOptions={{
               // @ts-ignore
-              redirectUrl={
-                Platform.OS === 'web' ? window.location.origin : 'cleanapp://'
-              }
-              storageOptions={{
-                // @ts-ignore
-                asyncStorage: AsyncStorage,
-              }}>
-              <MenuProvider>
-                <I18nextProvider i18n={i18next}>
-                  <RootNavigator />
-                </I18nextProvider>
-              </MenuProvider>
-            </WalletConnectProvider>
-          </StateProvider>
-        </NftProvider>
-      {/* </PersistGate> */}
+              asyncStorage: AsyncStorage,
+            }}>
+            <MenuProvider>
+              <I18nextProvider i18n={i18next}>
+                <RootNavigator />
+              </I18nextProvider>
+            </MenuProvider>
+          </WalletConnectProvider>
+        </StateProvider>
+      </NftProvider>
     </Provider>
   );
 };
