@@ -634,7 +634,7 @@ SPEC CHECKSUMS:
   Charts: ce0768268078eee0336f122c3c4ca248e4e204c5
   DoubleConversion: cf9b38bf0b2d048436d9a82ad2abe1404f11e7de
   FBLazyVector: fa8275d5086566e22a26ddc385ab5772e7f9b1bd
-  FBReactNativeSpec: aadc4b95b99c0eb4f85eec7fe271d1f90c59b6eb
+  FBReactNativeSpec: 5ff80c792a25e0a9b5127e0c41675c0f2533e472
   glog: 73c2498ac6884b13ede40eda8228cb1eee9d9d62
   MapboxCommon: 8592a003eae487508461d452d62cfc5906a9682a
   MapboxCoreMaps: faa14a797417dc32088c98019a3ce72e46cda5cd
