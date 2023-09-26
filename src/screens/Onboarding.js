@@ -445,9 +445,7 @@ export const Onboarding = (props) => {
   };
 
   useEffect(() => {
-    console.log(new Date().toLocaleString(), '>>> initData start');
     initData();
-    console.log(new Date().toLocaleString(), '<<< initData end');
   }, []);
 
   const onWalletConnect = () => {
