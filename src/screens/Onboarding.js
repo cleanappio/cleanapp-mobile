@@ -19,6 +19,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  TouchableWithoutFeedback,
   View,
 } from 'react-native';
 import {ExpandingDot, LiquidLike} from 'react-native-animated-pagination-dots';
@@ -265,7 +266,7 @@ const WelcomeScreen = ({
         autoCapitalize="none"
         returnKeyType="next"
         onSubmitEditing={() => {
-          gotoNextStep();
+          Keyboard.dismiss();
         }}
       />
       <Pressable
@@ -494,37 +495,39 @@ export const Onboarding = (props) => {
   }, [connected]);
 
   return (
-    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'position' : null}>
-      <ImageBackground
-        source={background}
-        resizeMode={'cover'}
-        style={styles.background}>
-        <View style={styles.container}>
-          <View style={styles.buttonBlock}>
-            <IndicatorView step={step} />
-            <Heading
-              title={t('onboarding.welcometocleanapp')}
-              subTitle={
-                step === 'privacy'
-                  ? t('onboarding.configureprivacy')
-                  : t('onboarding.letssetupyourprofile')
-              }
-            />
-            {step === 'name' && (
-              <WelcomeScreen
-                walletAddress={walletAddress}
-                userName={name}
-                setUserName={setUserName}
-                onComplete={onCompleteName}
+    <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'position' : null}>
+        <ImageBackground
+          source={background}
+          resizeMode={'cover'}
+          style={styles.background}>
+          <View style={styles.container}>
+            <View style={styles.buttonBlock}>
+              <IndicatorView step={step} />
+              <Heading
+                title={t('onboarding.welcometocleanapp')}
+                subTitle={
+                  step === 'privacy'
+                    ? t('onboarding.configureprivacy')
+                    : t('onboarding.letssetupyourprofile')
+                }
               />
-            )}
-            {step === 'privacy' && (
-              <PrivacyScreen onComplete={onCompletePrivacy} />
-            )}
+              {step === 'name' && (
+                <WelcomeScreen
+                  walletAddress={walletAddress}
+                  userName={name}
+                  setUserName={setUserName}
+                  onComplete={onCompleteName}
+                />
+              )}
+              {step === 'privacy' && (
+                <PrivacyScreen onComplete={onCompletePrivacy} />
+              )}
+            </View>
           </View>
-        </View>
-      </ImageBackground>
-    </KeyboardAvoidingView>
+        </ImageBackground>
+      </KeyboardAvoidingView>
+    </TouchableWithoutFeedback>
   );
 };
 
