@@ -428,8 +428,10 @@ export const Onboarding = (props) => {
   });
   const [name, setName] = useState('');
   const [connected, setConnected] = useState(false);
+  const [inProgress, setInProgress] = useState(false)
 
   const initData = async () => {
+    setInProgress(true);
     const _address = await createLocalWallet();
     if (_address === null) {
       return;
@@ -443,6 +445,7 @@ export const Onboarding = (props) => {
     }
 
     setUserName(_username);
+    setInProgress(false);
   };
 
   useEffect(() => {
@@ -526,6 +529,7 @@ export const Onboarding = (props) => {
             </View>
           </View>
         </ImageBackground>
+        <InProgress isVisible={inProgress} />
       </KeyboardAvoidingView>
     </TouchableWithoutFeedback>
   );
