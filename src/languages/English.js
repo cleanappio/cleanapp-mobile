@@ -173,31 +173,26 @@ export default {
     },
     privacy: {
       content: `
-      <h1>General Privacy Policy</h1>
-      <p>We at Dataunion care about your privacy and believe your personal information belongs to you. We follow a “privacy-first” and “privacy-by-design” approach and collect minimal data. If you have questions about the Privacy Policy, want to know what data we store about you, or if you want to withdraw your consent to any data processing, let us know by emailing at privacy@dataunion.app</p>
-      <h2>Contact details of the controller</h2>
-      <p>DataUnion Foundation PTE. LTD.<br>
-      160 Robinson Road, #14-04 Singapore Business Federation Centre<br>
-      Singapore (068914)<br>
-      Email: privacy@dataunion.app</p>
-      <h2>What data do we collect?</h2>
-      <p>We do not collect any personal data when you use our website. We do not have any advertising, tracking or analytics on our site. We do not process or collect IP addresses. We do not use cookies.</p>
-      <h2>How do we collect your data, how will we use your data, how do we store your data?</h2>
-      <p>We do not collect, use or store any personal data when you use our website.</p>
-      <h2>What are your data protection rights?</h2>
-      <p>Even though we do not collect, use or store any personal data, we would like to make sure you are fully aware of all your data protection rights. You are entitled to the following:</p>
-      <p>§ The right to access – You have the right to request Dataunion.app for copies of your personal data.</p>
-      <p>§ The right to rectification – You have the right to request that Dataunion.app correct any information you believe is inaccurate. You also have the right to request Dataunion.app to complete the information you believe is incomplete.</p>
-      <p>§ The right to erasure – You have the right to request that Dataunion.app erases your personal data, under certain conditions.</p>
-      <p>§ The right to restrict processing – You have the right to request that Dataunion.app restrict the processing of your personal data, under certain conditions.</p>
-      <p>§ The right to object to processing – You have the right to object to Dataunion.app’s processing of your personal data, under certain conditions.</p>
-      <p>§ The right to data portability – You have the right to request that Dataunion.app transfer the data that we have collected to another organization, or directly to you, under certain conditions.</p>
-      <h2>Changes to our privacy policy</h2>
-      <p>Dataunion.app keeps its privacy policy under regular review and places any updates on this web page. This privacy policy was last updated on 08 February 2021.</p>
-      <h2>How to contact us</h2>
-      <p>If you have any questions about our privacy policy, the data we store about you, or you would like to exercise one of your data protection rights, please email us at: privacy@dataunion.app</p>
-      <h2>How to contact the appropriate authority</h2>
-      <p>Should you wish to report a complaint or if you feel that Dataunion.app has not addressed your concern in a satisfactory manner, you may contact the Information Commissioner’s Office.</p>
+        <h4>Privacy Policy (June 13, 2023)</h4>
+        <p>This Privacy Policy describes how our company collects, uses, and shares your personal information when you visit our website or use our services. We are committed to protecting your privacy and ensuring the security of your personal information. By using our application, you consent to the practices described in this Privacy Policy.</p>
+        <h5>Information We Collect</h5>
+        <p>1.1 Personal Information: We may collect personal information such as your avatar name and a blockchain address when you register in our app. Your avatar name and a blockchain address are securely stored on your device and are sent within your reports to process rewards.</p>
+        <p>1.2 Usage Data: Our app collects information about your location when you use the application, i.e. take a litter or hazard report. </p>
+        <h5>Use of Information</h5>
+        <p>2.1 Personal Information: We use your blockchain address to process game rewards. We send points you won to your blockchain address once a day. After that we remove your avatar and &nbsp;blockchain address from your reports and your reports become anonymized. If you consent to publish reports with your avatar, we will keep your avatar connected to reports.</p>
+        <p>2.2 Usage Data: We use anonymized location data to aggregate report data by certain locations and send alerts to remediators for taking action on your reports.</p>
+        <h5>Information Sharing</h5>
+        <p>3.1 Data Publishing: We may publish your reports with your avatar only if you consent. Otherwise all reports are published anonymously.</p>
+        <p>3.2 Third-Party Service Providers: We may share your personal information with trusted third-party service providers who assist us in operating our website, conducting our business, or providing services to you. These service providers have access to your personal information only to perform tasks on our behalf and are obligated not to disclose or use it for any other purpose.</p>
+        <p>3.3 Legal Compliance: We may disclose your personal information if required by law or in response to valid requests by public authorities (e.g., a court or government agency).</p>
+        <h5>Data Security</h5>
+        <p>We implement reasonable security measures to protect your personal information from unauthorized access, disclosure, alteration, or destruction. However, please note that no method of transmission over the internet or electronic storage is 100% secure, and we cannot guarantee absolute security.</p>
+        <h5>Your Choices</h5>
+        <p>You have the right to access, correct, or delete your personal information. You can also choose to unsubscribe from our marketing communications or adjust your preferences by contacting us at privacy@cleanapp.io.</p>
+        <h5>Updates to this Privacy Policy</h5>
+        <p>We may update this Privacy Policy from time to time to reflect changes in our practices or applicable laws. We will notify you of any significant changes by posting the updated Privacy Policy on our website or by other means of communication.</p>
+        <h5>Contact Us</h5>
+        <p>If you have any questions, concerns, or requests regarding this Privacy Policy or the handling of your personal information, please contact us at <span class="c6">privacy@cleanapp.io.</p>
       `,
     },
 
@@ -393,6 +388,7 @@ export default {
       tocLink: 'terms and conditions',
       skip: 'Skip',
       startCleanup: 'Start Cleanup! (10 KITN)',
+      close: 'Close',
     },
     referral: {
       content:

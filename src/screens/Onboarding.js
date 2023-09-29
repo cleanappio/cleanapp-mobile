@@ -57,6 +57,7 @@ import CheckIcon from '../assets/btn_check.svg';
 import UncheckIcon from '../assets/btn_uncheck.svg';
 import {Row} from '../components/Row';
 import {createLocalWallet, loginUser} from '../functions/walletconnect';
+import { TermsAndConditions } from './TermsAndConditions';
 
 const bottomBlockHeight = 160;
 
@@ -288,7 +289,8 @@ const PrivacyScreen = ({onStartTutorial = () => {}, onComplete = () => {}}) => {
   const {t} = useTranslation();
   const [privacy, setPrivacy] = useState(0);
   const [agreeTOC, setAgreeTOC] = useState(true);
-  const [inProgress, setInProgress] = useState(false)
+  const [inProgress, setInProgress] = useState(false);
+  const [termsVisible, setTermsVisible] = useState(false);
 
   const switchPrivacy = (_privacy) => {
     setPrivacy(_privacy);
@@ -370,7 +372,7 @@ const PrivacyScreen = ({onStartTutorial = () => {}, onComplete = () => {}}) => {
           <Text
             style={styles.tocLink}
             onPress={() => {
-              Linking.openURL('https://cleanapp.io');
+              setTermsVisible(true);
             }}>
             {t('onboarding.tocLink')}
           </Text>
@@ -391,6 +393,7 @@ const PrivacyScreen = ({onStartTutorial = () => {}, onComplete = () => {}}) => {
           {t('onboarding.startCleanup')}
         </Text>
       </Pressable>
+      <TermsAndConditions isVisible={termsVisible} setIsVisible={setTermsVisible} />
       <InProgress isVisible={inProgress} />
     </View>
   );
