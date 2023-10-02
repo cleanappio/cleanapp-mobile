@@ -50,7 +50,6 @@ const persistor = persistStore(store);
 
 const RootNavigator = () => {
   useEffect(() => {
-    console.log(new Date().toLocaleString(), '>>> RootNavigator checks start')
     checkLanguage();
     checkStatus();
     checkDataUsageSettings();
@@ -59,7 +58,6 @@ const RootNavigator = () => {
     checkMapLocation();
     checkPlayers();
     checkGuilds();
-    console.log(new Date().toLocaleString(), '<<< RootNavigator checks end')
   }, []);
 
   const [{progressSettings, alertSettings, fabShow}, dispatch] =
