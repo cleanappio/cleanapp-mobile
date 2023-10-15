@@ -535,9 +535,9 @@ const CacheScreen = (props) => {
           <View style={styles.balanceContainer}>
             <Row>
               <Text style={{ ...styles.txt16, lineHeight: 16 }}>
-                {cacheVault.total || 0} <Text style={styles.txt9}>{'KITN'}</Text>
+                {cacheVault.total || 0} <Text style={styles.txt16}>{'KITN'}</Text>
               </Text>
-              <Text style={styles.txt12}>{'Lifetime XP'}</Text>
+              <Text style={styles.txt16}>{'Lifetime XP'}</Text>
             </Row>
             <Row>
               <Text style={styles.txt9}>
