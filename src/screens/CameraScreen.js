@@ -33,11 +33,11 @@ import RadialGradient from 'react-native-radial-gradient';
 import {fontFamilies} from '../utils/fontFamilies';
 import CheckBigIcon from '../assets/ico_check_big.svg';
 import {BlurView} from '@react-native-community/blur';
-import {ActivityIndicator} from 'react-native';
 import {useTranslation} from 'react-i18next';
-import {uploadImage} from '../services/API/APIManager';
+import {report, uploadImage} from '../services/API/APIManager';
 import {getLocation} from '../functions/geolocation';
 import {getReverseGeocodingData} from '../services/API/MapboxAPI';
+import { getWalletAddress } from '../services/DataManager';
 
 const CameraScreen = (props) => {
   const [hasPermission, setHasPermission] = useState(false);
@@ -194,13 +194,14 @@ const CameraScreen = (props) => {
         }
       }
 
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('latitude', userLocation.latitude);
-      formData.append('longitude', userLocation.longitude);
-      formData.append('locality', locationStr);
-      formData.append('city', cityStr);
-      const res = await uploadImage(formData);
+      var path = file.uri;
+      const imageData = await RNFS.readFile(path, 'base64');
+      const walletAddress = await getWalletAddress();
+      const res = await report(
+        walletAddress,
+        userLocation.latitude,
+        userLocation.longitude,
+        imageData);
       return res;
     }
     return null;

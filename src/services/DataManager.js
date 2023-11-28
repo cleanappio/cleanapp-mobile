@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import i18next from 'i18next';
 
 const KEYS = {
+  PRIVACY_SETTING: 'PRIVACY_SETTING',
   ACCEPTED_PRIVACY_AND_TERMS: 'ACCEPTED_PRIVACY_AND_TERMS',
   USER_INFO: 'USER_INFO',
   LAST_ACTIVITY: 'LAST_ACTIVITY',
@@ -21,6 +22,7 @@ const KEYS = {
   REPORTS: 'REPORTS',
   PLAYERS: 'PLAYERS',
   GUILDS: 'GUILDS',
+  REFERRAL: 'REFERRAL',
 };
 
 export const setUserInfo = async (userDetails) => {
@@ -60,6 +62,27 @@ export const getUserName = async () => {
     return null;
   }
 };
+
+export const setPrivacySetting = async (privacyValue) => {
+  try {
+    await AsyncStorage.setItem(KEYS.PRIVACY_SETTING, String(privacyValue));
+    return true;
+  } catch (err) {
+    return false;
+  }
+};
+
+export const getPrivacySetting = async () => {
+  try {
+    const response = await AsyncStorage.getItem(KEYS.PRIVACY_SETTING);
+    if (response) {
+      return JSON.parse(response);
+    }
+  } catch (err) {
+    return null;
+  }
+}
+
 export const setPrivacyAndTermsAccepted = async () => {
   try {
     await AsyncStorage.setItem(KEYS.ACCEPTED_PRIVACY_AND_TERMS, '1');
@@ -410,3 +433,17 @@ export const setGuilds = async (guilds) => {
     await AsyncStorage.setItem(KEYS.GUILDS, JSON.stringify(guilds));
   } catch (err) {}
 };
+
+export const getReferral = async () => {
+  try {
+    return await AsyncStorage.getItem(KEYS.REFERRAL);
+  } catch (err) {
+    return '';
+  }
+}
+
+export const setReferral = async (referral) => {
+  try {
+    await AsyncStorage.setItem(KEYS.REFERRAL, referral);
+  } catch (err) {}
+}

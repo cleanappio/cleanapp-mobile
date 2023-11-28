@@ -400,7 +400,8 @@ export default {
       referralLink: 'Referral Link',
       tipMsg: '/3 to get another Point',
       msg3: '+3 nCight Points',
-      ShareThis: 'Share this to get nCight points',
+      share: 'Share',
+      close: 'Close',
     },
     classifyImages: {
       pleasewait: 'please wait...',
@@ -488,6 +489,7 @@ export default {
       swap: 'Swap',
       swapyourkitnintodogsor:
         'Swap your kitn into dogs or whatever you want :)',
+      referCleanapp: 'Refer CleanApp',
     },
     createyourguild: {
       createyourguild: 'Create your Guild',

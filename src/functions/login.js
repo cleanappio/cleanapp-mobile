@@ -88,14 +88,10 @@ export const LoginFromWalletConnect = async (
 };
 
 // LoginProc from local wallet
-export const LoginProc = async (web3, referralCode = '') => {
+export const GetOrCreateLocalWallet = async () => {
   try {
-    //register to check account
-    var nounce = '';
-    var signature = '';
     //check wallet
     let walletInfo = await getWalletData();
-    let Web3 = web3.web3Instance;
     var publicKey = '';
     var privateKey = '';
     var seedPhrase = '';
@@ -128,49 +124,12 @@ export const LoginProc = async (web3, referralCode = '') => {
       privateKey = walletInfo.privateKey;
       publicKey = walletInfo.publicKey;
     }
-    let registerResponse = await userRegister(publicKey, referralCode);
-
-    if (registerResponse && registerResponse.username) {
-      await setUserName({userName: registerResponse.username});
-    } else {
-      await setUserName({userName: ''});
-    }
-
-    if (registerResponse && registerResponse.status === 'success') {
-      nounce = registerResponse.nonce;
-    } else {
-      //already registered
-      let nonceResponse = await getNounce(publicKey);
-      nounce = nonceResponse.nonce;
-    }
-
-    // sign nonce
-    let sign = await Web3.eth.accounts.sign(
-      Web3.utils.utf8ToHex(nounce.toString()),
-      privateKey,
-    );
-    if (sign && sign.signature) {
-      signature = sign.signature;
-      let loginResponse = await userLogin(publicKey, signature);
-      if (
-        loginResponse &&
-        loginResponse.access_token &&
-        loginResponse.refresh_token
-      ) {
-        await setWalletType(WALLETTYPE_LOCAL);
-        await setWalletAddress(publicKey);
-        // login success
-        // set Auth Token
-        await setAuthToken({
-          refresh_token: loginResponse.refresh_token,
-          access_token: loginResponse.access_token,
-        });
-        return loginResponse;
-      }
-    }
+    await setWalletType(WALLETTYPE_LOCAL);
+    await setWalletAddress(publicKey);
+    return true;
   } catch (err) {
-    console.error(err)
+    console.error(err);
+    return false;
     // error occur while login
   }
-  return null;
 };

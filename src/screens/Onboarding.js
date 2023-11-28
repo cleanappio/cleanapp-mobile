@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import {CommonActions, StackActions, useNavigation} from '@react-navigation/native';
+import {StackActions} from '@react-navigation/native';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {
@@ -7,48 +7,37 @@ import {
   Alert,
   Animated,
   Dimensions,
-  Image,
   ImageBackground,
   Keyboard,
   KeyboardAvoidingView,
-  Linking,
-  Modal,
   Platform,
   Pressable,
-  StatusBar,
   StyleSheet,
   Text,
   TextInput,
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
-import {ExpandingDot, LiquidLike} from 'react-native-animated-pagination-dots';
-import {FlatList, ScrollView} from 'react-native-gesture-handler';
-import LinearGradient from 'react-native-linear-gradient';
 import {useSelector} from 'react-redux';
 import Ripple from '../components/Ripple';
-import {LoginFromWalletConnect, LoginProc} from '../functions/login';
+import {LoginFromWalletConnect, GetOrCreateLocalWallet} from '../functions/login';
 import {
-  changeUserName,
-  requestUserName,
-  saveUsageFlag,
-  setDataSharingOption,
-  startTutorial,
+  updateOrCreateUser,
+  updatePrivacyAndTOC,
 } from '../services/API/APIManager';
 import {theme} from '../services/Common/theme';
 import {
   getUserName,
   getWalletAddress,
-  getWalletType,
   setFirstRun,
-  setUserInfo,
+  setPrivacyAndTermsAccepted,
+  setPrivacySetting,
   setUserName,
+  getReferral,
+  setReferral,
 } from '../services/DataManager';
-import {actions} from '../services/State/Reducer';
-import {useStateValue} from '../services/State/State';
 import {fontFamilies} from '../utils/fontFamilies';
 import {useWalletConnect} from '@walletconnect/react-native-dapp';
-import Swiper from 'react-native-swiper';
 import { InProgress } from '../components/InProgress';
 
 const background = require('../assets/onboard_background.jpg');
@@ -56,10 +45,9 @@ const background = require('../assets/onboard_background.jpg');
 import CheckIcon from '../assets/btn_check.svg';
 import UncheckIcon from '../assets/btn_uncheck.svg';
 import {Row} from '../components/Row';
-import {createLocalWallet, loginUser} from '../functions/walletconnect';
+import { createLocalWallet } from '../functions/walletconnect';
 import { TermsAndConditions } from './TermsAndConditions';
-
-const bottomBlockHeight = 160;
+import { retrieveReferral } from '../functions/referral';
 
 const steps = [/* 'walletSelect', */ 'name', 'privacy'];
 
@@ -162,9 +150,9 @@ const WelcomeScreen = ({
 
   const gotoNextStep = async () => {
     setInProgress(true);
-    const loginRet = await LoginProc(web3, referralCode);
+    const walletRet = await GetOrCreateLocalWallet();
 
-    if (loginRet) {
+    if (walletRet) {
       // check name
       const setNameRet = await setUserNameProc();
       if (setNameRet) {
@@ -185,23 +173,20 @@ const WelcomeScreen = ({
       return true;
     }
 
-    const data = await changeUserName(walletAddress, name);
-    if (data && data.username) {
-      if (data.username === 'user name already exists') {
-        // same name exists
+    data = await updateOrCreateUser(walletAddress, name, referralCode);
+    if (data) {
+      if (data.ok) {
+        setUserName({userName: name});
+      } else {
         Alert.alert(
           t('onboarding.Error'),
-          t('onboarding.ErrSameUsernameExists'),
+          String(data.error),
           [{text: t('onboarding.Ok'), type: 'cancel'}],
         );
         return false;
-      } else {
-        // success
-        // set username to local storage
-        setUserName({userName: data.username});
       }
     } else {
-      // same name exists
+      // Any other error
       Alert.alert(
         t('onboarding.Error'),
         t('onboarding.ErrWhileSettingUserName'),
@@ -215,6 +200,14 @@ const WelcomeScreen = ({
   const isInputCorrect = () => {
     return name === ''
   }
+
+  useEffect(async () => {
+    setInProgress(true);
+    const referral = await retrieveReferral();
+    await setReferral(referral);
+    setReferralCode(referral);
+    setInProgress(false);
+  }, []);
 
   return (
     <View style={styles.slideBlock}>
@@ -294,9 +287,6 @@ const PrivacyScreen = ({onStartTutorial = () => {}, onComplete = () => {}}) => {
 
   const switchPrivacy = (_privacy) => {
     setPrivacy(_privacy);
-    setDataSharingOption(
-      _privacy === 0 ? 'share_data_live' : 'not_share_data_live',
-    );
   };
 
   const switchAgreeTOC = (agree) => {
@@ -304,20 +294,19 @@ const PrivacyScreen = ({onStartTutorial = () => {}, onComplete = () => {}}) => {
   };
 
   const doCompleteAction = async () => {
-    await setDataSharingOption(
+    const walletAddress = await getWalletAddress();
+    await setPrivacySetting(privacy);
+    await setPrivacyAndTermsAccepted(agreeTOC);
+    await updatePrivacyAndTOC(
+      walletAddress,
       privacy === 0 ? 'share_data_live' : 'not_share_data_live',
+      agreeTOC ? 'ACCEPTED' : 'REJECTED',
     );
-    await saveUsageFlag(agreeTOC ? {flag: 'ACCEPTED'} : {flag: 'REJECTED'});
     onComplete();
-  };
-
-  const onPressNext = () => {
-    doCompleteAction();
   };
 
   const onPressStartCleanup = async () => {
     setInProgress(true);
-    await startTutorial();
     await doCompleteAction();
     setInProgress(false);
   };
@@ -401,13 +390,9 @@ const PrivacyScreen = ({onStartTutorial = () => {}, onComplete = () => {}}) => {
 
 export const Onboarding = (props) => {
   const web3 = useSelector((state) => state.web3);
-  const [loading, setLoading] = useState(false);
-  const [cwLoading, setCWLoading] = useState(false);
-  const [wcLoading, setWCLoading] = useState(false);
 
   const {t} = useTranslation();
   const {navigation} = props;
-  const [, dispatch] = useStateValue();
   const connector = useWalletConnect();
 
   /**
@@ -418,7 +403,6 @@ export const Onboarding = (props) => {
    * 5. end
    */
   const [step, setStep] = useState('name'); // name | privacy
-  const [stepIndex, setStepIndex] = useState(0);
   const [walletAddress, setWalletAddress] = useState(null);
 
   const scrollX = React.useRef(new Animated.Value(0)).current;
@@ -442,12 +426,6 @@ export const Onboarding = (props) => {
 
     setWalletAddress(_address);
 
-    const _username = await requestUserName(_address);
-    if (_username === null) {
-      return;
-    }
-
-    setUserName(_username);
     setInProgress(false);
   };
 

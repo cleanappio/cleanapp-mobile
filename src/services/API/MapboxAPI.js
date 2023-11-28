@@ -9,17 +9,20 @@ export const getReverseGeocodingData = async (
     language: 'en',
     limit: 1,
   });
-  let response = await fetch(
-    isReverse
-      ? `https://api.mapbox.com/geocoding/v5/mapbox.places/${coordinates[0]},${coordinates[1]}.json?` +
-          searchParams
-      : `https://api.mapbox.com/search/v1/reverse/${coordinates[0]},${coordinates[1]}?` +
-          searchParams,
-  );
-  let result = await response.json();
-  let resData = isReverse
-    ? result?.features[0]?.text
-    : result?.features[0]?.properties?.feature_name;
+  const url = isReverse
+    ? `https://api.mapbox.com/geocoding/v5/mapbox.places/${coordinates[0]},${coordinates[1]}.json?` +
+    searchParams
+    : `https://api.mapbox.com/search/v1/reverse/${coordinates[0]},${coordinates[1]}?` +
+    searchParams;
+  console.log('==============');
+  console.log('==============');
+  console.log('==============');
+  console.log(url);
+  console.log('==============');
+  console.log('==============');
+  console.log('==============');
+  const response = await fetch(url);
+  const result = await response.json();
   return result;
 };
 
@@ -30,34 +33,48 @@ export const getCoordinatesFromLocation = async (location) => {
     limit: 1,
   });
   try {
-    const response = await fetch(
-      `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
-        location,
-      )}.json?` + searchParams,
-    );
+    const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
+      location,
+    )}.json?` + searchParams;
+    console.log('==============');
+    console.log('==============');
+    console.log('==============');
+    console.log(url);
+    console.log('==============');
+    console.log('==============');
+    console.log('==============');
+    const response = await fetch(url);
 
     if (response) {
-      const {features} = await response.json();
+      const { features } = await response.json();
       if (features.length > 0) {
         const [longitude, latitude] = features[0].center;
         return [longitude, latitude];
       }
     }
-  } catch (err) {}
+  } catch (err) { }
   return null;
 };
 
 export const getMapSearchItems = async (text) => {
   try {
-    let response = await fetch(
+    const url =
       `https://api.mapbox.com/search/v1/suggest/${text}?` +
-        new URLSearchParams({
-          access_token: Config.MAPBOX_ACCESS_TOKEN,
-          session_token: '',
-          language: 'en',
-        }),
-    );
-    const {suggestions} = await response.json();
+      new URLSearchParams({
+        access_token: Config.MAPBOX_ACCESS_TOKEN,
+        session_token: '',
+        language: 'en',
+      });
+    console.log('==============');
+    console.log('==============');
+    console.log('==============');
+    console.log(url);
+    console.log('==============');
+    console.log('==============');
+    console.log('==============');
+
+    let response = await fetch(url);
+    const { suggestions } = await response.json();
     const result = suggestions.map((ele) => {
       return ele.feature_name;
     });
@@ -78,12 +95,21 @@ export const getMapSearchItem = async (item) => {
       },
       body: JSON.stringify(item?.action?.body),
     };
+    const url = 'https://api.mapbox.com/search/v1/retrieve?' +
+      new URLSearchParams({
+        access_token: Config.MAPBOX_ACCESS_TOKEN,
+        session_token: '',
+      });
+    console.log('==============');
+    console.log('==============');
+    console.log('==============');
+    console.log(url);
+    console.log('==============');
+    console.log('==============');
+    console.log('==============');
+
     let response = await fetch(
-      'https://api.mapbox.com/search/v1/retrieve?' +
-        new URLSearchParams({
-          access_token: Config.MAPBOX_ACCESS_TOKEN,
-          session_token: '',
-        }),
+      url,
       options,
     );
     let result = await response.json();

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, View, Text, Linking, ToastAndroid, Alert, Platform } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View, Text, ToastAndroid, Alert, Platform } from 'react-native';
 import { fontFamilies } from '../utils/fontFamilies';
 import { theme } from '../services/Common/theme';
 import Ripple from '../components/Ripple';
@@ -36,23 +36,22 @@ import {
 import { useTranslation } from 'react-i18next';
 import {
   getDataSharingOption,
-  getReferralId,
   get_claim_time,
   get_reward_status,
   setDataSharingOption,
 } from '../services/API/APIManager';
 import { useStateValue } from '../services/State/State';
 import { actions } from '../services/State/Reducer';
+import { ReferralSharing } from './ReferralSharing';
+import { generateReferralUrl } from '../functions/referral';
 
 const CacheScreen = (props) => {
   const [privacyOpened, setPrivacyOpened] = useState(false);
   const [cacheSettingOpened, setCacheSettingOpened] = useState(false);
   const [walletAddress, setWalletAddress] = useState('');
   const [walletInfo, setWalletInfo] = useState(null);
-  const [referralId, setReferralId] = useState('');
-  const [referralCode, setReferralCode] = useState(
-    'cleanapp.io/referral#id:7239G?03$',
-  );
+  const [isReferralVisible, setIsReferralVisible] = useState(false);
+  const [referralUrl, setReferralUrl] = useState('');
 
   const [rewardStatusList, setRewardStatusList] = useState([]);
   const [shareDataStatus, setShareDataStatus] = useState('share_data_live');
@@ -109,22 +108,6 @@ const CacheScreen = (props) => {
     setCacheSettingOpened(true);
   };
 
-  const onShare = () => {
-    let shareImage = {
-      message: referralCode,
-      subject: t('cachescreen.Sharingmyreferralcode'), //string
-      title: t('cachescreen.Sharingmyreferralcode'), //string
-    };
-    Share.open(shareImage)
-      .then((res) => { })
-      .catch((err) => { });
-  };
-
-  const onCopy = () => {
-    Clipboard.setString(referralCode);
-    Toast.show(t('cachescreen.copiedtoclipboard'), Toast.SHORT);
-  };
-
   const initWallet = async () => {
     const walletData = await getWalletData();
     setWalletAddress(walletData.publicKey);
@@ -133,9 +116,9 @@ const CacheScreen = (props) => {
 
   useEffect(() => {
     initWallet();
-    getReferralId().then((resp) => {
-      if (resp && resp.result) {
-        setReferralCode(`cleanapp.io/referral#id:${resp.result.referral_id}`);
+    generateReferralUrl().then((url) => {
+      if (url) {
+        setReferralUrl(url);
       }
     });
 
@@ -634,13 +617,15 @@ const CacheScreen = (props) => {
             </View>
             <View style={{ ...styles.blankCard, marginTop: 8 }}>
               <View style={styles.row}>
-                <Text style={styles.txt12italic}>{referralCode}</Text>
-                <Ripple style={styles.btnBlack} onPress={onShare}>
-                  <ShareIcon />
-                </Ripple>
-                <Ripple style={styles.btnBlack} onPress={onCopy}>
-                  <CopyIcon />
-                </Ripple>
+                <Pressable
+                  style={styles.btnBlue}
+                  onPress={() => {
+                    setIsReferralVisible(true);
+                  }}>
+                  <Text style={styles.btnBlueText}>
+                    {t('cachescreen.referCleanapp')}
+                  </Text>
+                </Pressable>
               </View>
             </View>
           </View>
@@ -673,6 +658,11 @@ const CacheScreen = (props) => {
         onClose={() => {
           setCacheSettingOpened(false);
         }}
+      />
+      <ReferralSharing
+        isVisible={isReferralVisible}
+        setIsVisible={setIsReferralVisible}
+        refUrl={referralUrl}
       />
     </>
   );
@@ -855,7 +845,6 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     fontWeight: '500',
     color: theme.COLORS.TEXT_GREY,
-
   },
   txt24: {
     fontFamily: fontFamilies.Default,

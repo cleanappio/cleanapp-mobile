@@ -176,6 +176,9 @@ const MapView = ({onMarkerPress = () => {}, selectedMarker = null}) => {
   };
 
   const onRegionDidChange = async (e) => {
+    console.log(e);
+    console.log(e.properties.visibleBounds[0]);
+    console.log(e.properties.visibleBounds[1]);
     if (e.geometry && e.geometry.coordinates) {
       const latitude = e.geometry.coordinates[1];
       const longitude = e.geometry.coordinates[0];
