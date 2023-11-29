@@ -29,7 +29,7 @@ export const ReferralSharing = ({ isVisible, setIsVisible, refUrl }) => {
         visible={isVisible}
         statusBarTranslucent={true}
       >
-        <SafeAreaView style={{ flex: 0.60 }} />
+        <SafeAreaView style={{ backgroundColor: theme.COLORS.BLACK_OPACITY_67P, flex: 0.60 }} />
         <SafeAreaView style={{ ...styles.centeredView, ...styles.frameView, flex: 0.40 }}>
           <View style={{ ...styles.row, marginTop: 6 }}>
             <QRCode
@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   frameView: {
-    backgroundColor: theme.COLORS.BLACK,
+    backgroundColor: theme.APP_COLOR_1,
   },
   btnBlue: {
     backgroundColor: theme.COLORS.BTN_BG_BLUE,
@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
     color: theme.COLORS.WHITE,
   },
   btnBlack: {
-    backgroundColor: theme.APP_COLOR_1,
+    backgroundColor: theme.COLORS.BG,
     borderRadius: 8,
     paddingVertical: 8,
   },
