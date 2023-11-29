@@ -591,9 +591,9 @@ const CacheScreen = (props) => {
                       : t('cachescreen.Nodatacollectedwhileflagging')}
                   </Text>
                 </View>
-                <Ripple style={styles.btnBlack} onPress={editPrivacy}>
+                <Pressable style={styles.btnBlack} onPress={editPrivacy}>
                   <Text style={styles.txt16bold}>{t('cachescreen.edit')}</Text>
-                </Ripple>
+                </Pressable>
               </View>
             </View>
             <View style={{ ...styles.greyCard, marginTop: 8 }}>
@@ -601,9 +601,9 @@ const CacheScreen = (props) => {
                 <Text style={styles.txt16bold}>
                   {t('cachescreen.cachesettings')}
                 </Text>
-                <Ripple onPress={openWalletSettings}>
+                <Pressable onPress={openWalletSettings}>
                   <WalletSettingsIcon />
-                </Ripple>
+                </Pressable>
               </View>
             </View>
           </View>
@@ -616,7 +616,7 @@ const CacheScreen = (props) => {
               <View style={styles.border} />
             </View>
             <View style={{ ...styles.blankCard, marginTop: 8 }}>
-              <View style={styles.row}>
+              <View style={styles.oneButtonRow}>
                 <Pressable
                   style={styles.btnBlue}
                   onPress={() => {
@@ -688,6 +688,11 @@ const styles = StyleSheet.create({
     backgroundColor: theme.COLORS.PANEL_BG,
   },
   blockHeader: {},
+  oneButtonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'stretch',
+  },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -747,7 +752,21 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: theme.COLORS.BORDER_GREY,
   },
-
+  btnBlue: {
+    backgroundColor: theme.COLORS.BTN_BG_BLUE,
+    borderRadius: 8,
+    paddingVertical: 14,
+    marginTop: 8,
+    width: '90%',
+  },
+  btnBlueText: {
+    textAlign: 'center',
+    fontFamily: fontFamilies.Default,
+    fontWeight: '500',
+    fontSize: 16,
+    lineHeight: 24,
+    color: theme.COLORS.WHITE,
+  },
   btnBlack: {
     backgroundColor: theme.APP_COLOR_1,
     paddingVertical: 8,

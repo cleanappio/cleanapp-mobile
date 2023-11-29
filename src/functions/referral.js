@@ -14,7 +14,6 @@ export const retrieveReferral = async () => {
 
 export const generateReferralUrl = async() => {
   const publicAddress = await getWalletAddress();
-  console.log(publicAddress);
   const response = await generateReferral(publicAddress);
   if (!response.ok) {
     return null;

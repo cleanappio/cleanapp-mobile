@@ -10,7 +10,6 @@ import Share from 'react-native-share';
 export const ReferralSharing = ({ isVisible, setIsVisible, refUrl }) => {
   const { t } = useTranslation();
 
-  console.log(refUrl);
   const onShare = () => {
     let shareImage = {
       message: refUrl,
@@ -28,28 +27,40 @@ export const ReferralSharing = ({ isVisible, setIsVisible, refUrl }) => {
         animationType="slide"
         transparent={true}
         visible={isVisible}
+        statusBarTranslucent={true}
       >
-        <SafeAreaView style={{ ...styles.centeredView, ...styles.frameView }}>
-          <QRCode
-            value={refUrl}
-          />
-          <View style={{ ...styles.blankCard, marginTop: 8 }}>
-            <View style={styles.row}>
-              <Text style={styles.txt12italic}>{refUrl}</Text>
-              <Pressable style={styles.btnBlack} onPress={onShare}>
-                <Text style={styles.txt12}>{ t('referral.share') }</Text>
-              </Pressable>
-            </View>
+        <SafeAreaView style={{ flex: 0.60 }} />
+        <SafeAreaView style={{ ...styles.centeredView, ...styles.frameView, flex: 0.40 }}>
+          <View style={{ ...styles.row, marginTop: 6 }}>
+            <QRCode
+              value={refUrl}
+              color={theme.COLORS.BLACK}
+              backgroundColor={theme.COLORS.WHITE}
+              quietZone={3}
+            />
           </View>
-          <Pressable
-            style={styles.btnBlue}
-            onPress={() => {
-              setIsVisible(false);
-            }}>
-            <Text style={styles.btnBlueText}>
-              {t('referral.close')}
-            </Text>
-          </Pressable>
+          <View style={{ ...styles.row, marginTop: 6 }}>
+            <Text style={styles.txt14}>{refUrl}</Text>
+          </View>
+          <View style={{ ...styles.row, marginTop: 18 }}>
+            <Pressable
+              style={{ ...styles.btnBlue, width: '80%' }}
+              onPress={onShare}
+            >
+              <Text style={styles.btnBlueText}>{t('referral.share')}</Text>
+            </Pressable>
+          </View>
+          <View style={{ ...styles.row, marginTop: 14 }}>
+            <Pressable
+              style={{ ...styles.btnBlack, width: '80%' }}
+              onPress={() => {
+                setIsVisible(false);
+              }}>
+              <Text style={styles.btnBlueText}>
+                {t('referral.close')}
+              </Text>
+            </Pressable>
+          </View>
         </SafeAreaView>
       </Modal>
     </View>
@@ -57,14 +68,9 @@ export const ReferralSharing = ({ isVisible, setIsVisible, refUrl }) => {
 }
 
 const styles = StyleSheet.create({
-  blankCard: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
-  },
   row: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'space-around',
     alignItems: 'center',
   },
   centeredView: {
@@ -73,14 +79,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   frameView: {
-    backgroundColor: theme.APP_COLOR_2,
+    backgroundColor: theme.COLORS.BLACK,
   },
   btnBlue: {
     backgroundColor: theme.COLORS.BTN_BG_BLUE,
     borderRadius: 8,
-    paddingVertical: 14,
-    marginTop: 30,
-    width: '90%',
+    paddingVertical: 8,
   },
   btnBlueText: {
     textAlign: 'center',
@@ -92,72 +96,14 @@ const styles = StyleSheet.create({
   },
   btnBlack: {
     backgroundColor: theme.APP_COLOR_1,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
     borderRadius: 8,
+    paddingVertical: 8,
   },
-  txt12: {
+  txt14: {
     fontFamily: fontFamilies.Default,
-    fontSize: 12,
-    lineHeight: 15,
+    fontSize: 14,
+    lineHeight: 18,
     fontWeight: '400',
     color: theme.COLORS.TEXT_GREY,
   },
-  txt12bold: {
-    fontFamily: fontFamilies.Default,
-    fontSize: 12,
-    lineHeight: 15,
-    fontWeight: '600',
-    color: theme.COLORS.TEXT_GREY,
-  },
-  txt12italic: {
-    fontFamily: fontFamilies.DefaultItalic,
-    fontSize: 12,
-    lineHeight: 15,
-    fontWeight: '400',
-    color: theme.COLORS.TEXT_GREY,
-  },
-  txt12thin: {
-    fontFamily: fontFamilies.Default,
-    fontSize: 12,
-    lineHeight: 15,
-    fontWeight: '300',
-    color: theme.COLORS.TEXT_GREY,
-  },
-  txt12thinitalic: {
-    fontFamily: fontFamilies.DefaultItalic,
-    fontSize: 12,
-    lineHeight: 15,
-    fontWeight: '300',
-    color: theme.COLORS.TEXT_GREY,
-  },
-  txt16: {
-    fontFamily: fontFamilies.Default,
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: '400',
-    color: theme.COLORS.TEXT_GREY,
-  },
-  txt16bold: {
-    fontFamily: fontFamilies.Default,
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: '500',
-    color: theme.COLORS.TEXT_GREY,
-  },
-  txt18: {
-    fontFamily: fontFamilies.Default,
-    fontSize: 18,
-    lineHeight: 24,
-    fontWeight: '500',
-    color: theme.COLORS.TEXT_GREY,
-
-  },
-  txt24: {
-    fontFamily: fontFamilies.Default,
-    fontSize: 24,
-    lineHeight: 30,
-    fontWeight: '400',
-    color: theme.COLORS.TEXT_GREY,
-  }
 })

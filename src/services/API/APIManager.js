@@ -12,11 +12,6 @@ import { settings as s } from './Settings';
 // === API v.2
 
 export const updateOrCreateUser = async (public_address, avatar, referral) => {
-  console.log('+++++++++++++++++++');
-  console.log('+++++++++++++++++++');
-  console.log('updateOrCreateUser', public_address, avatar, referral);
-  console.log('+++++++++++++++++++');
-  console.log('+++++++++++++++++++');
   try {
     const data = {
       version: '2.0',
@@ -158,7 +153,6 @@ export const generateReferral = async(public_address) => {
       version: '2.0',
       id: public_address,
     }
-    console.log(data);
     const response = await postJSONData(s.v2api.generateReferral, data);
     const ret = {
       ok: response.ok
@@ -182,7 +176,6 @@ export const generateReferral = async(public_address) => {
 // === Deprecated API v.1
 
 export const getImage = async (imageId) => {
-  console.log('========= getImage');
   try {
     const response = await getFile(
       s.taxonomy.getImage.replace('$[image_id]', imageId),
@@ -194,7 +187,6 @@ export const getImage = async (imageId) => {
 };
 
 export const getLabelImage = async (label) => {
-  console.log('========= getLabelImage');
   try {
     const response = await getFile(
       s.taxonomy.getLabelImage.replace('$[label_id]', label),
@@ -206,7 +198,6 @@ export const getLabelImage = async (label) => {
 };
 
 export const storeUserResponse = async (data) => {
-  console.log('========= storeUserResponse');
   try {
     const response = await postUserData(s.taxonomy.storeUserResponse, data);
     return response;
@@ -216,7 +207,6 @@ export const storeUserResponse = async (data) => {
 };
 
 export const userLogin = async (public_address, signature) => {
-  console.log('========= userLogin');
   try {
     let data = {
       public_address: public_address,
@@ -231,7 +221,6 @@ export const userLogin = async (public_address, signature) => {
 };
 
 export const userRegister = async (public_address, referral_id = '') => {
-  console.log('========= userRegister');
   try {
     let data = {
       public_address: public_address,
@@ -252,7 +241,6 @@ export const userRegister = async (public_address, referral_id = '') => {
   }
 };
 export const requestUserName = async (public_address) => {
-  console.log('========= requestUserName');
   try {
     let data = {public_address: public_address};
     const username = await postData(s.auth.user_name, data);
@@ -264,7 +252,6 @@ export const requestUserName = async (public_address) => {
 };
 
 export const changeUserName = async (public_address, name) => {
-  console.log('========= changeUserName');
   try {
     let data = {public_address: public_address, username: name};
     const response = await postData(s.auth.change_user_name, data);
@@ -275,7 +262,6 @@ export const changeUserName = async (public_address, name) => {
 };
 
 export const userLogout = async () => {
-  console.log('========= userLogout');
   try {
     const response = await getUserData(s.auth.logout);
     return response;
@@ -299,7 +285,6 @@ export const userLogout = async () => {
  */
 //{"page":1,"page_size":100,"result":[{"descriptions":[],"image_id":"df970b07070d3800","tag_data":["meme bounty"]},{"descriptions":[],"image_id":"ff0f004440fffb04","tag_data":["nft+art bounty"]},{"descriptions":[],"image_id":"e0f0f0e0f8fcfedf","tag_data":["nft+art bounty"]},{"descriptions":[],"image_id":"20f8f86cf8f86600","tag_data":["nft+art bounty"]},}]}
 export const queryMetadata = async (data) => {
-  console.log('========= queryMetadata');
   //const data = {page: page, status: status, fields: fields, type: type};
   //check if tags empty, then what result?
 
@@ -312,7 +297,6 @@ export const queryMetadata = async (data) => {
 };
 
 export const getImageById = async (imageId) => {
-  console.log('========= getImageById');
   try {
     const response = await getFile(
       s.metadata.getImageById.replace('$[image_id]', imageId),
@@ -324,12 +308,10 @@ export const getImageById = async (imageId) => {
 };
 
 export const getNounce = async (public_address) => {
-  console.log('========= getNonse');
   try {
     const response = await getData(
       s.auth.get_nounce.replace('$[public_address]', public_address),
     );
-    console.log(response);
     return response;
   } catch (err) {
     return null;
@@ -348,7 +330,6 @@ export const verifyImage = async (data) => {
   //   annotation: annotation,
   //   verification: verification,
   // };
-  console.log('========= verifyImage');
   try {
     const response = await postUserData(s.metadata.verifyImage, data);
     return response;
@@ -358,7 +339,6 @@ export const verifyImage = async (data) => {
 };
 
 export const uploadImage = async (data) => {
-  console.log('========= uploadImage');
   try {
     const response = await postUserData(s.taxonomy.uploadImage, data, true);
     return response;
@@ -368,9 +348,7 @@ export const uploadImage = async (data) => {
 };
 
 export const annotateImage = async (data) => {
-  console.log('========= annotateImage');
   try {
-    console.log(data);
     const response = await postUserData(s.taxonomy.annotateImage, data);
     return response;
   } catch (err) {
@@ -383,7 +361,6 @@ export const annotateImage = async (data) => {
  * {photos: [{photo_id: "fffff1000010787c"}]}
  */
 export const reportImages = async (photos) => {
-  console.log('========= reportImages');
   const data = {photos: [...photos]};
   try {
     const response = await postUserData(s.metadata.reportImages, data);
@@ -401,7 +378,6 @@ export const reportImages = async (photos) => {
  * }
  */
 export const annotate = async (data) => {
-  console.log('========= annotate');
   try {
     const response = await postUserData(s.metadata.annotate, data);
     return response;
@@ -410,7 +386,6 @@ export const annotate = async (data) => {
 };
 
 export const saveUsageFlag = async (data) => {
-  console.log('========= saveUserFlag');
   try {
     const response = await postUserData(s.auth.usageFlag, data);
     return response;
@@ -420,7 +395,6 @@ export const saveUsageFlag = async (data) => {
 };
 
 export const getRomanNumberStats = async () => {
-  console.log('========= getRomanNumberStats');
   try {
     const response = await getUserData(s.taxonomy.getRomanNumberStats);
     return response;
@@ -430,7 +404,6 @@ export const getRomanNumberStats = async () => {
 };
 
 export const getReferralId = async () => {
-  console.log('========= getReferralId');
   try {
     const response = await getUserData(s.user.referral_id);
     return response;
@@ -440,7 +413,6 @@ export const getReferralId = async () => {
 };
 
 export const getUserRanks = async () => {
-  console.log('========= getUserRanks');
   try {
     const response = await getUserData(s.queryView.userRank);
     return response;
@@ -454,7 +426,6 @@ export const createGuild = async ({
   description = '',
   invited_users = [],
 }) => {
-  console.log('========= sreateGuild');
   const req = new FormData();
   req.append('file', profile_image);
   req.append('name', name);
@@ -469,7 +440,6 @@ export const createGuild = async ({
 };
 
 export const joinGuild = async ({guild_id = ''}) => {
-  console.log('========= jopinGuild');
   try {
     const response = await getUserData(
       s.guild.joinGuild.replace('$[GUILD_ID]', guild_id),
@@ -480,7 +450,6 @@ export const joinGuild = async ({guild_id = ''}) => {
 };
 
 export const leaveGuild = async ({guild_id = ''}) => {
-  console.log('========= leaveGuild');
   try {
     const response = await getUserData(
       s.guild.leaveGuild.replace('$[GUILD_ID]', guild_id),
@@ -491,7 +460,6 @@ export const leaveGuild = async ({guild_id = ''}) => {
 };
 
 export const getGuildList = async () => {
-  console.log('========= getGuildList');
   try {
     const response = await getUserData(s.guild.getGuildList);
     return response;
@@ -500,7 +468,6 @@ export const getGuildList = async () => {
 };
 
 export const getUserRank = async () => {
-  console.log('========= getUserRank');
   try {
     const response = await getUserData(s.guild.userrank);
     return response;
@@ -509,7 +476,6 @@ export const getUserRank = async () => {
 };
 
 export const setDataSharingOption = async (option) => {
-  console.log('========= setDataSharingOption');
   try {
     const response = await postUserData(s.metadata.shareDataLive, {
       data_sharing_option: option,
@@ -520,7 +486,6 @@ export const setDataSharingOption = async (option) => {
 };
 
 export const getDataSharingOption = async () => {
-  console.log('========= getDatSharingOption');
   try {
     const response = await getUserData(s.metadata.shareDataLive);
     return response;
@@ -529,7 +494,6 @@ export const getDataSharingOption = async () => {
 };
 
 export const startTutorial = async () => {
-  console.log('========= startTutorial');
   try {
     const response = await getUserData(s.other.startTutorial);
     return response;
@@ -542,7 +506,6 @@ export const searchImagesByLocation = async ({
   longitude,
   range = 1,
 }) => {
-  console.log('========= searchImageByLocation');
   try {
     const response = await getUserData(
       s.metadata.searchImagesByLocation
@@ -557,7 +520,6 @@ export const searchImagesByLocation = async ({
 };
 
 export const getTeamStatus = async () => {
-  console.log('========= getTeamStatus');
   try {
     const response = await getUserData(s.other.team_status);
     return response;
@@ -566,7 +528,6 @@ export const getTeamStatus = async () => {
 };
 
 export const getGuildImage = async (guildId) => {
-  console.log('========= getGuildImage');
   try {
     const response = await getFile(
       s.guild.getGuildImage.replace('$[GUILD_ID]', guildId),
@@ -577,7 +538,6 @@ export const getGuildImage = async (guildId) => {
 };
 
 export const get_reward_status = async () => {
-  console.log('========= get_reward_status');
   try {
     const response = await getUserData(s.reward.get_reward_status);
     return response;
@@ -586,7 +546,6 @@ export const get_reward_status = async () => {
 };
 
 export const get_claim_time = async () => {
-  console.log('========= get_claim_time');
   try {
     const response = await getUserData(s.reward.next_claim_time);
     return response;
@@ -595,7 +554,6 @@ export const get_claim_time = async () => {
 };
 
 export const update_annotation = async (data) => {
-  console.log('========= update_annotation');
   try {
     const response = await postUserData(
       s.taxonomy.updateAnnotation,
