@@ -35,6 +35,7 @@ import {
   setUserName,
   getReferral,
   setReferral,
+  setTeam,
 } from '../services/DataManager';
 import {fontFamilies} from '../utils/fontFamilies';
 import {useWalletConnect} from '@walletconnect/react-native-dapp';
@@ -177,6 +178,7 @@ const WelcomeScreen = ({
     if (data) {
       if (data.ok) {
         setUserName({userName: name});
+        setTeam(data.team);
       } else {
         Alert.alert(
           t('onboarding.Error'),

@@ -9,6 +9,8 @@ export const settings = {
     getMap: 'get_map',
     readReferral: 'read_referral',
     generateReferral: 'generate_referral',
+    getTeams: 'get_teams',
+    getTopScores: 'get_top_scores',
   },
 
   taxonomy: {

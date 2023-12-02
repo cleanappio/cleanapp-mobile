@@ -76,7 +76,10 @@ export const report = async (public_address, latitude, longitude, image) => {
     const ret = {
       ok: response.ok
     }
-    if (!response.ok) {
+    if (response.ok) {
+      ret.team = await response.json()
+        .then((resp) => resp.team);
+    } else {
       if (response.error) {
         ret.error = response.error;
       } else if (response.status) {
@@ -160,6 +163,59 @@ export const generateReferral = async(public_address) => {
     if (response.ok) {
       ret.refid = await response.json()
         .then((response) => response.refvalue);
+    } else {
+      if (response.error) {
+        ret.error = response.error;
+      } else if (response.status) {
+        ret.error = response.statusText;
+      }
+    }
+    return ret
+  } catch (err) {
+    return null;
+  }
+}
+
+export const getTeams = async(public_address) => {
+  try {
+    const data = {
+      version: '2.0',
+      id: public_address,
+    }
+    const response = await postJSONData(s.v2api.getTeams, data);
+    const ret = {
+      ok: response.ok
+    }
+    if (response.ok) {
+      resp_json = await response.json();
+      ret.green = resp_json.green;
+      ret.blue = resp_json.blue;
+    } else {
+      if (response.error) {
+        ret.error = response.error;
+      } else if (response.status) {
+        ret.error = response.statusText;
+      }
+    }
+    return ret
+  } catch (err) {
+    return null;
+  }
+}
+
+export const getTopScores = async(public_address) => {
+  try {
+    const data = {
+      version: '2.0',
+      id: public_address,
+    }
+    const response = await postJSONData(s.v2api.getTopScores, data);
+    const ret = {
+      ok: response.ok
+    }
+    if (response.ok) {
+      ret.records = await response.json()
+        .then((response) => response.records);
     } else {
       if (response.error) {
         ret.error = response.error;

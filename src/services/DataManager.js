@@ -23,6 +23,7 @@ const KEYS = {
   PLAYERS: 'PLAYERS',
   GUILDS: 'GUILDS',
   REFERRAL: 'REFERRAL',
+  TEAM: 'TEAM',
 };
 
 export const setUserInfo = async (userDetails) => {
@@ -445,5 +446,19 @@ export const getReferral = async () => {
 export const setReferral = async (referral) => {
   try {
     await AsyncStorage.setItem(KEYS.REFERRAL, referral);
+  } catch (err) {}
+}
+
+export const getTeam = async () => {
+  try {
+    return await AsyncStorage.getItem(KEYS.TEAM);
+  } catch (err) {
+    return 0;
+  }
+}
+
+export const setTeam = async (team) => {
+  try {
+    await AsyncStorage.setItem(KEYS.TEAM, team);
   } catch (err) {}
 }

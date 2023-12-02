@@ -40,7 +40,6 @@ const FirstEntry = ({t, navigation}) => {
         const userAvatar = await getUserName();
         const privacySetting = await getPrivacySetting();
         const termAccepted = await isPrivacyAndTermsAccepted();
-        console.log(walletAddress, userAvatar, privacySetting, termAccepted);
         await updateOrCreateUser(walletAddress, userAvatar.userName);
         await updatePrivacyAndTOC(
           walletAddress,

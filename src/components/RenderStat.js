@@ -1,15 +1,16 @@
-import React, {useEffect, useRef, useState} from 'react';
-import {useTranslation} from 'react-i18next';
-import {StyleSheet, Text, View} from 'react-native';
-import {theme} from '../services/Common/theme';
-import {fontFamilies} from '../utils/fontFamilies';
+import React, { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { StyleSheet, Text, View } from 'react-native';
+import { theme } from '../services/Common/theme';
+import { fontFamilies } from '../utils/fontFamilies';
+import LinearGradient from 'react-native-linear-gradient';
 
 const RenderStat = (props) => {
-  const {isSelf = false, item, index} = props;
+  const { item } = props;
 
   //const isUser = item && ((item.username && userName === item.username) || (item.address && ( walletAddress === item.address))) &&  !isSelf;
 
-  const bottomMargin = (index === 0 || index === 1) && !isSelf ? 8 : 0;
+  const bottomMargin = (item.place === 1 || item.place === 2) && !item.is_you ? 8 : 0;
   let indexColor = 'white',
     indexSize = 12,
     bottomBorderColor = 'transparent',
@@ -19,7 +20,7 @@ const RenderStat = (props) => {
     valueColor = 'white',
     marginBottom = 0,
     valueSize = 14;
-  if (isSelf) {
+  if (item.is_you) {
     indexColor = theme.COLORS.TEXT_GREY;
     indexSize = 14;
     nameColor = theme.COLORS.TEXT_GREY;
@@ -33,22 +34,22 @@ const RenderStat = (props) => {
         //nameSize = 18;
         valueColor = theme.COLORS.TULIP_TREE;
     } */ else {
-    switch (index) {
-      case 0:
+    switch (item.place) {
+      case 1:
         indexColor = theme.COLORS.GOLD;
         valueColor = theme.COLORS.GOLD;
         bottomBorderColor = theme.COLORS.GOLD;
         borderHeight = 2;
         marginBottom = 8;
         break;
-      case 1:
+      case 2:
         indexColor = theme.COLORS.SILVER;
         valueColor = theme.COLORS.SILVER;
         bottomBorderColor = theme.COLORS.SILVER;
         borderHeight = 2;
         marginBottom = 8;
         break;
-      case 2:
+      case 3:
         indexColor = theme.COLORS.BRONZE;
         valueColor = theme.COLORS.BRONZE;
         bottomBorderColor = theme.COLORS.BRONZE;
@@ -58,11 +59,31 @@ const RenderStat = (props) => {
   }
   return (
     <>
+      {item && item.is_you && (
+        <View
+          style={{
+            width: '100%',
+          }}>
+          <LinearGradient
+            end={{ x: 0, y: 0.5 }}
+            start={{ x: 1, y: 0.5 }}
+            colors={[
+              theme.COLORS.GREEN_ITEM_BG_END,
+              theme.COLORS.GREEN_ITEM_BG_START,
+              theme.COLORS.GREEN_ITEM_BG_END,
+            ]}
+            style={{
+              width: '100%',
+              height: 1,
+            }}
+          />
+        </View>
+      )}
       {item && (
         <View
           style={{
             ...styles.listContainer,
-            backgroundColor: index % 2 == 0 ? 'transparent' : theme.APP_COLOR_1,
+            backgroundColor: item.place % 2 == 1 ? 'transparent' : theme.APP_COLOR_1,
             bottomMargin: bottomMargin,
             borderBottomColor: bottomBorderColor,
             marginBottom: marginBottom,
@@ -74,9 +95,8 @@ const RenderStat = (props) => {
               fontWeight: '300',
               fontSize: indexSize,
               fontFamily: fontFamilies.Default,
-            }}>{`${index + 1}${
-            index === 0 ? 'st' : index === 1 ? 'nd' : index === 2 ? 'rd' : 'th'
-          }`}</Text>
+            }}>{`${item.place}${item.place === 1 ? 'st' : item.place === 2 ? 'nd' : item.place === 3 ? 'rd' : 'th'
+              }`}</Text>
           <View
             style={{
               flexDirection: 'row',
@@ -92,13 +112,11 @@ const RenderStat = (props) => {
                 width: '60%',
                 fontWeight: '300',
                 fontFamily: fontFamilies.Default,
-                textAlign: isSelf ? 'center' : 'left',
+                textAlign: item.is_you ? 'center' : 'left',
               }}>
-              {isSelf
-                ? 'You'
-                : item.username
-                ? item.username
-                : item.public_address}
+              {item.is_you
+                ? item.title + ' (You)'
+                : item.title}
             </Text>
             <Text
               style={{
@@ -107,8 +125,28 @@ const RenderStat = (props) => {
                 fontWeight: '300',
                 fontSize: nameSize,
                 fontFamily: fontFamilies.Default,
-              }}>{`${item.rewards} KITN`}</Text>
+              }}>{`${item.kitn} KITN`}</Text>
           </View>
+        </View>
+      )}
+      {item && item.is_you && (
+        <View
+          style={{
+            width: '100%',
+          }}>
+          <LinearGradient
+            end={{ x: 0, y: 0.5 }}
+            start={{ x: 1, y: 0.5 }}
+            colors={[
+              theme.COLORS.GREEN_ITEM_BG_END,
+              theme.COLORS.GREEN_ITEM_BG_START,
+              theme.COLORS.GREEN_ITEM_BG_END,
+            ]}
+            style={{
+              width: '100%',
+              height: 1,
+            }}
+          />
         </View>
       )}
     </>

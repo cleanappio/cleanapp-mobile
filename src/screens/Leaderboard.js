@@ -4,42 +4,42 @@ import React, {useEffect, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {
   Dimensions,
-  Image,
-  ImageBackground,
-  Pressable,
+  // Image,
+  // ImageBackground,
+  // Pressable,
   StyleSheet,
   Text,
-  TextInput,
+  // TextInput,
   View,
 } from 'react-native';
 import {FlatList, ScrollView} from 'react-native-gesture-handler';
 import {theme} from '../services/Common/theme';
 import {fontFamilies} from '../utils/fontFamilies';
 import Ripple from '../components/Ripple';
-import Share, {Social} from 'react-native-share';
-import {getUserName, getWalletAddress} from '../services/DataManager';
+// import Share, {Social} from 'react-native-share';
+import {getTeam, getUserName, getWalletAddress} from '../services/DataManager';
 import {
-  changeUserName,
-  getGuildList,
-  getGuildImage,
-  getTeamStatus,
-  getUserRank,
-  getUserRanks,
-  leaveGuild,
+  // changeUserName,
+  // getGuildList,
+  // getGuildImage,
+  getTeams,
+  getTopScores,
+  // getUserRanks,
+  // leaveGuild,
 } from '../services/API/APIManager';
-import {actions} from '../services/State/Reducer';
+// import {actions} from '../services/State/Reducer';
 import {useStateValue} from '../services/State/State';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
 
-import {setUserName} from '../services/DataManager';
+// import {setUserName} from '../services/DataManager';
 import LinearGradient from 'react-native-linear-gradient';
-import {SceneMap, TabBar, TabView} from 'react-native-tab-view';
-import PlusCircleIcon from '../assets/ico_plus_circle.svg';
+// import {SceneMap, TabBar, TabView} from 'react-native-tab-view';
+// import PlusCircleIcon from '../assets/ico_plus_circle.svg';
 import RenderStat from '../components/RenderStat';
-import {Chip} from 'react-native-paper';
-import BottomSheetDialog from '../components/BotomSheetDialog';
-import RenderGuildListItem from '../components/RenderGuildListItem';
-import {Row} from '../components/Row';
+// import {Chip} from 'react-native-paper';
+// import BottomSheetDialog from '../components/BotomSheetDialog';
+// import RenderGuildListItem from '../components/RenderGuildListItem';
+// import {Row} from '../components/Row';
 
 import MemberIcon from '../assets/ico_member.svg';
 
@@ -66,18 +66,18 @@ const Tab = ({title, icon, value, isSelected, setTab}) => {
 export const Leaderboard = (props) => {
   const {t} = useTranslation();
   const [{}, dispatch] = useStateValue();
-  const navigation = useNavigation();
+  // const navigation = useNavigation();
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [userName, setName] = useState('');
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [leaderboardData, setLeaderboardData] = useState([]);
+  // const [isMenuOpen, setIsMenuOpen] = useState(false);
+  // const [leaderboardData, setLeaderboardData] = useState([]);
   const [walletAddress, setWalletAddress] = useState('');
-  const [allRankMode, setAllRankMode] = useState(false);
-  const [editName, setEditName] = useState(false);
+  // const [allRankMode, setAllRankMode] = useState(false);
+  // const [editName, setEditName] = useState(false);
   const [newName, setNewName] = useState(false);
   const nameRef = useRef(null);
   const [userIndex, setUserIndex] = useState(-1);
-  const [userGuildIndex, setUserGuildIndex] = useState(-1);
+  // const [userGuildIndex, setUserGuildIndex] = useState(-1);
 
   const [leaderboardPlayers, setLeaderboardPlayers] = useState([]);
   const [leaderboardGuilds, setLeaderboardGuilds] = useState([]);
@@ -86,18 +86,18 @@ export const Leaderboard = (props) => {
 
   const [blueStat, setBlueStat] = useState(0);
   const [greenStat, setGreenStat] = useState(0);
-  const [tabIndex, setTabIndex] = useState(0);
-  const [bottomSheetOpened, setBottomSheetOpened] = useState(false);
-  const [teamStatus, setTeamStatus] = useState(null);
+  // const [tabIndex, setTabIndex] = useState(0);
+  // const [bottomSheetOpened, setBottomSheetOpened] = useState(false);
+  // const [teamStatus, setTeamStatus] = useState(null);
   const [userTeam, setUserTeam] = useState('');
 
-  const onOpenMenu = () => {
-    setIsMenuOpen(true);
-  };
+  // const onOpenMenu = () => {
+  //   setIsMenuOpen(true);
+  // };
 
-  const onCloseMenu = () => {
-    setIsMenuOpen(false);
-  };
+  // const onCloseMenu = () => {
+  //   setIsMenuOpen(false);
+  // };
 
   const fetchData = async () => {
     const wallet = await getWalletAddress();
@@ -105,11 +105,13 @@ export const Leaderboard = (props) => {
       setWalletAddress(wallet);
     }
 
-    getUserRank().then((userrankResponse) => {
-      if (userrankResponse && userrankResponse.length > 0) {
-        setLeaderboardPlayers(userrankResponse);
-        const _index = userrankResponse.findIndex(
-          (user) => user.public_address === wallet,
+    publicAddress = await getWalletAddress();
+
+    getTopScores(publicAddress).then((userrankResponse) => {
+      if (userrankResponse && userrankResponse.ok) {
+        setLeaderboardPlayers(userrankResponse.records);
+        const _index = userrankResponse.records.findIndex(
+          (record) => record.is_you,
         );
         if (_index !== -1) {
           setUserIndex(_index);
@@ -117,30 +119,26 @@ export const Leaderboard = (props) => {
       }
     });
 
-    getGuildList().then((guildListResponse) => {
-      if (guildListResponse && guildListResponse.length > 0) {
-        setLeaderboardGuilds(guildListResponse);
-        const _index = guildListResponse.findIndex(
-          (guild) =>
-            guild.members.findIndex((member) => member === wallet) !== -1,
-        );
-        if (_index !== -1) {
-          setUserGuildIndex(_index);
-          setJoined(true);
-        }
-      }
-    });
-    getTeamStatus().then((teamResponse) => {
-      if (teamResponse) {
-        if (teamResponse.data) {
-          teamResponse.data.forEach((ele) => {
-            if (ele.name === 'blue') setBlueStat(ele.point);
-            if (ele.name === 'green') setGreenStat(ele.point);
-          });
-        }
+    // getGuildList().then((guildListResponse) => {
+    //   if (guildListResponse && guildListResponse.length > 0) {
+    //     setLeaderboardGuilds(guildListResponse);
+    //     const _index = guildListResponse.findIndex(
+    //       (guild) =>
+    //         guild.members.findIndex((member) => member === wallet) !== -1,
+    //     );
+    //     if (_index !== -1) {
+    //       setUserGuildIndex(_index);
+    //       setJoined(true);
+    //     }
+    //   }
+    // });
+    getTeams(publicAddress).then((teamResponse) => {
+      if (teamResponse && teamResponse.ok) {
+        setBlueStat(teamResponse.blue);
+        setGreenStat(teamResponse.green);
 
         if (teamResponse.user_data && teamResponse.user_data.team) {
-          setUserTeam(teamResponse.user_data.team);
+          setUserTeam(getTeam());
         }
       }
     });
@@ -157,284 +155,247 @@ export const Leaderboard = (props) => {
     }, []),
   );
 
-  const openGuildDetail = () => {
-    setBottomSheetOpened(true);
-  };
+  // const openGuildDetail = () => {
+  //   setBottomSheetOpened(true);
+  // };
 
-  const onCloseBottomSheet = () => {
-    setBottomSheetOpened(false);
-  };
+  // const onCloseBottomSheet = () => {
+  //   setBottomSheetOpened(false);
+  // };
 
-  const onLeaveGuild = () => {
-    if (userGuildIndex > -1) {
-      const guild_id = leaderboardGuilds[userGuildIndex]._id;
-      leaveGuild({guild_id: guild_id}).then((resp) => {
-        onCloseBottomSheet();
-        setUserGuildIndex(-1);
-        setJoined(false);
-        fetchData();
-      });
-    }
-  };
+  // const onLeaveGuild = () => {
+  //   if (userGuildIndex > -1) {
+  //     const guild_id = leaderboardGuilds[userGuildIndex]._id;
+  //     leaveGuild({guild_id: guild_id}).then((resp) => {
+  //       onCloseBottomSheet();
+  //       setUserGuildIndex(-1);
+  //       setJoined(false);
+  //       fetchData();
+  //     });
+  //   }
+  // };
 
   const LeaderboardPlayers = () => {
     return (
       <>
         <FlatList
-          data={leaderboardPlayers.slice(0, 7)}
+          data={leaderboardPlayers}
           keyExtractor={(item, index) => index}
           renderItem={RenderStat}
           nestedScrollEnabled
         />
-        <View
-          style={{
-            width: '100%',
-          }}>
-          <LinearGradient
-            end={{x: 0, y: 0.5}}
-            start={{x: 1, y: 0.5}}
-            colors={[
-              theme.COLORS.GREEN_ITEM_BG_END,
-              theme.COLORS.GREEN_ITEM_BG_START,
-              theme.COLORS.GREEN_ITEM_BG_END,
-            ]}
-            style={{
-              width: '100%',
-              height: 1,
-            }}
-          />
-          {leaderboardPlayers && (
-            <RenderStat
-              isSelf={true}
-              item={leaderboardPlayers[userIndex]}
-              index={userIndex}
-            />
-          )}
-          <LinearGradient
-            end={{x: 0, y: 0.5}}
-            start={{x: 1, y: 0.5}}
-            colors={[
-              theme.COLORS.GREEN_ITEM_BG_END,
-              theme.COLORS.GREEN_ITEM_BG_START,
-              theme.COLORS.GREEN_ITEM_BG_END,
-            ]}
-            style={{
-              width: '100%',
-              height: 1,
-            }}
-          />
-        </View>
       </>
     );
   };
 
-  const GuildDetail = ({
-    isVisible = false,
-    onLeaveGuild = () => {},
-    onClose = () => {},
-    userItem = {
-      members: [],
-      name: '',
-      description: '',
-      profile_image: '',
-    },
-  }) => {
-    const [image, setImage] = useState(null);
+  // const GuildDetail = ({
+  //   isVisible = false,
+  //   onLeaveGuild = () => {},
+  //   onClose = () => {},
+  //   userItem = {
+  //     members: [],
+  //     name: '',
+  //     description: '',
+  //     profile_image: '',
+  //   },
+  // }) => {
+  //   const [image, setImage] = useState(null);
 
-    const getSingleImage = async (imageId) => {
-      let result = await getGuildImage(imageId);
-      const fileReaderInstance = new FileReader();
-      fileReaderInstance.readAsDataURL(result);
-      fileReaderInstance.onload = () => {
-        setImage(fileReaderInstance.result);
-      };
-    };
+  //   const getSingleImage = async (imageId) => {
+  //     let result = await getGuildImage(imageId);
+  //     const fileReaderInstance = new FileReader();
+  //     fileReaderInstance.readAsDataURL(result);
+  //     fileReaderInstance.onload = () => {
+  //       setImage(fileReaderInstance.result);
+  //     };
+  //   };
 
-    useEffect(() => {
-      if (userItem) {
-        getSingleImage(userItem._id);
-      }
-    }, [userItem]);
+  //   useEffect(() => {
+  //     if (userItem) {
+  //       getSingleImage(userItem._id);
+  //     }
+  //   }, [userItem]);
 
-    if (userItem === null) return null;
+  //   if (userItem === null) return null;
 
-    return (
-      <BottomSheetDialog
-        isVisible={isVisible}
-        onClose={onClose}
-        title={userItem.name}>
-        <View style={{marginTop: 22}}>
-          {image && (
-            <ImageBackground
-              style={{
-                borderRadius: 8,
-                width: Dimensions.get('screen').width - 40,
-                height: ((Dimensions.get('screen').width - 40) * 9) / 16,
-                alignItems: 'baseline',
-                justifyContent: 'flex-end',
-                paddingVertical: 7,
-                paddingHorizontal: 10,
-              }}
-              resizeMode={'cover'}
-              source={{uri: image}}>
-              <Row>
-                <View style={{flexDirection: 'row'}}>
-                  <MemberIcon />
-                  <Text style={{...styles.txt16, marginLeft: 4}}>
-                    {userItem.members.length}
-                  </Text>
-                </View>
-                <View style={{flexDirection: 'row'}}>
-                  <Text style={styles.txt12}>
-                    {`Total$Cat  `}
-                    <Text style={styles.txt16}>{userItem.rewards}</Text>
-                  </Text>
-                </View>
-              </Row>
-            </ImageBackground>
-          )}
-        </View>
-        <Text style={styles.guild_desc}>{userItem.description}</Text>
-        <View style={{marginTop: 22}}>
-          <Text style={styles.guild_desc}>{'Users'}</Text>
-        </View>
-        <View style={styles.tagsContainer}>
-          {userItem.members.map((user) => (
-            <Chip title={user} style={styles.chip} textStyle={styles.chipText}>
-              {user}
-            </Chip>
-          ))}
-        </View>
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            marginTop: 24,
-          }}>
-          <Ripple
-            onPress={onClose}
-            containerStyle={{
-              flex: 0.5,
-            }}
-            style={{
-              paddingVertical: 14,
-              backgroundColor: theme.COLORS.BG,
-              borderRadius: 8,
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}>
-            <Text
-              style={{
-                fontFamily: fontFamilies.Default,
-                color: theme.COLORS.WHITE,
-                fontSize: 16,
-                fontWeight: '500',
-              }}>
-              {'Back'}
-            </Text>
-          </Ripple>
-          <Ripple
-            onPress={onLeaveGuild}
-            containerStyle={{
-              flex: 0.45,
-            }}
-            style={{
-              paddingVertical: 14,
-              backgroundColor: theme.COLORS.BTN_BG_RED,
-              borderRadius: 8,
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}>
-            <Text
-              style={{
-                fontFamily: fontFamilies.Default,
-                color: theme.COLORS.WHITE,
-                fontSize: 16,
-                fontWeight: '500',
-              }}>
-              {'Leave Guild'}
-            </Text>
-          </Ripple>
-        </View>
-      </BottomSheetDialog>
-    );
-  };
+  //   return (
+  //     <BottomSheetDialog
+  //       isVisible={isVisible}
+  //       onClose={onClose}
+  //       title={userItem.name}>
+  //       <View style={{marginTop: 22}}>
+  //         {image && (
+  //           <ImageBackground
+  //             style={{
+  //               borderRadius: 8,
+  //               width: Dimensions.get('screen').width - 40,
+  //               height: ((Dimensions.get('screen').width - 40) * 9) / 16,
+  //               alignItems: 'baseline',
+  //               justifyContent: 'flex-end',
+  //               paddingVertical: 7,
+  //               paddingHorizontal: 10,
+  //             }}
+  //             resizeMode={'cover'}
+  //             source={{uri: image}}>
+  //             <Row>
+  //               <View style={{flexDirection: 'row'}}>
+  //                 <MemberIcon />
+  //                 <Text style={{...styles.txt16, marginLeft: 4}}>
+  //                   {userItem.members.length}
+  //                 </Text>
+  //               </View>
+  //               <View style={{flexDirection: 'row'}}>
+  //                 <Text style={styles.txt12}>
+  //                   {`Total$Cat  `}
+  //                   <Text style={styles.txt16}>{userItem.rewards}</Text>
+  //                 </Text>
+  //               </View>
+  //             </Row>
+  //           </ImageBackground>
+  //         )}
+  //       </View>
+  //       <Text style={styles.guild_desc}>{userItem.description}</Text>
+  //       <View style={{marginTop: 22}}>
+  //         <Text style={styles.guild_desc}>{'Users'}</Text>
+  //       </View>
+  //       <View style={styles.tagsContainer}>
+  //         {userItem.members.map((user) => (
+  //           <Chip title={user} style={styles.chip} textStyle={styles.chipText}>
+  //             {user}
+  //           </Chip>
+  //         ))}
+  //       </View>
+  //       <View
+  //         style={{
+  //           flexDirection: 'row',
+  //           justifyContent: 'space-between',
+  //           marginTop: 24,
+  //         }}>
+  //         <Ripple
+  //           onPress={onClose}
+  //           containerStyle={{
+  //             flex: 0.5,
+  //           }}
+  //           style={{
+  //             paddingVertical: 14,
+  //             backgroundColor: theme.COLORS.BG,
+  //             borderRadius: 8,
+  //             justifyContent: 'center',
+  //             alignItems: 'center',
+  //           }}>
+  //           <Text
+  //             style={{
+  //               fontFamily: fontFamilies.Default,
+  //               color: theme.COLORS.WHITE,
+  //               fontSize: 16,
+  //               fontWeight: '500',
+  //             }}>
+  //             {'Back'}
+  //           </Text>
+  //         </Ripple>
+  //         <Ripple
+  //           onPress={onLeaveGuild}
+  //           containerStyle={{
+  //             flex: 0.45,
+  //           }}
+  //           style={{
+  //             paddingVertical: 14,
+  //             backgroundColor: theme.COLORS.BTN_BG_RED,
+  //             borderRadius: 8,
+  //             justifyContent: 'center',
+  //             alignItems: 'center',
+  //           }}>
+  //           <Text
+  //             style={{
+  //               fontFamily: fontFamilies.Default,
+  //               color: theme.COLORS.WHITE,
+  //               fontSize: 16,
+  //               fontWeight: '500',
+  //             }}>
+  //             {'Leave Guild'}
+  //           </Text>
+  //         </Ripple>
+  //       </View>
+  //     </BottomSheetDialog>
+  //   );
+  // };
 
-  const LeaderboardGuilds = () => {
-    return (
-      <>
-        <FlatList
-          style={{marginTop: 24}}
-          data={leaderboardGuilds.slice(0, 7)}
-          keyExtractor={(item, index) => index}
-          renderItem={RenderGuildListItem}
-          nestedScrollEnabled
-        />
-        <View
-          style={{
-            width: '100%',
-          }}>
-          <LinearGradient
-            end={{x: 0, y: 0.5}}
-            start={{x: 1, y: 0.5}}
-            colors={[
-              theme.COLORS.GREEN_ITEM_BG_END,
-              theme.COLORS.GREEN_ITEM_BG_START,
-              theme.COLORS.GREEN_ITEM_BG_END,
-            ]}
-            style={{
-              width: '100%',
-              height: 1,
-            }}
-          />
-          {joined && userGuildIndex > -1 ? (
-            <RenderGuildListItem
-              onToggle={openGuildDetail}
-              index={userGuildIndex}
-              item={leaderboardGuilds[userGuildIndex]}
-            />
-          ) : (
-            <Ripple
-              style={{
-                paddingVertical: 16,
-                width: '100%',
-                flexDirection: 'row',
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}
-              onPress={() => {
-                setJoined(true);
-                navigation.navigate('GuildList');
-              }}>
-              <Text
-                style={{
-                  fontFamily: fontFamilies.Default,
-                  color: theme.COLORS.TEXT_GREY,
-                  fontSize: 14,
-                }}>
-                {t('leaderboard.joinaguild')}
-              </Text>
-              <PlusCircleIcon />
-            </Ripple>
-          )}
+  // Temporarily disabling guilds
+  // const LeaderboardGuilds = () => {
+  //   return (
+  //     <>
+  //       <FlatList
+  //         style={{marginTop: 24}}
+  //         data={leaderboardGuilds.slice(0, 7)}
+  //         keyExtractor={(item, index) => index}
+  //         renderItem={RenderGuildListItem}
+  //         nestedScrollEnabled
+  //       />
+  //       <View
+  //         style={{
+  //           width: '100%',
+  //         }}>
+  //         <LinearGradient
+  //           end={{x: 0, y: 0.5}}
+  //           start={{x: 1, y: 0.5}}
+  //           colors={[
+  //             theme.COLORS.GREEN_ITEM_BG_END,
+  //             theme.COLORS.GREEN_ITEM_BG_START,
+  //             theme.COLORS.GREEN_ITEM_BG_END,
+  //           ]}
+  //           style={{
+  //             width: '100%',
+  //             height: 1,
+  //           }}
+  //         />
+  //         {joined && userGuildIndex > -1 ? (
+  //           <RenderGuildListItem
+  //             onToggle={openGuildDetail}
+  //             index={userGuildIndex}
+  //             item={leaderboardGuilds[userGuildIndex]}
+  //           />
+  //         ) : (
+  //           <Ripple
+  //             style={{
+  //               paddingVertical: 16,
+  //               width: '100%',
+  //               flexDirection: 'row',
+  //               justifyContent: 'center',
+  //               alignItems: 'center',
+  //             }}
+  //             onPress={() => {
+  //               setJoined(true);
+  //               navigation.navigate('GuildList');
+  //             }}>
+  //             <Text
+  //               style={{
+  //                 fontFamily: fontFamilies.Default,
+  //                 color: theme.COLORS.TEXT_GREY,
+  //                 fontSize: 14,
+  //               }}>
+  //               {t('leaderboard.joinaguild')}
+  //             </Text>
+  //             <PlusCircleIcon />
+  //           </Ripple>
+  //         )}
 
-          <LinearGradient
-            end={{x: 0, y: 0.5}}
-            start={{x: 1, y: 0.5}}
-            colors={[
-              theme.COLORS.GREEN_ITEM_BG_END,
-              theme.COLORS.GREEN_ITEM_BG_START,
-              theme.COLORS.GREEN_ITEM_BG_END,
-            ]}
-            style={{
-              width: '100%',
-              height: 1,
-            }}
-          />
-        </View>
-      </>
-    );
-  };
+  //         <LinearGradient
+  //           end={{x: 0, y: 0.5}}
+  //           start={{x: 1, y: 0.5}}
+  //           colors={[
+  //             theme.COLORS.GREEN_ITEM_BG_END,
+  //             theme.COLORS.GREEN_ITEM_BG_START,
+  //             theme.COLORS.GREEN_ITEM_BG_END,
+  //           ]}
+  //           style={{
+  //             width: '100%',
+  //             height: 1,
+  //           }}
+  //         />
+  //       </View>
+  //     </>
+  //   );
+  // };
 
   return (
     <View style={{flex: 1}}>
@@ -547,27 +508,27 @@ export const Leaderboard = (props) => {
                 setSelectedIndex(0);
               }}
             />
-            <Tab
+            {/* <Tab
               title={t('leaderboard.guilds')}
               isSelected={selectedIndex === 1}
               setTab={() => {
                 setSelectedIndex(1);
               }}
-            />
+            /> */}
           </View>
 
           {selectedIndex === 0 && <LeaderboardPlayers />}
-          {selectedIndex === 1 && <LeaderboardGuilds />}
+          {/* {selectedIndex === 1 && <LeaderboardGuilds />} */}
         </View>
       </ScrollView>
-      <GuildDetail
+      {/* <GuildDetail
         isVisible={bottomSheetOpened}
         onClose={onCloseBottomSheet}
         onLeaveGuild={onLeaveGuild}
         userItem={
           userGuildIndex > -1 ? leaderboardGuilds[userGuildIndex] : null
         }
-      />
+      /> */}
     </View>
   );
 };
