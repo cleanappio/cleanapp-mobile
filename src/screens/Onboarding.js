@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import {StackActions} from '@react-navigation/native';
-import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {useTranslation} from 'react-i18next';
+import { StackActions } from '@react-navigation/native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   Alert,
@@ -18,14 +18,14 @@ import {
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
-import {useSelector} from 'react-redux';
+import { useSelector } from 'react-redux';
 import Ripple from '../components/Ripple';
-import {LoginFromWalletConnect, GetOrCreateLocalWallet} from '../functions/login';
+import { LoginFromWalletConnect, GetOrCreateLocalWallet } from '../functions/login';
 import {
   updateOrCreateUser,
   updatePrivacyAndTOC,
 } from '../services/API/APIManager';
-import {theme} from '../services/Common/theme';
+import { theme } from '../services/Common/theme';
 import {
   getUserName,
   getWalletAddress,
@@ -37,22 +37,22 @@ import {
   setReferral,
   setTeam,
 } from '../services/DataManager';
-import {fontFamilies} from '../utils/fontFamilies';
-import {useWalletConnect} from '@walletconnect/react-native-dapp';
+import { fontFamilies } from '../utils/fontFamilies';
+import { useWalletConnect } from '@walletconnect/react-native-dapp';
 import { InProgress } from '../components/InProgress';
 
 const background = require('../assets/onboard_background.jpg');
 
 import CheckIcon from '../assets/btn_check.svg';
 import UncheckIcon from '../assets/btn_uncheck.svg';
-import {Row} from '../components/Row';
+import { Row } from '../components/Row';
 import { createLocalWallet } from '../functions/walletconnect';
 import { TermsAndConditions } from './TermsAndConditions';
 import { retrieveReferral } from '../functions/referral';
 
 const steps = [/* 'walletSelect', */ 'name', 'privacy'];
 
-const IndicatorView = ({step = 'walletSelect'}) => {
+const IndicatorView = ({ step = 'walletSelect' }) => {
   const stepIndex = steps.findIndex((ele) => ele === step);
 
   return (
@@ -73,17 +73,17 @@ const IndicatorView = ({step = 'walletSelect'}) => {
   );
 };
 
-const Heading = ({title = '', subTitle = ''}) => {
+const Heading = ({ title = '', subTitle = '' }) => {
   return (
-    <View style={{marginTop: 8}}>
+    <View style={{ marginTop: 8 }}>
       <Text style={styles.head}>{title}</Text>
       <Text style={styles.subHead}>{subTitle}</Text>
     </View>
   );
 };
 
-const WalletSelect = ({onComplete = () => {}}) => {
-  const {t} = useTranslation();
+const WalletSelect = ({ onComplete = () => { } }) => {
+  const { t } = useTranslation();
   const [cwLoading, setCwLoading] = useState(false);
   const [wcLoading, setWcLoading] = useState(false);
 
@@ -106,14 +106,14 @@ const WalletSelect = ({onComplete = () => {}}) => {
             <ActivityIndicator
               color={theme.COLORS.WHITE}
               size="small"
-              style={{marginRight: 10}}
+              style={{ marginRight: 10 }}
             />
           )}
           <Text style={styles.btnText}>{t('onboarding.createNewWallet')}</Text>
         </Row>
       </Ripple>
       <Ripple
-        containerStyle={{marginTop: 16}}
+        containerStyle={{ marginTop: 16 }}
         style={styles.btn}
         onPress={() => {
           connectWallet();
@@ -123,7 +123,7 @@ const WalletSelect = ({onComplete = () => {}}) => {
             <ActivityIndicator
               color={theme.COLORS.WHITE}
               size="small"
-              style={{marginRight: 10}}
+              style={{ marginRight: 10 }}
             />
           )}
           <Text style={styles.btnText}>{t('onboarding.wcconnect')}</Text>
@@ -136,11 +136,11 @@ const WalletSelect = ({onComplete = () => {}}) => {
 const WelcomeScreen = ({
   userName = '',
   walletAddress = '',
-  setUserName = () => {},
-  onComplete = () => {},
+  setUserName = () => { },
+  onComplete = () => { },
 }) => {
   const web3 = useSelector((state) => state.web3);
-  const {t} = useTranslation();
+  const { t } = useTranslation();
 
   const [name, setName] = useState(userName);
   const [referralCode, setReferralCode] = useState('');
@@ -166,7 +166,7 @@ const WelcomeScreen = ({
   const setUserNameProc = async () => {
     if (name === '') {
       Alert.alert(t('onboarding.Error'), t('onboarding.UsernameEmpty'), [
-        {text: t('onboarding.Ok'), type: 'cancel'},
+        { text: t('onboarding.Ok'), type: 'cancel' },
       ]);
       return false;
     }
@@ -175,24 +175,23 @@ const WelcomeScreen = ({
     }
 
     data = await updateOrCreateUser(walletAddress, name, referralCode);
-    if (data) {
-      if (data.ok) {
-        setUserName({userName: name});
-        setTeam(data.team);
-      } else {
+    if (data && data.ok) {
+      if (data.dup_avatar) {
         Alert.alert(
           t('onboarding.Error'),
-          String(data.error),
-          [{text: t('onboarding.Ok'), type: 'cancel'}],
+          t('onboarding.ErrSameUsernameExists'),
+          [{ text: t('onboarding.Ok'), type: 'cancel' }],
         );
         return false;
+      } else {
+        setUserName({ userName: name });
+        setTeam(data.team);
       }
     } else {
-      // Any other error
       Alert.alert(
         t('onboarding.Error'),
-        t('onboarding.ErrWhileSettingUserName'),
-        [{text: t('onboarding.Ok'), type: 'cancel'}],
+        String(data.error),
+        [{ text: t('onboarding.Ok'), type: 'cancel' }],
       );
       return false;
     }
@@ -280,8 +279,8 @@ const WelcomeScreen = ({
   );
 };
 
-const PrivacyScreen = ({onStartTutorial = () => {}, onComplete = () => {}}) => {
-  const {t} = useTranslation();
+const PrivacyScreen = ({ onStartTutorial = () => { }, onComplete = () => { } }) => {
+  const { t } = useTranslation();
   const [privacy, setPrivacy] = useState(0);
   const [agreeTOC, setAgreeTOC] = useState(true);
   const [inProgress, setInProgress] = useState(false);
@@ -380,7 +379,7 @@ const PrivacyScreen = ({onStartTutorial = () => {}, onComplete = () => {}}) => {
         disabled={!agreeTOC && !inProgress}
         style={agreeTOC ? styles.btn : styles.disabledBtn}
         onPress={onPressStartCleanup}>
-        <Text style={agreeTOC ? styles.btnText : styles.disabledBtnText }>
+        <Text style={agreeTOC ? styles.btnText : styles.disabledBtnText}>
           {t('onboarding.startCleanup')}
         </Text>
       </Pressable>
@@ -393,8 +392,8 @@ const PrivacyScreen = ({onStartTutorial = () => {}, onComplete = () => {}}) => {
 export const Onboarding = (props) => {
   const web3 = useSelector((state) => state.web3);
 
-  const {t} = useTranslation();
-  const {navigation} = props;
+  const { t } = useTranslation();
+  const { navigation } = props;
   const connector = useWalletConnect();
 
   /**
@@ -411,8 +410,8 @@ export const Onboarding = (props) => {
   const keyExtractor = React.useCallback((_, index) => index.toString(), []);
   let flatListRef = React.useRef(null);
   const [activeIndex, setActiveIndex] = React.useState(0);
-  const viewConfigRef = React.useRef({viewAreaCoveragePercentThreshold: 50});
-  const onViewRef = React.useRef(({viewableItems}) => {
+  const viewConfigRef = React.useRef({ viewAreaCoveragePercentThreshold: 50 });
+  const onViewRef = React.useRef(({ viewableItems }) => {
     setActiveIndex(viewableItems[0].index);
   });
   const [name, setName] = useState('');

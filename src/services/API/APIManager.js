@@ -23,7 +23,11 @@ export const updateOrCreateUser = async (public_address, avatar, referral) => {
     const ret = {
       ok: response.ok
     }
-    if (!response.ok) {
+    if (response.ok) {
+      resp_json = await response.json();
+      ret.team = resp_json.team;
+      ret.dup_avatar = resp_json.dup_avatar;
+    } else {
       if (response.error) {
         ret.error = response.error;
       } else if (response.status) {
@@ -77,8 +81,6 @@ export const report = async (public_address, latitude, longitude, image) => {
       ok: response.ok
     }
     if (response.ok) {
-      ret.team = await response.json()
-        .then((resp) => resp.team);
     } else {
       if (response.error) {
         ret.error = response.error;
