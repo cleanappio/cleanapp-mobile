@@ -41,8 +41,6 @@ export const settings = {
     myMetadata: 'api/get/my-metadata',
     getTags: 'staticdata/tags?type=$[word_type]',
     shareDataLive: 'api/v1/metadata/share-data-live',
-    searchImagesByLocation:
-      '/api/v1/search-images-by-location?latitude=$[latitude]&longitude=$[longitude]&range=$[range]',
   },
 
   //Authentification

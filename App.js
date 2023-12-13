@@ -34,7 +34,7 @@ import {I18nextProvider} from 'react-i18next';
 import {MenuProvider} from 'react-native-popup-menu';
 import {ethers} from 'ethers';
 import {NftProvider} from 'use-nft';
-import {WalletConnectProvider} from '@walletconnect/react-native-dapp/dist/providers';
+// import {WalletConnectProvider} from '@walletconnect/react-native-dapp/dist/providers';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import MapboxGL from '@rnmapbox/maps';
 import Config from 'react-native-config';
@@ -201,7 +201,7 @@ const App = () => {
     <Provider store={store}>
       <NftProvider fetcher={fetcher}>
         <StateProvider initialState={initialState} reducer={reducer}>
-          <WalletConnectProvider
+          {/* <WalletConnectProvider
             // @ts-ignore
             redirectUrl={
               Platform.OS === 'web' ? window.location.origin : 'cleanapp://'
@@ -209,13 +209,13 @@ const App = () => {
             storageOptions={{
               // @ts-ignore
               asyncStorage: AsyncStorage,
-            }}>
+            }}> */}
             <MenuProvider>
               <I18nextProvider i18n={i18next}>
                 <RootNavigator />
               </I18nextProvider>
             </MenuProvider>
-          </WalletConnectProvider>
+          {/* </WalletConnectProvider> */}
         </StateProvider>
       </NftProvider>
     </Provider>

@@ -38,7 +38,7 @@ import {
   setTeam,
 } from '../services/DataManager';
 import { fontFamilies } from '../utils/fontFamilies';
-import { useWalletConnect } from '@walletconnect/react-native-dapp';
+// import { useWalletConnect } from '@walletconnect/react-native-dapp';
 import { InProgress } from '../components/InProgress';
 
 const background = require('../assets/onboard_background.jpg');
@@ -82,56 +82,56 @@ const Heading = ({ title = '', subTitle = '' }) => {
   );
 };
 
-const WalletSelect = ({ onComplete = () => { } }) => {
-  const { t } = useTranslation();
-  const [cwLoading, setCwLoading] = useState(false);
-  const [wcLoading, setWcLoading] = useState(false);
+// const WalletSelect = ({ onComplete = () => { } }) => {
+//   const { t } = useTranslation();
+//   const [cwLoading, setCwLoading] = useState(false);
+//   const [wcLoading, setWcLoading] = useState(false);
 
-  const createNewWallet = () => {
-    setCwLoading(true);
-    setTimeout(() => {
-      onComplete();
-    }, 2000);
-  };
+//   const createNewWallet = () => {
+//     setCwLoading(true);
+//     setTimeout(() => {
+//       onComplete();
+//     }, 2000);
+//   };
 
-  const connectWallet = () => {
-    setWcLoading(true);
-  };
+//   const connectWallet = () => {
+//     setWcLoading(true);
+//   };
 
-  return (
-    <View style={styles.slideBlock}>
-      <Ripple style={styles.btn} onPress={createNewWallet}>
-        <Row justifyContent={'center'}>
-          {cwLoading && (
-            <ActivityIndicator
-              color={theme.COLORS.WHITE}
-              size="small"
-              style={{ marginRight: 10 }}
-            />
-          )}
-          <Text style={styles.btnText}>{t('onboarding.createNewWallet')}</Text>
-        </Row>
-      </Ripple>
-      <Ripple
-        containerStyle={{ marginTop: 16 }}
-        style={styles.btn}
-        onPress={() => {
-          connectWallet();
-        }}>
-        <Row justifyContent={'center'}>
-          {wcLoading && (
-            <ActivityIndicator
-              color={theme.COLORS.WHITE}
-              size="small"
-              style={{ marginRight: 10 }}
-            />
-          )}
-          <Text style={styles.btnText}>{t('onboarding.wcconnect')}</Text>
-        </Row>
-      </Ripple>
-    </View>
-  );
-};
+//   return (
+//     <View style={styles.slideBlock}>
+//       <Ripple style={styles.btn} onPress={createNewWallet}>
+//         <Row justifyContent={'center'}>
+//           {cwLoading && (
+//             <ActivityIndicator
+//               color={theme.COLORS.WHITE}
+//               size="small"
+//               style={{ marginRight: 10 }}
+//             />
+//           )}
+//           <Text style={styles.btnText}>{t('onboarding.createNewWallet')}</Text>
+//         </Row>
+//       </Ripple>
+//       <Ripple
+//         containerStyle={{ marginTop: 16 }}
+//         style={styles.btn}
+//         onPress={() => {
+//           connectWallet();
+//         }}>
+//         <Row justifyContent={'center'}>
+//           {wcLoading && (
+//             <ActivityIndicator
+//               color={theme.COLORS.WHITE}
+//               size="small"
+//               style={{ marginRight: 10 }}
+//             />
+//           )}
+//           <Text style={styles.btnText}>{t('onboarding.wcconnect')}</Text>
+//         </Row>
+//       </Ripple>
+//     </View>
+//   );
+// };
 
 const WelcomeScreen = ({
   userName = '',
@@ -394,7 +394,7 @@ export const Onboarding = (props) => {
 
   const { t } = useTranslation();
   const { navigation } = props;
-  const connector = useWalletConnect();
+  // const connector = useWalletConnect();
 
   /**
    * 1. choose wallet - local or walletconnect
@@ -415,7 +415,7 @@ export const Onboarding = (props) => {
     setActiveIndex(viewableItems[0].index);
   });
   const [name, setName] = useState('');
-  const [connected, setConnected] = useState(false);
+  // const [connected, setConnected] = useState(false);
   const [inProgress, setInProgress] = useState(false)
 
   const initData = async () => {
@@ -434,9 +434,9 @@ export const Onboarding = (props) => {
     initData();
   }, []);
 
-  const onWalletConnect = () => {
-    setStep('name');
-  };
+  // const onWalletConnect = () => {
+  //   setStep('name');
+  // };
 
   const onCompleteName = () => {
     setStep('privacy');
@@ -447,37 +447,37 @@ export const Onboarding = (props) => {
     navigation.dispatch(StackActions.replace('Home'));
   };
 
-  const connectWallet = useCallback(async () => {
-    let result = await connector.connect();
-    if (result) {
-      // connection flag
-      setConnected(true);
-    }
+  // const connectWallet = useCallback(async () => {
+  //   let result = await connector.connect();
+  //   if (result) {
+  //     // connection flag
+  //     setConnected(true);
+  //   }
 
-    return result;
-  }, [connector]);
+  //   return result;
+  // }, [connector]);
 
-  const wcLogin = async () => {
-    // Login From Wallet
-    const response = await LoginFromWalletConnect(
-      connector,
-      web3,
-      '', // referralCode,
-    );
-    setConnected(false);
-    // move to user name input
-    const username = await getUserName();
-    if (username && username.userName) {
-      setName(username.userName);
-    }
-    setStep('name');
-  };
+  // const wcLogin = async () => {
+  //   // Login From Wallet
+  //   const response = await LoginFromWalletConnect(
+  //     connector,
+  //     web3,
+  //     '', // referralCode,
+  //   );
+  //   setConnected(false);
+  //   // move to user name input
+  //   const username = await getUserName();
+  //   if (username && username.userName) {
+  //     setName(username.userName);
+  //   }
+  //   setStep('name');
+  // };
 
-  useEffect(() => {
-    if (connected) {
-      wcLogin();
-    }
-  }, [connected]);
+  // useEffect(() => {
+  //   if (connected) {
+  //     wcLogin();
+  //   }
+  // }, [connected]);
 
   return (
     <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
@@ -629,11 +629,6 @@ export const styles = StyleSheet.create({
     fontFamily: fontFamilies.Default,
     marginTop: 6,
   },
-  centeredView: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   inProgressImage: {
     width: 60,
     height: 60,
@@ -707,10 +702,6 @@ export const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '400',
     fontFamily: fontFamilies.Default,
-  },
-  btns: {
-    marginTop: 30,
-    alignItems: 'center',
   },
   background: {
     width: '100%',

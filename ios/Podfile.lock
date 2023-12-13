@@ -244,13 +244,13 @@ PODS:
     - React-Core
   - react-native-image-picker (5.3.1):
     - React-Core
-  - react-native-pager-view (6.2.1):
+  - react-native-pager-view (6.2.3):
     - React-Core
   - react-native-randombytes (3.5.3):
     - React
   - react-native-safe-area-context (3.2.0):
     - React-Core
-  - react-native-segmented-control (2.4.2):
+  - react-native-segmented-control (2.4.3):
     - React-Core
   - react-native-simple-toast (1.1.4):
     - React-Core
@@ -390,11 +390,11 @@ PODS:
     - React-RCTImage
   - RNShare (7.9.1):
     - React-Core
-  - RNSVG (9.6.4):
+  - RNSVG (9.13.6):
     - React
   - RNVectorIcons (8.1.0):
     - React-Core
-  - SRSRadialGradient (1.1.3):
+  - SRSRadialGradient (1.1.4):
     - React
   - SwiftAlgorithms (1.0.0)
   - SwiftyJSON (5.0.0)
@@ -662,10 +662,10 @@ SPEC CHECKSUMS:
   react-native-geolocation-service: 608e1da71a1ac31b4de64d9ef2815f697978c55b
   react-native-get-random-values: 30b3f74ca34e30e2e480de48e4add2706a40ac8f
   react-native-image-picker: ec9b713e248760bfa0f879f0715391de4651a7cb
-  react-native-pager-view: d211379f61895b6349bd7e571b44a26d005c2975
+  react-native-pager-view: c29d484f19c49ff19525a94105e4ab2c4d4ae273
   react-native-randombytes: 3638d24759d67c68f6ccba60c52a7a8a8faa6a23
   react-native-safe-area-context: f0906bf8bc9835ac9a9d3f97e8bde2a997d8da79
-  react-native-segmented-control: 2221962f5073e2e809aa3691e8e410fc10b60578
+  react-native-segmented-control: d88b35fcd06c0c8e1f1f7ed1eb066c2b02570fdd
   react-native-simple-toast: 8ee5d23f0b92b935ab7434cdb65159ce12dfb4b7
   react-native-splash-screen: 4312f786b13a81b5169ef346d76d33bc0c6dc457
   react-native-udp: ff9d13e523f2b58e6bc5d4d32321ac60671b5dc9
@@ -696,9 +696,9 @@ SPEC CHECKSUMS:
   RNReanimated: 024eff8202342abf4b24e11575a16afc441dabfe
   RNScreens: d6da2b9e29cf523832c2542f47bf1287318b1868
   RNShare: a5dc3b9c53ddc73e155b8cd9a94c70c91913c43c
-  RNSVG: a53a5de0d90ec96a6502cc3a4534dfcc0c130622
+  RNSVG: 8ba35cbeb385a52fd960fd28db9d7d18b4c2974f
   RNVectorIcons: 31cebfcf94e8cf8686eb5303ae0357da64d7a5a4
-  SRSRadialGradient: 6cb74f9a531a3c843566c7f5836e6a14f7c5f31f
+  SRSRadialGradient: 8363f6c3ce63636f5ffee74a7016f5c84a6df0a1
   SwiftAlgorithms: 38dda4731d19027fdeee1125f973111bf3386b53
   SwiftyJSON: 36413e04c44ee145039d332b4f4e2d3e8d6c4db7
   TcpSockets: 14306fb79f9750ea7d2ddd02d8bed182abb01797

@@ -1,4 +1,4 @@
-import React, {memo, useCallback, useEffect, useRef, useState} from 'react';
+import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import MapboxGL from '@rnmapbox/maps';
 import {
   StyleSheet,
@@ -18,32 +18,33 @@ import {
   getMapSearchItems,
   getReverseGeocodingData,
 } from '../services/API/MapboxAPI';
-import {TextInput} from 'react-native';
-import {fontFamilies} from '../utils/fontFamilies';
-import {theme} from '../services/Common/theme';
+import { TextInput } from 'react-native';
+import { fontFamilies } from '../utils/fontFamilies';
+import { theme } from '../services/Common/theme';
 import SearchIcon from '../assets/ico_search_large.svg';
-import {Tooltip} from 'react-native-elements';
+import { Tooltip } from 'react-native-elements';
 import BottomSheetDialog from '../components/BotomSheetDialog';
 import Ripple from '../components/Ripple';
-import {useTranslation} from 'react-i18next';
-import {useStateValue} from '../services/State/State';
+import { useTranslation } from 'react-i18next';
+import { useStateValue } from '../services/State/State';
 import {
   getImage,
-  searchImagesByLocation,
+  getReportsOnMap,
   update_annotation,
 } from '../services/API/APIManager';
 import MarkerGreen from '../assets/marker_green.svg';
 import MarkerBlue from '../assets/marker_blue.svg';
-import {getLocation} from '../functions/geolocation';
-import {actions} from '../services/State/Reducer';
-import {setMapLocation} from '../services/DataManager';
+import { getLocation } from '../functions/geolocation';
+import { actions } from '../services/State/Reducer';
+import { getWalletAddress, setMapLocation } from '../services/DataManager';
+import { AggregatedMarker } from '../components/AggregatedMarker';
 
 const offsetMultiplier = 0.00001;
 
 const DetailView = memo(
   ({
     isVisible = true,
-    onClose = () => {},
+    onClose = () => { },
     latitude = 0,
     longitude = 0,
     locality = '',
@@ -80,7 +81,7 @@ const DetailView = memo(
           <Text style={styles.txt12}>{city}</Text>
         </View>
         <Image
-          source={{uri: image}}
+          source={{ uri: image }}
           style={styles.detailImage}
           resizeMode="cover"
         />
@@ -89,7 +90,7 @@ const DetailView = memo(
   },
 );
 
-const Balloon = ({title = ''}) => {
+const Balloon = ({ title = '' }) => {
   return (
     <View style={styles.balloonContainer}>
       <View style={styles.balloonBox}>
@@ -100,59 +101,45 @@ const Balloon = ({title = ''}) => {
   );
 };
 
-const MapView = ({onMarkerPress = () => {}, selectedMarker = null}) => {
+const MapView = ({ onMarkerPress = () => { }, selectedMarker = null }) => {
   const [coordinates, setCoordinates] = useState({
     zoomLevel: 17,
     coordinates: [0, 0],
   });
   const [reportData, setReportData] = useState({});
-  const [searchText, setSearchText] = useState('');
   const [searchItems, setSearchItems] = useState([]);
-  const [{mapLocation, reports}, dispatch] = useStateValue();
+  const [{ mapLocation, reports }, dispatch] = useStateValue();
   const [searchLocText, setSearchLocText] = useState('');
-  const [zoomLevel, setZoomLevel] = useState(17);
-  const [isMapLoaded, setIsMapLoaded] = useState(false);
+  const [savedRegion, setSavedRegion] = useState(null);
   const mapLocationRef = useRef(coordinates);
   const reportsRef = useRef(reportData);
   const camera = useRef(null);
 
-  const {t} = useTranslation();
+  const { t } = useTranslation();
 
-  const fetchImages = async (latitude, longitude, range = 1) => {
-    searchImagesByLocation({
-      latitude: latitude,
-      longitude: longitude,
-      range: 100,
-    }).then((data) => {
-      if (data.result) {
-        data.result.forEach(async (ele) => {
-          if (ele.city === '') {
-            const formdata = new FormData();
-            formdata.append('entity_id', ele.image_id);
-            const resp = await update_annotation(formdata);
-          }
-        });
-
-        setReportData((prevData) => {
-          const newData = {};
-          data.result.forEach((ele) => {
-            const key = `${ele.longitude}-${ele.latitude}`;
-            if (newData[`${key}`]) {
-              if (
-                newData[`${key}`].findIndex(
-                  (prevEle) => prevEle.image_id === ele.image_id,
-                ) === -1
-              ) {
-                newData[`${key}`].push(ele);
-              }
-            } else {
+  const fetchImages = async (latMin, lonMin, latMax, lonMax, latCenter, lonCenter) => {
+    const walletAddress = await getWalletAddress();
+    getReportsOnMap(
+      walletAddress,
+      latMin,
+      lonMin,
+      latMax,
+      lonMax,
+      latCenter,
+      lonCenter
+    ).then((data) => {
+      if (data.ok) {
+        if (data.reports) {
+          setReportData((prevData) => {
+            const newData = {};
+            data.reports.forEach((report) => {
+              const key = `${report.longitude}-${report.latitude}`;
               newData[`${key}`] = [];
-              newData[`${key}`].push(ele);
-            }
+              newData[`${key}`].push(report);
+            });
+            return newData;
           });
-
-          return newData;
-        });
+        }
       }
     });
   };
@@ -176,17 +163,25 @@ const MapView = ({onMarkerPress = () => {}, selectedMarker = null}) => {
   };
 
   const onRegionDidChange = async (e) => {
-    console.log(e);
-    console.log(e.properties.visibleBounds[0]);
-    console.log(e.properties.visibleBounds[1]);
+    if (savedRegion &&
+      savedRegion.geometry.coordinates[0] === e.geometry.coordinates[0] &&
+      savedRegion.geometry.coordinates[1] === e.geometry.coordinates[1] &&
+      savedRegion.properties.zoomLevel === e.properties.zoomLevel) {
+      return;
+    }
+    setSavedRegion(e);
     if (e.geometry && e.geometry.coordinates) {
-      const latitude = e.geometry.coordinates[1];
-      const longitude = e.geometry.coordinates[0];
+      const latCenter = e.geometry.coordinates[1];
+      const lonCenter = e.geometry.coordinates[0];
+      const latMin = e.properties.visibleBounds[1][1];
+      const lonMin = e.properties.visibleBounds[1][0];
+      const latMax = e.properties.visibleBounds[0][1];
+      const lonMax = e.properties.visibleBounds[0][0];
       setCoordinates({
         zoomLevel: e.properties.zoomLevel,
-        coordinates: [longitude, latitude],
+        coordinates: [lonCenter, latCenter],
       });
-      fetchImages(latitude, longitude);
+      fetchImages(latMin, lonMin, latMax, lonMax, latCenter, lonCenter);
     }
   };
 
@@ -201,7 +196,7 @@ const MapView = ({onMarkerPress = () => {}, selectedMarker = null}) => {
   useEffect(() => {
     if (reports) {
       setReportData((prevReports) => {
-        return {...prevReports, ...reports};
+        return { ...prevReports, ...reports };
       });
     }
   }, [reports]);
@@ -215,8 +210,6 @@ const MapView = ({onMarkerPress = () => {}, selectedMarker = null}) => {
           coordinates: [location.longitude, location.latitude],
         });
       });
-    } else {
-      fetchImages(mapLocation.coordinates[1], mapLocation.coordinates[0]);
     }
   }, [mapLocation]);
 
@@ -276,7 +269,7 @@ const MapView = ({onMarkerPress = () => {}, selectedMarker = null}) => {
     return <View style={styles.seperator}></View>;
   };
 
-  const RenderSearchItemView = ({item}) => (
+  const RenderSearchItemView = ({ item }) => (
     <Ripple onPress={() => selectSuggestion(item)}>
       <Text style={styles.searchItemText}>{item} </Text>
     </Ripple>
@@ -327,6 +320,7 @@ const MapView = ({onMarkerPress = () => {}, selectedMarker = null}) => {
         />
         {Object.keys(reportData).map((elekey) =>
           reportData[elekey].map((element, index) => {
+            console.log(element);
             const latitude = element.latitude;
             const longitude = element.longitude + offsetMultiplier * index;
             return (
@@ -335,7 +329,13 @@ const MapView = ({onMarkerPress = () => {}, selectedMarker = null}) => {
                 key={`flag-${elekey}-${index}`}
                 coordinate={[longitude, latitude]}
                 onSelected={() => onMarkerPress(element, longitude, latitude)}>
-                <MarkerGreen />
+                {element.count === 1 && element.team === 1 && <MarkerBlue />}
+                {element.count === 1 && element.team === 2 && <MarkerGreen />}
+                {element.count > 1 && <AggregatedMarker
+                  bgColor={theme.COLORS.SILVER_SAND}
+                  numColor={theme.COLORS.BLACK}
+                  count={element.count}
+                />}
               </MapboxGL.PointAnnotation>
             );
           }),
@@ -358,7 +358,7 @@ const MapScreen = (props) => {
 
   const onMarkerPress = useCallback(
     (feature, longitude, latitude) => {
-      setSelectedMarker({...feature, longitude, latitude});
+      setSelectedMarker({ ...feature, longitude, latitude });
       slidingPanel.current.show();
     },
     [slidingPanel],
@@ -374,7 +374,7 @@ const MapScreen = (props) => {
       <SlidingUpPanel
         ref={slidingPanel}
         onBottomReached={onDismissSlide}
-        draggableRange={{top: 272, bottom: 0}}
+        draggableRange={{ top: 272, bottom: 0 }}
         showBackdrop={false}>
         {selectedMarker && (
           <DetailView
@@ -500,7 +500,7 @@ const styles = StyleSheet.create({
   },
   balloonArrow: {
     zIndex: 0,
-    transform: [{rotateZ: '45deg'}],
+    transform: [{ rotateZ: '45deg' }],
     width: 16,
     height: 16,
     backgroundColor: theme.COLORS.TEXT_GREY,

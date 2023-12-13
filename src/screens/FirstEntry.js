@@ -5,14 +5,14 @@ import {CommonActions} from '@react-navigation/native';
 import {useSelector} from 'react-redux';
 import {withTranslation} from 'react-i18next';
 import {getFirstRun, getPrivacySetting, getUserName, getWalletAddress, isPrivacyAndTermsAccepted} from '../services/DataManager';
-import {
-  useWalletConnect,
-} from '@walletconnect/react-native-dapp';
+// import {
+//   useWalletConnect,
+// } from '@walletconnect/react-native-dapp';
 import { updateOrCreateUser, updatePrivacyAndTOC } from '../services/API/APIManager';
 
 const FirstEntry = ({t, navigation}) => {
   const web3 = useSelector((state) => state.web3);
-  const connector = useWalletConnect();
+  // const connector = useWalletConnect();
 
   const navigateHome = () => {
     navigation.dispatch(

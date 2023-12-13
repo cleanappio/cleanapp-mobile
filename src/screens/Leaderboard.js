@@ -467,7 +467,7 @@ export const Leaderboard = (props) => {
             <View style={styles.statContainer}>
               <Text style={styles.statTitle}>
                 {t('leaderboard.teamblue')}
-                {userTeam === 'blue' ? `  (Your team)` : ''}
+                {userTeam === '1' ? `  (Your team)` : ''}
               </Text>
               <Text style={styles.blueStat}>{`${blueStat} ${t(
                 'leaderboard.kitn',
@@ -475,7 +475,7 @@ export const Leaderboard = (props) => {
             </View>
             <View style={styles.statContainer}>
               <Text style={{...styles.statTitle, textAlign: 'right'}}>
-                {userTeam === 'green' ? `(Your team)   ` : ''}
+                {userTeam === '2' ? `(Your team)   ` : ''}
                 {t('leaderboard.teamgreen')}
               </Text>
               <Text

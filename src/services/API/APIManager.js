@@ -11,11 +11,11 @@ import { settings as s } from './Settings';
 
 // === API v.2
 
-export const updateOrCreateUser = async (public_address, avatar, referral) => {
+export const updateOrCreateUser = async (publicAddress, avatar, referral) => {
   try {
     const data = {
       version: '2.0',
-      id: public_address,
+      id: publicAddress,
       avatar: avatar,
       referral: referral,
     }
@@ -40,11 +40,11 @@ export const updateOrCreateUser = async (public_address, avatar, referral) => {
   }
 }
 
-export const updatePrivacyAndTOC = async (public_address, privacy, agreeTOC) => {
+export const updatePrivacyAndTOC = async (publicAddress, privacy, agreeTOC) => {
   try {
     const data = {
       version: '2.0',
-      id: public_address,
+      id: publicAddress,
       privacy: privacy,
       agree_toc: agreeTOC,
     }
@@ -65,11 +65,11 @@ export const updatePrivacyAndTOC = async (public_address, privacy, agreeTOC) => 
   }
 }
 
-export const report = async (public_address, latitude, longitude, image) => {
+export const report = async (publicAddress, latitude, longitude, image) => {
   try {
     const data = {
       version: '2.0',
-      id: public_address,
+      id: publicAddress,
       latitude: latitude,
       longitude: longitude,
       x: 0,
@@ -94,25 +94,29 @@ export const report = async (public_address, latitude, longitude, image) => {
   }
 }
 
-export const getMap = async (public_address, latTop, lonLeft, latBottom, lonRight) => {
+export const getReportsOnMap = async (publicAddress, latMin, lonMin, latMax, lonMax, latCenter, lonCenter) => {
   try {
     const data = {
       version: '2.0',
-      id: public_address,
+      id: publicAddress,
       vport: {
-        lattop: latTop,
-        lonleft: lonLeft,
-        latbottom: latBottom,
-        lonright: lonRight,
-      }
+        latmin: latMin,
+        lonmin: lonMin,
+        latmax: latMax,
+        lonmax: lonMax,
+      },
+      center: {
+        lat: latCenter,
+        lon: lonCenter,
+      },
     }
     const response = await postJSONData(s.v2api.getMap, data);
     const ret = {
       ok: response.ok
     }
     if (response.ok) {
-      ret.pins = await response.json()
-        .then((pins) => pins);
+      ret.reports = await response.json()
+        .then((reports) => { return reports; });
     } else {
       if (response.error) {
         ret.error = response.error;
@@ -122,6 +126,7 @@ export const getMap = async (public_address, latTop, lonLeft, latBottom, lonRigh
     }
     return ret;
   } catch (err) {
+    console.log(err)
     return null;
   }
 }
@@ -152,11 +157,11 @@ export const fetchReferral = async (key) => {
   }
 }
 
-export const generateReferral = async(public_address) => {
+export const generateReferral = async(publicAddress) => {
   try {
     const data = {
       version: '2.0',
-      id: public_address,
+      id: publicAddress,
     }
     const response = await postJSONData(s.v2api.generateReferral, data);
     const ret = {
@@ -178,11 +183,11 @@ export const generateReferral = async(public_address) => {
   }
 }
 
-export const getTeams = async(public_address) => {
+export const getTeams = async(publicAddress) => {
   try {
     const data = {
       version: '2.0',
-      id: public_address,
+      id: publicAddress,
     }
     const response = await postJSONData(s.v2api.getTeams, data);
     const ret = {
@@ -205,11 +210,11 @@ export const getTeams = async(public_address) => {
   }
 }
 
-export const getTopScores = async(public_address) => {
+export const getTopScores = async(publicAddress) => {
   try {
     const data = {
       version: '2.0',
-      id: public_address,
+      id: publicAddress,
     }
     const response = await postJSONData(s.v2api.getTopScores, data);
     const ret = {
@@ -264,7 +269,7 @@ export const storeUserResponse = async (data) => {
   }
 };
 
-export const userLogin = async (public_address, signature) => {
+export const userLogin = async (publicAddress, signature) => {
   try {
     let data = {
       public_address: public_address,
@@ -556,24 +561,6 @@ export const startTutorial = async () => {
     const response = await getUserData(s.other.startTutorial);
     return response;
   } catch (err) {}
-  return null;
-};
-
-export const searchImagesByLocation = async ({
-  latitude,
-  longitude,
-  range = 1,
-}) => {
-  try {
-    const response = await getUserData(
-      s.metadata.searchImagesByLocation
-        .replace('$[latitude]', latitude)
-        .replace('$[longitude]', longitude)
-        .replace('$[range]', range),
-    );
-    return response;
-  } catch (err) {}
-
   return null;
 };
 
