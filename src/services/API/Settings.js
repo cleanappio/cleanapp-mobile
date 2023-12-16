@@ -7,6 +7,7 @@ export const settings = {
     updatePrivacyAndToc: 'update_privacy_and_toc',
     report: 'report',
     getMap: 'get_map',
+    readReport: 'read_report',
     readReferral: 'read_referral',
     generateReferral: 'generate_referral',
     getTeams: 'get_teams',

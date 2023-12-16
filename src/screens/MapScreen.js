@@ -7,30 +7,24 @@ import {
   FlatList,
   Image,
   Dimensions,
-  Platform,
   Keyboard,
-  Alert,
 } from 'react-native';
 import SlidingUpPanel from 'rn-sliding-up-panel';
 import Config from 'react-native-config';
 import {
   getCoordinatesFromLocation,
   getMapSearchItems,
-  getReverseGeocodingData,
 } from '../services/API/MapboxAPI';
 import { TextInput } from 'react-native';
 import { fontFamilies } from '../utils/fontFamilies';
 import { theme } from '../services/Common/theme';
 import SearchIcon from '../assets/ico_search_large.svg';
-import { Tooltip } from 'react-native-elements';
-import BottomSheetDialog from '../components/BotomSheetDialog';
 import Ripple from '../components/Ripple';
 import { useTranslation } from 'react-i18next';
 import { useStateValue } from '../services/State/State';
 import {
-  getImage,
   getReportsOnMap,
-  update_annotation,
+  readReport,
 } from '../services/API/APIManager';
 import MarkerGreen from '../assets/marker_green.svg';
 import MarkerBlue from '../assets/marker_blue.svg';
@@ -43,15 +37,10 @@ const offsetMultiplier = 0.00001;
 
 const DetailView = memo(
   ({
-    isVisible = true,
-    onClose = () => { },
-    latitude = 0,
-    longitude = 0,
-    locality = '',
-    city = '',
     image_id = '',
   }) => {
     const [image, setImage] = useState(null);
+    const [avatar, setAvatar] = useState('');
     useEffect(() => {
       if (image_id) {
         getSingleImage(image_id);
@@ -59,12 +48,13 @@ const DetailView = memo(
     }, [image_id]);
 
     const getSingleImage = async (imageId) => {
-      let result = await getImage(imageId);
-      const fileReaderInstance = new FileReader();
-      fileReaderInstance.readAsDataURL(result);
-      fileReaderInstance.onload = () => {
-        setImage(fileReaderInstance.result);
-      };
+      let result = await readReport(imageId);
+      if (result && result.ok) {
+        setImage(`data:plain/text;base64,${result.report.image}`);
+        if (result.report.avatar && result.report.avatar != '') {
+          setAvatar(result.report.avatar)
+        }
+      }
     };
 
     return (
@@ -77,8 +67,7 @@ const DetailView = memo(
           padding: 16,
         }}>
         <View style={styles.row}>
-          <Text style={styles.txt12}>{locality}</Text>
-          <Text style={styles.txt12}>{city}</Text>
+          <Text style={styles.txt12}>{avatar}</Text>
         </View>
         <Image
           source={{ uri: image }}
@@ -357,6 +346,9 @@ const MapScreen = (props) => {
 
   const onMarkerPress = useCallback(
     (feature, longitude, latitude) => {
+      if (feature.count > 1) {
+        return;
+      }
       setSelectedMarker({ ...feature, longitude, latitude });
       slidingPanel.current.show();
     },
@@ -377,12 +369,7 @@ const MapScreen = (props) => {
         showBackdrop={false}>
         {selectedMarker && (
           <DetailView
-            isVisible={true}
-            latitude={selectedMarker.latitude}
-            longitude={selectedMarker.longitude}
-            locality={selectedMarker.locality}
-            city={selectedMarker.city}
-            image_id={selectedMarker.image_id}
+            image_id={selectedMarker.report_id}
           />
         )}
       </SlidingUpPanel>

@@ -126,8 +126,33 @@ export const getReportsOnMap = async (publicAddress, latMin, lonMin, latMax, lon
     }
     return ret;
   } catch (err) {
-    console.log(err)
     return null;
+  }
+}
+
+export const readReport = async (reportSeq) => {
+  try {
+    const data = {
+      version: '2.0',
+      seq: reportSeq,
+    }
+    const response = await postJSONData(s.v2api.readReport, data);
+    const ret = {
+      ok: response.ok
+    }
+    if (response.ok) {
+      ret.report = await response.json()
+        .then((reports) => { return reports; });
+    } else {
+      if (response.error) {
+        ret.error = response.error;
+      } else if (response.status) {
+        ret.error = response.statusText;
+      }
+    }
+    return ret;
+  } catch (err) {
+    console.log(err);
   }
 }
 
@@ -157,7 +182,7 @@ export const fetchReferral = async (key) => {
   }
 }
 
-export const generateReferral = async(publicAddress) => {
+export const generateReferral = async (publicAddress) => {
   try {
     const data = {
       version: '2.0',
@@ -183,7 +208,7 @@ export const generateReferral = async(publicAddress) => {
   }
 }
 
-export const getTeams = async(publicAddress) => {
+export const getTeams = async (publicAddress) => {
   try {
     const data = {
       version: '2.0',
@@ -210,7 +235,7 @@ export const getTeams = async(publicAddress) => {
   }
 }
 
-export const getTopScores = async(publicAddress) => {
+export const getTopScores = async (publicAddress) => {
   try {
     const data = {
       version: '2.0',
@@ -305,18 +330,18 @@ export const userRegister = async (public_address, referral_id = '') => {
 };
 export const requestUserName = async (public_address) => {
   try {
-    let data = {public_address: public_address};
+    let data = { public_address: public_address };
     const username = await postData(s.auth.user_name, data);
     if (username && username.username) {
     }
     return username;
-  } catch (err) {}
+  } catch (err) { }
   return null;
 };
 
 export const changeUserName = async (public_address, name) => {
   try {
-    let data = {public_address: public_address, username: name};
+    let data = { public_address: public_address, username: name };
     const response = await postData(s.auth.change_user_name, data);
     return response;
   } catch (err) {
@@ -424,7 +449,7 @@ export const annotateImage = async (data) => {
  * {photos: [{photo_id: "fffff1000010787c"}]}
  */
 export const reportImages = async (photos) => {
-  const data = {photos: [...photos]};
+  const data = { photos: [...photos] };
   try {
     const response = await postUserData(s.metadata.reportImages, data);
     return response;
@@ -444,7 +469,7 @@ export const annotate = async (data) => {
   try {
     const response = await postUserData(s.metadata.annotate, data);
     return response;
-  } catch (err) {}
+  } catch (err) { }
   return null;
 };
 
@@ -479,7 +504,7 @@ export const getUserRanks = async () => {
   try {
     const response = await getUserData(s.queryView.userRank);
     return response;
-  } catch (err) {}
+  } catch (err) { }
   return null;
 };
 
@@ -502,23 +527,23 @@ export const createGuild = async ({
   }
 };
 
-export const joinGuild = async ({guild_id = ''}) => {
+export const joinGuild = async ({ guild_id = '' }) => {
   try {
     const response = await getUserData(
       s.guild.joinGuild.replace('$[GUILD_ID]', guild_id),
     );
     return response;
-  } catch (err) {}
+  } catch (err) { }
   return null;
 };
 
-export const leaveGuild = async ({guild_id = ''}) => {
+export const leaveGuild = async ({ guild_id = '' }) => {
   try {
     const response = await getUserData(
       s.guild.leaveGuild.replace('$[GUILD_ID]', guild_id),
     );
     return response;
-  } catch (err) {}
+  } catch (err) { }
   return null;
 };
 
@@ -526,7 +551,7 @@ export const getGuildList = async () => {
   try {
     const response = await getUserData(s.guild.getGuildList);
     return response;
-  } catch (err) {}
+  } catch (err) { }
   return null;
 };
 
@@ -534,7 +559,7 @@ export const getUserRank = async () => {
   try {
     const response = await getUserData(s.guild.userrank);
     return response;
-  } catch (err) {}
+  } catch (err) { }
   return null;
 };
 
@@ -544,7 +569,7 @@ export const setDataSharingOption = async (option) => {
       data_sharing_option: option,
     });
     return response;
-  } catch (err) {}
+  } catch (err) { }
   return null;
 };
 
@@ -552,7 +577,7 @@ export const getDataSharingOption = async () => {
   try {
     const response = await getUserData(s.metadata.shareDataLive);
     return response;
-  } catch (err) {}
+  } catch (err) { }
   return null;
 };
 
@@ -560,7 +585,7 @@ export const startTutorial = async () => {
   try {
     const response = await getUserData(s.other.startTutorial);
     return response;
-  } catch (err) {}
+  } catch (err) { }
   return null;
 };
 
@@ -568,7 +593,7 @@ export const getTeamStatus = async () => {
   try {
     const response = await getUserData(s.other.team_status);
     return response;
-  } catch (err) {}
+  } catch (err) { }
   return null;
 };
 
@@ -578,7 +603,7 @@ export const getGuildImage = async (guildId) => {
       s.guild.getGuildImage.replace('$[GUILD_ID]', guildId),
     );
     return response;
-  } catch (err) {}
+  } catch (err) { }
   return null;
 };
 
@@ -586,7 +611,7 @@ export const get_reward_status = async () => {
   try {
     const response = await getUserData(s.reward.get_reward_status);
     return response;
-  } catch (err) {}
+  } catch (err) { }
   return null;
 };
 
@@ -594,7 +619,7 @@ export const get_claim_time = async () => {
   try {
     const response = await getUserData(s.reward.next_claim_time);
     return response;
-  } catch (err) {}
+  } catch (err) { }
   return null;
 };
 
@@ -606,6 +631,6 @@ export const update_annotation = async (data) => {
       true,
     );
     return response;
-  } catch (err) {}
+  } catch (err) { }
   return null;
 }
