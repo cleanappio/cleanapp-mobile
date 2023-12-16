@@ -320,7 +320,6 @@ const MapView = ({ onMarkerPress = () => { }, selectedMarker = null }) => {
         />
         {Object.keys(reportData).map((elekey) =>
           reportData[elekey].map((element, index) => {
-            console.log(element);
             const latitude = element.latitude;
             const longitude = element.longitude + offsetMultiplier * index;
             return (
