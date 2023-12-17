@@ -544,6 +544,7 @@ export default {
     },
     mapscreen: {
       maps: 'Maps',
+      close: 'Close',
     },
     location: {
       locationPermissionNotGranted:

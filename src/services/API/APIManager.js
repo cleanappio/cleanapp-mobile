@@ -130,10 +130,11 @@ export const getReportsOnMap = async (publicAddress, latMin, lonMin, latMax, lon
   }
 }
 
-export const readReport = async (reportSeq) => {
+export const readReport = async (publicAddress, reportSeq) => {
   try {
     const data = {
       version: '2.0',
+      id: publicAddress,
       seq: reportSeq,
     }
     const response = await postJSONData(s.v2api.readReport, data);

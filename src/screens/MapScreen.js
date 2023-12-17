@@ -1,13 +1,13 @@
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import MapboxGL from '@rnmapbox/maps';
 import {
-  StyleSheet,
-  View,
-  Text,
+  Dimensions,
   FlatList,
   Image,
-  Dimensions,
   Keyboard,
+  StyleSheet,
+  Text,
+  View,
 } from 'react-native';
 import SlidingUpPanel from 'rn-sliding-up-panel';
 import Config from 'react-native-config';
@@ -28,6 +28,8 @@ import {
 } from '../services/API/APIManager';
 import MarkerGreen from '../assets/marker_green.svg';
 import MarkerBlue from '../assets/marker_blue.svg';
+import MarkerCircleBlue from '../assets/marker_circle_blue.svg';
+import MarkerCircleGreen from '../assets/marker_circle_green.svg';
 import { getLocation } from '../functions/geolocation';
 import { actions } from '../services/State/Reducer';
 import { getWalletAddress, setMapLocation } from '../services/DataManager';
@@ -48,10 +50,11 @@ const DetailView = memo(
     }, [image_id]);
 
     const getSingleImage = async (imageId) => {
-      let result = await readReport(imageId);
+      const walletAddress = await getWalletAddress();
+      let result = await readReport(walletAddress, imageId);
       if (result && result.ok) {
         setImage(`data:plain/text;base64,${result.report.image}`);
-        if (result.report.avatar && result.report.avatar != '') {
+        if (result.report.avatar) {
           setAvatar(result.report.avatar)
         }
       }
@@ -72,7 +75,7 @@ const DetailView = memo(
         <Image
           source={{ uri: image }}
           style={styles.detailImage}
-          resizeMode="cover"
+          resizeMode="contain"
         />
       </View>
     );
@@ -317,8 +320,10 @@ const MapView = ({ onMarkerPress = () => { }, selectedMarker = null }) => {
                 key={`flag-${elekey}-${index}`}
                 coordinate={[longitude, latitude]}
                 onSelected={() => onMarkerPress(element, longitude, latitude)}>
-                {element.count === 1 && element.team === 1 && <MarkerBlue />}
-                {element.count === 1 && element.team === 2 && <MarkerGreen />}
+                {element.count === 1 && element.team === 1 && !element.own && <MarkerBlue />}
+                {element.count === 1 && element.team === 2 && !element.own && <MarkerGreen />}
+                {element.count === 1 && element.team === 1 && element.own && <MarkerCircleBlue />}
+                {element.count === 1 && element.team === 2 && element.own && <MarkerCircleGreen />}
                 {element.count > 1 && <AggregatedMarker
                   bgColor={theme.COLORS.SILVER_SAND}
                   numColor={theme.COLORS.BLACK}
@@ -328,7 +333,7 @@ const MapView = ({ onMarkerPress = () => { }, selectedMarker = null }) => {
             );
           }),
         )}
-        {selectedMarker && (
+        {selectedMarker && selectedMarker.avatar && (
           <MapboxGL.MarkerView
             id={'marker'}
             coordinate={[selectedMarker.longitude, selectedMarker.latitude]}>
@@ -361,12 +366,18 @@ const MapScreen = (props) => {
 
   return (
     <View style={styles.page}>
-      <MapView onMarkerPress={onMarkerPress} selectedMarker={selectedMarker} />
+      <MapView
+        onMarkerPress={onMarkerPress}
+        selectedMarker={selectedMarker}
+      />
       <SlidingUpPanel
         ref={slidingPanel}
         onBottomReached={onDismissSlide}
-        draggableRange={{ top: 272, bottom: 0 }}
-        showBackdrop={false}>
+        draggableRange={{
+          top: Dimensions.get('screen').height - 250,
+          bottom: 0,
+        }}
+        showBackdrop={true}>
         {selectedMarker && (
           <DetailView
             image_id={selectedMarker.report_id}
@@ -376,6 +387,7 @@ const MapScreen = (props) => {
     </View>
   );
 };
+
 const styles = StyleSheet.create({
   page: {
     flex: 1,
@@ -505,9 +517,7 @@ const styles = StyleSheet.create({
   },
   detailImage: {
     marginTop: 8,
-    borderRadius: 8,
-    width: Dimensions.get('screen').width - 40,
-    height: Dimensions.get('screen').height - 350,
+    height: Dimensions.get('screen').height - 300,
   },
 });
 export default MapScreen;
