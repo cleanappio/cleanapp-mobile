@@ -387,7 +387,7 @@ export default {
       tocPrefix: "I agree with CleanApp's ",
       tocLink: 'terms and conditions',
       skip: 'Skip',
-      startCleanup: 'Start Cleanup! (10 KITN)',
+      startCleanup: 'Start Cleanup!',
       close: 'Close',
     },
     referral: {
