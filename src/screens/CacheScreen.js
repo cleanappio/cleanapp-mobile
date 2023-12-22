@@ -29,16 +29,16 @@ import Toast from 'react-native-simple-toast';
 import BackgroundTimer from 'react-native-background-timer';
 import { ethers } from 'ethers';
 import {
+  getPrivacySetting,
   getWalletAddress,
   getWalletData,
   setCacheVault,
+  setPrivacySetting,
 } from '../services/DataManager';
 import { useTranslation } from 'react-i18next';
 import {
-  getDataSharingOption,
-  get_claim_time,
-  get_reward_status,
-  setDataSharingOption,
+  getRewardStats,
+  updatePrivacyAndTOC,
 } from '../services/API/APIManager';
 import { useStateValue } from '../services/State/State';
 import { actions } from '../services/State/Reducer';
@@ -53,20 +53,8 @@ const CacheScreen = (props) => {
   const [isReferralVisible, setIsReferralVisible] = useState(false);
   const [referralUrl, setReferralUrl] = useState('');
 
-  const [rewardStatusList, setRewardStatusList] = useState([]);
-  const [shareDataStatus, setShareDataStatus] = useState('share_data_live');
+  const [shareDataStatus, setShareDataStatus] = useState(0);
   const [{ cacheVault }, dispatch] = useStateValue();
-  /* const [totalCache, setTotalCache] = useState({
-    reports: 0,
-    referrals: 0,
-    offchainReports: 0,
-    offchainReferrals: 0,
-    onchainReports: 0,
-    onchainReferrals: 0,
-    onchainTotal: 0,
-    offchainTotal: 0,
-    total: 0,
-  }); */
 
   const [nextRunTime, setNextRunTime] = useState(0);
   const navigation = useNavigation();
@@ -110,70 +98,43 @@ const CacheScreen = (props) => {
 
   const initWallet = async () => {
     const walletData = await getWalletData();
-    setWalletAddress(walletData.publicKey);
     setWalletInfo(walletData);
   };
 
-  useEffect(() => {
-    initWallet();
+  useEffect(async () => {
+    await initWallet();
     generateReferralUrl().then((url) => {
       if (url) {
         setReferralUrl(url);
       }
     });
 
-    getDataSharingOption().then((resp) => {
+    getPrivacySetting().then((resp) => {
       if (resp) {
-        setShareDataStatus(
-          resp.data_sharing_option === 'share_data_live' ? 0 : 1,
-        );
+        setShareDataStatus(resp);
       }
     });
-
-    get_claim_time().then((resp) => {
-      if (resp && resp.result) {
-        setNextRunTime(resp.result);
-      }
-    });
-
-    get_reward_status().then((resp) => {
-      if (resp && resp.result) {
-        setRewardStatusList(resp);
+    const wa = await getWalletAddress();
+    setWalletAddress(await getWalletAddress(wa));
+    getRewardStats(wa).then((resp) => {
+      if (resp && resp.ok) {
         let cacheResult = {
-          reports: 0,
-          referrals: 0,
-          offchainReports: 0,
-          offchainReferrals: 0,
-          onchainReports: 0,
-          onchainReferrals: 0,
-          onchainTotal: 0,
-          offchainTotal: 0,
-          total: 0,
+          reports: resp.stats.kitns_daily + resp.stats.kitns_disbursed || 0,
+          referrals: resp.stats.kitns_ref_daily + resp.stats.kitns_ref_disbursed || 0,
+          dailyReports: resp.stats.kitns_daily || 0,
+          dailyReferrals: resp.stats.kitns_ref_daily || 0,
+          disbursedReports: resp.stats.kitns_disbursed || 0,
+          disbursedReferrals: resp.stats.kitns_ref_disbursed || 0,
+          disbursedTotal: resp.stats.kitns_disbursed + resp.stats.kitns_ref_disbursed || 0,
+          dailyTotal: resp.stats.kitns_daily + resp.stats.kitns_ref_daily || 0,
+          total: resp.stats.kitns_daily + resp.stats.kitns_ref_daily +
+                 resp.stats.kitns_disbursed + resp.stats.kitns_ref_disbursed || 0,
         };
-        resp.result.forEach((element) => {
-          cacheResult.total += element.reward;
-          if (element.type === 'referral') {
-            if (element.reward_status === 'paid') {
-              cacheResult.onchainReferrals += element.reward;
-            } else {
-              cacheResult.offchainReferrals += element.reward;
-            }
-            cacheResult.referrals += element.reward;
-          } else {
-            if (element.reward_status === 'paid') {
-              cacheResult.onchainReports += element.reward;
-            } else {
-              cacheResult.offchainReports += element.reward;
-            }
-            cacheResult.reports += element.reward;
-          }
-        });
         dispatch({
           type: actions.SET_CACHE_VAULT,
           cacheVault: cacheResult,
         });
         setCacheVault(cacheResult);
-        //setTotalCache(cacheResult);
       }
     });
   }, []);
@@ -190,9 +151,11 @@ const CacheScreen = (props) => {
     };
 
     const setPrivacy = async () => {
-      await setDataSharingOption(
-        privacySelected === 0 ? 'not_share_data_live' : 'share_data_live',
+      await updatePrivacyAndTOC(
+        walletAddress,
+        privacySelected === 0 ? 'share_data_live' : 'not_share_data_live'
       );
+      setPrivacySetting(privacySelected);
       setShareDataStatus(privacySelected);
       onClose();
     };
@@ -520,7 +483,7 @@ const CacheScreen = (props) => {
               <Text style={{ ...styles.txt16, lineHeight: 16 }}>
                 {cacheVault.total || 0} <Text style={styles.txt16}>{'KITN'}</Text>
               </Text>
-              <Text style={styles.txt16}>{'Lifetime XP'}</Text>
+              <Text style={styles.txt16}>{'Total'}</Text>
             </Row>
             <Row>
               <Text style={styles.txt9}>
@@ -534,28 +497,25 @@ const CacheScreen = (props) => {
               </Text>
               <Text style={styles.txt9}>{'Referrals'}</Text>
             </Row>
-            {/* <Row>
+            <Row>
               <Text style={styles.txt9}>
-                {totalCache.offchainReports} <Text style={styles.txt9}>{'KITN'}</Text>
+                {cacheVault.dailyReports} <Text style={styles.txt9}>{'KITN'}</Text>
               </Text>
-              <Text style={styles.txt9}>{'Litterbox(offchain) reports'}</Text>
+              <Text style={styles.txt9}>{'Litterbox(daily) reports'}</Text>
             </Row>
             <Row>
               <Text style={styles.txt9}>
-                {totalCache.offchainReferrals} <Text style={styles.txt9}>{'KITN'}</Text>
+                {cacheVault.dailyReferrals} <Text style={styles.txt9}>{'KITN'}</Text>
               </Text>
-              <Text style={styles.txt9}>{'Litterbox(offchain) referrals'}</Text>
-            </Row> */}
+              <Text style={styles.txt9}>{'Litterbox(daily) referrals'}</Text>
+            </Row>
           </View>
           <View style={styles.balanceContainer}>
             <Row>
-              <Text style={styles.txt12}>{'Litterbox(offchain)'}</Text>
-              {/*  <Text style={styles.txt12}>{`Emptied in ${Math.ceil(nextRunTime / 3600)}h ${
-                Math.ceil((nextRunTime % 3600) / 60)
-              }mins`}</Text> */}
+              <Text style={styles.txt12}>{'Litterbox(daily)'}</Text>
             </Row>
             <Text style={styles.txt24}>
-              {`${cacheVault.offchainTotal || 0} `}
+              {`${cacheVault.dailyTotal || 0} `}
               <Text style={styles.txt16}>{'KITN'}</Text>
             </Text>
           </View>

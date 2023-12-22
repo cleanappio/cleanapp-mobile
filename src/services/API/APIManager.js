@@ -1,12 +1,4 @@
-import Config from 'react-native-config';
-import {
-  getData,
-  getFile,
-  postData,
-  getUserData,
-  postUserData,
-  postJSONData,
-} from './CoreAPICalls';
+import { postJSONData } from './CoreAPICalls';
 import { settings as s } from './Settings';
 
 // === API v.2
@@ -47,7 +39,7 @@ export const updatePrivacyAndTOC = async (publicAddress, privacy, agreeTOC) => {
       version: '2.0',
       id: publicAddress,
       privacy: privacy,
-      agree_toc: agreeTOC,
+      agree_toc: agreeTOC || '',
     }
     const response = await postJSONData(s.v2api.updatePrivacyAndToc, data);
     const ret = {
@@ -263,38 +255,28 @@ export const getTopScores = async (publicAddress) => {
   }
 }
 
-// === Deprecated API v.1
-
-export const setDataSharingOption = async (option) => {
+export const getRewardStats = async (publicAddress) => {
   try {
-    const response = await postUserData(s.metadata.shareDataLive, {
-      data_sharing_option: option,
-    });
-    return response;
-  } catch (err) { }
-  return null;
-};
-
-export const getDataSharingOption = async () => {
-  try {
-    const response = await getUserData(s.metadata.shareDataLive);
-    return response;
-  } catch (err) { }
-  return null;
-};
-
-export const get_reward_status = async () => {
-  try {
-    const response = await getUserData(s.reward.get_reward_status);
-    return response;
-  } catch (err) { }
-  return null;
-};
-
-export const get_claim_time = async () => {
-  try {
-    const response = await getUserData(s.reward.next_claim_time);
-    return response;
-  } catch (err) { }
-  return null;
-};
+    const data = {
+      version: '2.0',
+      id: publicAddress,
+    }
+    const response = await postJSONData(s.v2api.getStats, data);
+    const ret = {
+      ok:response.ok
+    }
+    if (response.ok) {
+      ret.stats = await response.json()
+        .then((response) => response);
+    } else {
+      if (response.error) {
+        ret.error = response.error;
+      } else if (response.status) {
+        ret.error = response.statusText;
+      }
+    }
+    return ret;
+  } catch (err) {
+    return null;
+  }
+}
