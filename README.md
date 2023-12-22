@@ -178,6 +178,17 @@ yarn install && yarn react-native link
         
         ***You have to set a full path like /home/... or /Users/..., without variables like $HOME etc.***
 
+#### Configure Mapbox API dowload API key
+
+1. Make sure the Mapbox download token is created.
+    *   All public scopes are to be checked
+    *   DOWNLOADS:READ from secret scopes is to be checked
+
+1. Modify the cleanapp.properties file created in the step above. Add the following line there:
+    ```
+    mapbox.downloadsToken=<The key>
+    ```
+
 #### Install and test the release version on the device
 1.  Make sure the developer mode on the devise is enabled, https://developer.android.com/studio/debug/dev-options?authuser=3
 1.  Uninstall any existing CleanApp applicationon teh device
