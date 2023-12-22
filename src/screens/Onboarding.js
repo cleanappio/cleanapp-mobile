@@ -20,7 +20,7 @@ import {
 } from 'react-native';
 import { useSelector } from 'react-redux';
 import Ripple from '../components/Ripple';
-import { LoginFromWalletConnect, GetOrCreateLocalWallet } from '../functions/login';
+import { GetOrCreateLocalWallet } from '../functions/login';
 import {
   updateOrCreateUser,
   updatePrivacyAndTOC,

@@ -21,8 +21,8 @@ import MapScreen from './screens/MapScreen';
 import CacheScreen from './screens/CacheScreen';
 import BasketBGIcon from './assets/ico_basket_bg.svg';
 import BasketIcon from './assets/ico_basket.svg';
-import CreateGuildScreen from './screens/CreateGuildScreen';
-import GuildScreen from './screens/GuildScreen';
+// import CreateGuildScreen from './screens/CreateGuildScreen';
+// import GuildScreen from './screens/GuildScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -99,7 +99,7 @@ const LeaderboardStack = () => {
           );
         }}
       />
-      <Stack.Screen
+      {/* <Stack.Screen
         name="CreateGuild"
         component={CreateGuildScreen}
         options={({navigation}) => {
@@ -128,7 +128,7 @@ const LeaderboardStack = () => {
             navigation,
           );
         }}
-      />
+      /> */}
     </Stack.Navigator>
   );
 };

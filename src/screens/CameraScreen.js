@@ -10,31 +10,23 @@ import {
   Dimensions,
   Animated,
 } from 'react-native';
-import {FAB} from 'react-native-paper';
 import {
   Camera,
   useCameraDevices,
-  useFrameProcessor,
 } from 'react-native-vision-camera';
 import RNFS from 'react-native-fs';
 import {theme} from '../services/Common/theme';
-import {Row} from '../components/Row';
 
 import {useNavigation} from '@react-navigation/native';
 import {useStateValue} from '../services/State/State';
 import {actions} from '../services/State/Reducer';
-import {
-  PERMISSIONS,
-  RESULTS,
-  request,
-  openSettings,
-} from 'react-native-permissions';
+import {openSettings} from 'react-native-permissions';
 import RadialGradient from 'react-native-radial-gradient';
 import {fontFamilies} from '../utils/fontFamilies';
 import CheckBigIcon from '../assets/ico_check_big.svg';
 import {BlurView} from '@react-native-community/blur';
 import {useTranslation} from 'react-i18next';
-import {report, uploadImage} from '../services/API/APIManager';
+import {report} from '../services/API/APIManager';
 import {getLocation} from '../functions/geolocation';
 import {getReverseGeocodingData} from '../services/API/MapboxAPI';
 import { getWalletAddress } from '../services/DataManager';

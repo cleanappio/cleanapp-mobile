@@ -152,7 +152,6 @@ export default {
       save: 'Annotate',
       Bounty: 'Bounty',
       Type: 'Type',
-      uploadImage: 'Upload Image',
       upload: 'Upload',
       next: 'Next',
       back: 'Back',
