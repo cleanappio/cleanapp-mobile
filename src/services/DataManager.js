@@ -22,6 +22,7 @@ const KEYS = {
   REPORTS: 'REPORTS',
   PLAYERS: 'PLAYERS',
   GUILDS: 'GUILDS',
+  REFERRAL_KEY: 'REFERRAL_KEY',
   REFERRAL: 'REFERRAL',
   TEAM: 'TEAM',
 };
@@ -435,6 +436,20 @@ export const setGuilds = async (guilds) => {
   } catch (err) {}
 };
 
+export const getReferralKey = async () => {
+  try {
+    return await AsyncStorage.getItem(KEYS.REFERRAL_KEY);
+  } catch (err) {
+    return '';
+  }
+}
+
+export const setReferralKey = async (referralKey) => {
+  try {
+    await AsyncStorage.setItem(KEYS.REFERRAL_KEY, referralKey);
+  } catch (err) {}
+}
+
 export const getReferral = async () => {
   try {
     return await AsyncStorage.getItem(KEYS.REFERRAL);
@@ -459,6 +474,6 @@ export const getTeam = async () => {
 
 export const setTeam = async (team) => {
   try {
-    await AsyncStorage.setItem(KEYS.TEAM, team);
+    await AsyncStorage.setItem(KEYS.TEAM, string(team));
   } catch (err) {}
 }

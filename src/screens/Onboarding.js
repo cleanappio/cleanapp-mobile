@@ -27,14 +27,11 @@ import {
 } from '../services/API/APIManager';
 import { theme } from '../services/Common/theme';
 import {
-  getUserName,
   getWalletAddress,
   setFirstRun,
   setPrivacyAndTermsAccepted,
   setPrivacySetting,
   setUserName,
-  getReferral,
-  setReferral,
   setTeam,
 } from '../services/DataManager';
 import { fontFamilies } from '../utils/fontFamilies';
@@ -143,6 +140,7 @@ const WelcomeScreen = ({
   const { t } = useTranslation();
 
   const [name, setName] = useState(userName);
+  const [refKey, setRefKey] = useState('');
   const [referralCode, setReferralCode] = useState('');
   const [inProgress, setInProgress] = useState(false)
 
@@ -174,7 +172,7 @@ const WelcomeScreen = ({
       return true;
     }
 
-    data = await updateOrCreateUser(walletAddress, name, referralCode);
+    data = await updateOrCreateUser(walletAddress, name, refKey, referralCode);
     if (data && data.ok) {
       if (data.dup_avatar) {
         Alert.alert(
@@ -204,8 +202,9 @@ const WelcomeScreen = ({
 
   useEffect(async () => {
     setInProgress(true);
-    const referral = await retrieveReferral();
-    await setReferral(referral);
+    console.log('+++', 'useEffect in Onboarding');
+    const [refKey, referral] = await retrieveReferral();
+    setRefKey(refKey);
     setReferralCode(referral);
     setInProgress(false);
   }, []);

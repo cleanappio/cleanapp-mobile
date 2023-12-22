@@ -11,12 +11,13 @@ import { settings as s } from './Settings';
 
 // === API v.2
 
-export const updateOrCreateUser = async (publicAddress, avatar, referral) => {
+export const updateOrCreateUser = async (publicAddress, avatar, refKey, referral) => {
   try {
     const data = {
       version: '2.0',
       id: publicAddress,
       avatar: avatar,
+      ref_key: refKey,
       referral: referral,
     }
     const response = await postJSONData(s.v2api.updateOrCreateUser, data);
