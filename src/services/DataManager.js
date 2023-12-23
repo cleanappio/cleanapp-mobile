@@ -474,6 +474,6 @@ export const getTeam = async () => {
 
 export const setTeam = async (team) => {
   try {
-    await AsyncStorage.setItem(KEYS.TEAM, string(team));
+    await AsyncStorage.setItem(KEYS.TEAM, team.toString());
   } catch (err) {}
 }

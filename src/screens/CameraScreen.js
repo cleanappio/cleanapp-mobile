@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, {useEffect, useMemo, useRef, useState} from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   SafeAreaView,
   StyleSheet,
@@ -9,27 +9,31 @@ import {
   Platform,
   Dimensions,
   Animated,
+  Pressable,
 } from 'react-native';
 import {
   Camera,
   useCameraDevices,
 } from 'react-native-vision-camera';
 import RNFS from 'react-native-fs';
-import {theme} from '../services/Common/theme';
+import { theme } from '../services/Common/theme';
 
-import {useNavigation} from '@react-navigation/native';
-import {useStateValue} from '../services/State/State';
-import {actions} from '../services/State/Reducer';
-import {openSettings} from 'react-native-permissions';
+import { useNavigation } from '@react-navigation/native';
+import { useStateValue } from '../services/State/State';
+import { actions } from '../services/State/Reducer';
+import { openSettings } from 'react-native-permissions';
 import RadialGradient from 'react-native-radial-gradient';
-import {fontFamilies} from '../utils/fontFamilies';
+import { fontFamilies } from '../utils/fontFamilies';
 import CheckBigIcon from '../assets/ico_check_big.svg';
-import {BlurView} from '@react-native-community/blur';
-import {useTranslation} from 'react-i18next';
-import {report} from '../services/API/APIManager';
-import {getLocation} from '../functions/geolocation';
-import {getReverseGeocodingData} from '../services/API/MapboxAPI';
+import { BlurView } from '@react-native-community/blur';
+import { useTranslation } from 'react-i18next';
+import { report } from '../services/API/APIManager';
+import { getLocation } from '../functions/geolocation';
+import { getReverseGeocodingData } from '../services/API/MapboxAPI';
 import { getWalletAddress } from '../services/DataManager';
+
+const tapSpotDiameter = 400;
+const tapDuration = 2000;
 
 const CameraScreen = (props) => {
   const [hasPermission, setHasPermission] = useState(false);
@@ -41,11 +45,21 @@ const CameraScreen = (props) => {
   const [torchEnabled, setTorchEnabled] = useState(false);
   const camera = useRef(null);
   const [photoPath, setPhotoPath] = useState('');
-  const [{cameraAction}, dispatch] = useStateValue();
+  const [{ cameraAction }, dispatch] = useStateValue();
   const [phototaken, setPhototaken] = useState(false);
   const [animatedValue] = useState(new Animated.Value(0));
+  const tapAnimatedValue = useRef(new Animated.Value(0)).current;
+  const [tapScale, setTapScale] = useState(0);
   const [flashVisible, setFlashVisible] = useState(false);
-  const {t} = useTranslation();
+  const [tapX, setTapX] = useState(0.0);
+  const [tapY, setTapY] = useState(0.0);
+  const [tappingOn, setTappingOn] = useState(false);
+  const [cameraLayout, setCameraLayout] = useState({});
+  const { t } = useTranslation();
+
+  tapAnimatedValue.addListener((state) => {
+    setTapScale(state.value)
+  });
 
   const navigation = useNavigation();
 
@@ -63,7 +77,7 @@ const CameraScreen = (props) => {
         [
           {
             text: t('camerascreen.no'),
-            onPress: () => {},
+            onPress: () => { },
             style: 'cancel',
           },
           {
@@ -114,6 +128,22 @@ const CameraScreen = (props) => {
   }, [cameraAction]);
 
   useEffect(() => {
+    if (tappingOn) {
+      Animated.timing(tapAnimatedValue, {
+        toValue: 1,
+        duration: tapDuration,
+        useNativeDriver: false,
+      }).start();
+    } else {
+      Animated.timing(tapAnimatedValue, {
+        toValue: 0,
+        duration: 0,
+        useNativeDriver: false,
+      }).start();
+    }
+  }, [tappingOn]);
+
+  useEffect(() => {
     if (phototaken) {
       Animated.timing(animatedValue, {
         toValue: 1,
@@ -124,7 +154,7 @@ const CameraScreen = (props) => {
       setTimeout(() => {
         dispatch({
           type: actions.SET_CAMERA_ACTION,
-          cameraAction: {requestCameraShot: false},
+          cameraAction: { requestCameraShot: false },
         });
       }, 5000);
     } else {
@@ -193,6 +223,8 @@ const CameraScreen = (props) => {
         walletAddress,
         userLocation.latitude,
         userLocation.longitude,
+        tapX / cameraLayout.width,
+        tapY / cameraLayout.height,
         imageData);
       return res;
     }
@@ -229,8 +261,8 @@ const CameraScreen = (props) => {
             Alert.alert(
               t('camerascreen.saveimage'),
               t('camerascreen.failedtosaveimage') + err.message,
-              [{text: t('camerascreen.ok'), onPress: () => {}}],
-              {cancelable: false},
+              [{ text: t('camerascreen.ok'), onPress: () => { } }],
+              { cancelable: false },
             );
           });
       } catch (e) {
@@ -269,7 +301,12 @@ const CameraScreen = (props) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.container}>
+      <View
+        style={styles.container}
+        onLayout={({ nativeEvent }) => {
+          setCameraLayout(nativeEvent.layout);
+        }}
+      >
         {hasPermission && (useFront ? !!frontCam : !!backCam) && (
           <Camera
             ref={camera}
@@ -300,7 +337,7 @@ const CameraScreen = (props) => {
               ...animateStyleTop,
             }}>
             <RadialGradient
-              style={{...styles.gradientFrame, transform: [{scaleX: 4}]}}
+              style={{ ...styles.gradientFrame, transform: [{ scaleX: 4 }] }}
               colors={theme.COLORS.CAMERA_GRADIENT}
               radius={100}
             />
@@ -311,7 +348,7 @@ const CameraScreen = (props) => {
               ...animateStyleBottom,
             }}>
             <RadialGradient
-              style={{...styles.gradientFrame, transform: [{scaleX: 4}]}}
+              style={{ ...styles.gradientFrame, transform: [{ scaleX: 4 }] }}
               colors={theme.COLORS.CAMERA_GRADIENT}
               radius={100}
             />
@@ -322,7 +359,7 @@ const CameraScreen = (props) => {
               ...animateStyleLeft,
             }}>
             <RadialGradient
-              style={{...styles.gradientFrame, transform: [{scaleY: 4}]}}
+              style={{ ...styles.gradientFrame, transform: [{ scaleY: 4 }] }}
               colors={theme.COLORS.CAMERA_GRADIENT}
               radius={100}
             />
@@ -333,14 +370,56 @@ const CameraScreen = (props) => {
               ...animateStyleRight,
             }}>
             <RadialGradient
-              style={{...styles.gradientFrame, transform: [{scaleY: 4}]}}
+              style={{ ...styles.gradientFrame, transform: [{ scaleY: 4 }] }}
               colors={theme.COLORS.CAMERA_GRADIENT}
               radius={100}
             />
           </Animated.View>
+          {!phototaken &&
+            (Platform.OS === 'ios' ? (
+              <BlurView
+                style={
+                  {
+                    ...styles.blurview,
+                    position: 'absolute',
+                    top: 40,
+                    left: 40,
+                    width: Dimensions.get('screen').width - 80,
+                  }
+                }
+                blurType="light"
+              >
+                <Text style={styles.centerText}>
+                  {t('camerascreen.prompt')}
+                </Text>
+              </BlurView>
+            ) : (
+              <View
+                style={
+                  {
+                    ...styles.blurview2,
+                    position: 'absolute',
+                    top: 40,
+                    left: 40,
+                    width: Dimensions.get('screen').width - 80,
+                  }
+                }
+              >
+                <Text style={styles.centerText}>
+                  {t('camerascreen.prompt')}
+                </Text>
+              </View>
+            ))
+          }
           {phototaken &&
             (Platform.OS === 'ios' ? (
-              <BlurView style={styles.blurview} blurType="light" blurAmount={6}>
+              <BlurView style={
+                {
+                  ...styles.blurview,
+                  width: 221,
+                  height: 191,
+                }
+              } blurType="light" blurAmount={6}>
                 <CheckBigIcon
                   style={{
                     width: 72,
@@ -354,7 +433,13 @@ const CameraScreen = (props) => {
                 </Text>
               </BlurView>
             ) : (
-              <View style={styles.blurview2}>
+              <View style={
+                {
+                  ...styles.blurview2,
+                  width: 221,
+                  height: 191,
+                }
+              }>
                 <CheckBigIcon
                   style={{
                     width: 72,
@@ -368,7 +453,52 @@ const CameraScreen = (props) => {
                 </Text>
               </View>
             ))}
-       </View>
+        </View>
+        {tappingOn && <Animated.View
+          style={
+            {
+              position: 'absolute',
+              top: tapY - tapSpotDiameter / 2 * tapScale,
+              left: tapX - tapSpotDiameter / 2 * tapScale,
+              width: tapSpotDiameter * tapScale,
+              height: tapSpotDiameter * tapScale,
+            }
+          }
+        >
+          <RadialGradient
+            style={{
+              width: "100%",
+              height: "100%",
+            }}
+            colors={theme.COLORS.CAMERA_TAP_SPOT_GRADIENT}
+            radius={tapSpotDiameter / 2 * tapScale}
+          />
+        </Animated.View>}
+        <Pressable
+          style={
+            {
+              position: 'absolute',
+              width: Dimensions.get('screen').width,
+              height: Dimensions.get('screen').height,
+            }
+          }
+          delayLongPress={tapDuration}
+          onLongPress={() => {
+            setTappingOn(false);
+            takePhoto().then(() => {
+              setPhototaken(true);
+            });
+          }}
+          onPressIn={({ nativeEvent }) => {
+            if (phototaken) {
+              return;
+            }
+            setTappingOn(true);
+            setTapX(nativeEvent.locationX);
+            setTapY(nativeEvent.locationY);
+          }}
+          onPressOut={() => setTappingOn(false)}
+        />
       </View>
     </SafeAreaView>
   );
@@ -401,16 +531,12 @@ const styles = StyleSheet.create({
   blurview: {
     borderRadius: 20,
     backgroundColor: theme.COLORS.WHITE_OPACITY_1P,
-    width: 221,
-    height: 191,
     justifyContent: 'center',
     alignItems: 'center',
   },
   blurview2: {
     borderRadius: 20,
     backgroundColor: theme.COLORS.WHITE_OPACITY_10P,
-    width: 221,
-    height: 191,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -425,6 +551,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: fontFamilies.Default,
     color: theme.COLORS.TEXT_GREY,
+  },
+  centerText: {
+    margin: 20,
+    fontSize: 16,
+    fontFamily: fontFamilies.Default,
+    color: theme.COLORS.TEXT_GREY,
+    textAlign: 'center',
   },
   flashOverlay: {
     flex: 1,

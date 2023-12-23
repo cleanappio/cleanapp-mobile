@@ -185,7 +185,7 @@ const RootNavigator = () => {
         />
         <AppAlert {...getAlertSettings()} />
         <CreateRootNavigator />
-        {fabShow && <FABCameraButton dispatch={dispatch} />}
+        {/* {fabShow && <FABCameraButton dispatch={dispatch} />} */}
       </SafeAreaView>
     </>
   );

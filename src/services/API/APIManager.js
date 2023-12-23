@@ -58,15 +58,15 @@ export const updatePrivacyAndTOC = async (publicAddress, privacy, agreeTOC) => {
   }
 }
 
-export const report = async (publicAddress, latitude, longitude, image) => {
+export const report = async (publicAddress, latitude, longitude, relX, relY, image) => {
   try {
     const data = {
       version: '2.0',
       id: publicAddress,
       latitude: latitude,
       longitude: longitude,
-      x: 0,
-      y: 0,
+      x: relX,
+      y: relY,
       image: image,
     }
     const response = await postJSONData(s.v2api.report, data);

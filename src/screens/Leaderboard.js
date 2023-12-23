@@ -1,7 +1,7 @@
 /* eslint-disable react-native/no-inline-styles */
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, {useEffect, useRef, useState} from 'react';
-import {useTranslation} from 'react-i18next';
+import React, { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Dimensions,
   // Image,
@@ -12,12 +12,12 @@ import {
   // TextInput,
   View,
 } from 'react-native';
-import {FlatList, ScrollView} from 'react-native-gesture-handler';
-import {theme} from '../services/Common/theme';
-import {fontFamilies} from '../utils/fontFamilies';
+import { FlatList, ScrollView } from 'react-native-gesture-handler';
+import { theme } from '../services/Common/theme';
+import { fontFamilies } from '../utils/fontFamilies';
 import Ripple from '../components/Ripple';
 // import Share, {Social} from 'react-native-share';
-import {getTeam, getUserName, getWalletAddress} from '../services/DataManager';
+import { getTeam, getUserName, getWalletAddress } from '../services/DataManager';
 import {
   // changeUserName,
   // getGuildList,
@@ -28,8 +28,8 @@ import {
   // leaveGuild,
 } from '../services/API/APIManager';
 // import {actions} from '../services/State/Reducer';
-import {useStateValue} from '../services/State/State';
-import {useFocusEffect, useNavigation} from '@react-navigation/native';
+import { useStateValue } from '../services/State/State';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 
 // import {setUserName} from '../services/DataManager';
 import LinearGradient from 'react-native-linear-gradient';
@@ -43,7 +43,7 @@ import RenderStat from '../components/RenderStat';
 
 import MemberIcon from '../assets/ico_member.svg';
 
-const Tab = ({title, icon, value, isSelected, setTab}) => {
+const Tab = ({ title, icon, value, isSelected, setTab }) => {
   return (
     <Ripple
       style={StyleSheet.flatten([
@@ -64,8 +64,8 @@ const Tab = ({title, icon, value, isSelected, setTab}) => {
 };
 
 export const Leaderboard = (props) => {
-  const {t} = useTranslation();
-  const [{}, dispatch] = useStateValue();
+  const { t } = useTranslation();
+  const [{ }, dispatch] = useStateValue();
   // const navigation = useNavigation();
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [userName, setName] = useState('');
@@ -132,14 +132,12 @@ export const Leaderboard = (props) => {
     //     }
     //   }
     // });
-    getTeams(publicAddress).then((teamResponse) => {
+    getTeams(publicAddress).then(async (teamResponse) => {
       if (teamResponse && teamResponse.ok) {
         setBlueStat(teamResponse.blue);
         setGreenStat(teamResponse.green);
-
-        if (teamResponse.user_data && teamResponse.user_data.team) {
-          setUserTeam(getTeam());
-        }
+        const team = await getTeam();
+        setUserTeam(team);
       }
     });
 
@@ -398,129 +396,113 @@ export const Leaderboard = (props) => {
   // };
 
   return (
-    <View style={{flex: 1}}>
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <View style={styles.container}>
-          <View style={{marginTop: 25}}>
-            <View style={{...styles.card, paddingHorizontal: 0}}>
-              <Text style={{...styles.title, marginLeft: 16}}>
-                {t('leaderboard.social')}
-              </Text>
-              {(joined || created) && (
-                <View style={styles.guildstatcontainer}>
-                  <Text style={styles.guildstat}>
-                    {joined
-                      ? t('leaderboard.guildjoined')
-                      : t('leaderboard.guildcreated')}
-                  </Text>
-                </View>
-              )}
-            </View>
-            
-            <View style={styles.statusContainer}>
-              <LinearGradient
-                end={{x: 0, y: 0.5}}
-                start={{x: 1, y: 0.5}}
-                colors={[
-                  theme.COLORS.GRADIENT_BLUE_BEGIN,
-                  theme.COLORS.GRADIENT_BLUE_END,
-                ]}
-                style={{
-                  ...styles.statusbar_left,
-                  marginRight: 10,
-                  flex:
-                    blueStat + greenStat === 0
-                      ? 1
-                      : blueStat / (blueStat + greenStat),
-                }}>
-                <View style={styles.blueBall} />
-              </LinearGradient>
-              <LinearGradient
-                end={{x: 1, y: 0.5}}
-                start={{x: 0, y: 0.5}}
-                colors={[
-                  theme.COLORS.GRADIENT_GREEN_BEGIN,
-                  theme.COLORS.GRADIENT_GREEN_END,
-                ]}
-                style={{
-                  ...styles.statusbar_right,
-                  marginLeft: 10,
-                  flex:
-                    blueStat + greenStat === 0
-                      ? 1
-                      : greenStat / (blueStat + greenStat),
-                }}>
-                <View style={styles.greenBall} />
-              </LinearGradient>
-            </View>
-          </View>
-          <View
-            style={{
-              ...styles.card,
-              marginTop: 11,
-              borderBottomWidth: 0.4,
-              borderBottomColor: theme.COLORS.TEXT_GREY,
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              paddingBottom: 32,
-            }}>
-            <View style={styles.statContainer}>
-              <Text style={styles.statTitle}>
-                {t('leaderboard.teamblue')}
-                {userTeam === '1' ? `  (Your team)` : ''}
-              </Text>
-              <Text style={styles.blueStat}>{`${blueStat} ${t(
-                'leaderboard.kitn',
-              )}`}</Text>
-            </View>
-            <View style={styles.statContainer}>
-              <Text style={{...styles.statTitle, textAlign: 'right'}}>
-                {userTeam === '2' ? `(Your team)   ` : ''}
-                {t('leaderboard.teamgreen')}
-              </Text>
-              <Text
-                style={{
-                  ...styles.greenStat,
-                  textAlign: 'right',
-                }}>{`${greenStat} ${t('leaderboard.kitn')}`}</Text>
-            </View>
+    <View style={{ flex: 1 }}>
+      <View style={styles.container}>
+        <View style={{ marginTop: 25 }}>
+          <View style={{ ...styles.card, paddingHorizontal: 0 }}>
+            <Text style={{ ...styles.title, marginLeft: 16 }}>
+              {t('leaderboard.social')}
+            </Text>
+            {(joined || created) && (
+              <View style={styles.guildstatcontainer}>
+                <Text style={styles.guildstat}>
+                  {joined
+                    ? t('leaderboard.guildjoined')
+                    : t('leaderboard.guildcreated')}
+                </Text>
+              </View>
+            )}
           </View>
 
-          <View
-            style={{
-              ...styles.card,
-              marginTop: 32,
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-            }}>
-            <Text style={styles.leaderboard_title}>
-              {t('leaderboard.leaderboard')}
-            </Text>
-            <Text style={styles.leaderboard_title}>
-              {t('leaderboard.global')}
-            </Text>
+          <View style={styles.statusContainer}>
+            <LinearGradient
+              end={{ x: 0, y: 0.5 }}
+              start={{ x: 1, y: 0.5 }}
+              colors={[
+                theme.COLORS.GRADIENT_BLUE_BEGIN,
+                theme.COLORS.GRADIENT_BLUE_END,
+              ]}
+              style={{
+                ...styles.statusbar_left,
+                marginRight: 10,
+                flex:
+                  blueStat + greenStat === 0
+                    ? 1
+                    : blueStat / (blueStat + greenStat),
+              }}>
+              <View style={styles.blueBall} />
+            </LinearGradient>
+            <LinearGradient
+              end={{ x: 1, y: 0.5 }}
+              start={{ x: 0, y: 0.5 }}
+              colors={[
+                theme.COLORS.GRADIENT_GREEN_BEGIN,
+                theme.COLORS.GRADIENT_GREEN_END,
+              ]}
+              style={{
+                ...styles.statusbar_right,
+                marginLeft: 10,
+                flex:
+                  blueStat + greenStat === 0
+                    ? 1
+                    : greenStat / (blueStat + greenStat),
+              }}>
+              <View style={styles.greenBall} />
+            </LinearGradient>
           </View>
-          <View style={styles.tabContainer}>
-            <Tab
-              title={t('leaderboard.players')}
-              isSelected={selectedIndex === 0}
-              setTab={() => {
-                setSelectedIndex(0);
-              }}
-            />
-            {/* <Tab
+        </View>
+        <View
+          style={{
+            ...styles.card,
+            marginTop: 11,
+            borderBottomWidth: 0.4,
+            borderBottomColor: theme.COLORS.TEXT_GREY,
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            paddingBottom: 32,
+          }}>
+          <View style={styles.statContainer}>
+            <Text style={styles.statTitle}>
+              {t('leaderboard.teamblue')}
+              {userTeam === '1' ? `  (Your team)` : ''}
+            </Text>
+            <Text style={styles.blueStat}>{`${blueStat} ${t(
+              'leaderboard.kitn',
+            )}`}</Text>
+          </View>
+          <View style={styles.statContainer}>
+            <Text style={{ ...styles.statTitle, textAlign: 'right' }}>
+              {userTeam === '2' ? `(Your team)   ` : ''}
+              {t('leaderboard.teamgreen')}
+            </Text>
+            <Text
+              style={{
+                ...styles.greenStat,
+                textAlign: 'right',
+              }}>{`${greenStat} ${t('leaderboard.kitn')}`}</Text>
+          </View>
+        </View>
+
+        <View style={styles.tabContainer}>
+          <Tab
+            title={t('leaderboard.players')}
+            isSelected={selectedIndex === 0}
+            setTab={() => {
+              setSelectedIndex(0);
+            }}
+          />
+          {/* <Tab
               title={t('leaderboard.guilds')}
               isSelected={selectedIndex === 1}
               setTab={() => {
                 setSelectedIndex(1);
               }}
             /> */}
-          </View>
-
-          {selectedIndex === 0 && <LeaderboardPlayers />}
-          {/* {selectedIndex === 1 && <LeaderboardGuilds />} */}
         </View>
-      </ScrollView>
+
+        {selectedIndex === 0 && <LeaderboardPlayers />}
+        {/* {selectedIndex === 1 && <LeaderboardGuilds />} */}
+      </View>
       {/* <GuildDetail
         isVisible={bottomSheetOpened}
         onClose={onCloseBottomSheet}

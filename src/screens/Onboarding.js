@@ -133,7 +133,6 @@ const Heading = ({ title = '', subTitle = '' }) => {
 const WelcomeScreen = ({
   userName = '',
   walletAddress = '',
-  setUserName = () => { },
   onComplete = () => { },
 }) => {
   const web3 = useSelector((state) => state.web3);
@@ -500,7 +499,6 @@ export const Onboarding = (props) => {
                 <WelcomeScreen
                   walletAddress={walletAddress}
                   userName={name}
-                  setUserName={setUserName}
                   onComplete={onCompleteName}
                 />
               )}
