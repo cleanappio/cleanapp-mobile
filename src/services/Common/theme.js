@@ -40,7 +40,7 @@ export const theme = {
     ORANGE: '#E45F35',
 
     CAMERA_GRADIENT: ['#59E480', '#59E48000'],
-    CAMERA_TAP_SPOT_GRADIENT: ['#F4510280', '#F4510200'],
+    CAMERA_TAP_SPOT_GRADIENT: ['#F45102', '#F4510200'],
 
     // Old Color Tables
     WHITE: '#FFF',

@@ -33,7 +33,8 @@ import { getReverseGeocodingData } from '../services/API/MapboxAPI';
 import { getWalletAddress } from '../services/DataManager';
 
 const tapSpotDiameter = 400;
-const tapDuration = 2000;
+const tapSpotInitFraction = 0.2;
+const tapDuration = 1000;
 
 const CameraScreen = (props) => {
   const [hasPermission, setHasPermission] = useState(false);
@@ -48,7 +49,7 @@ const CameraScreen = (props) => {
   const [{ cameraAction }, dispatch] = useStateValue();
   const [phototaken, setPhototaken] = useState(false);
   const [animatedValue] = useState(new Animated.Value(0));
-  const tapAnimatedValue = useRef(new Animated.Value(0)).current;
+  const tapAnimatedValue = useRef(new Animated.Value(0.2)).current;
   const [tapScale, setTapScale] = useState(0);
   const [flashVisible, setFlashVisible] = useState(false);
   const [tapX, setTapX] = useState(0.0);
@@ -132,13 +133,13 @@ const CameraScreen = (props) => {
       Animated.timing(tapAnimatedValue, {
         toValue: 1,
         duration: tapDuration,
-        useNativeDriver: false,
+        useNativeDriver: true,
       }).start();
     } else {
       Animated.timing(tapAnimatedValue, {
-        toValue: 0,
-        duration: 0,
-        useNativeDriver: false,
+        toValue: tapSpotInitFraction,
+        duration: tapSpotInitFraction,
+        useNativeDriver: true,
       }).start();
     }
   }, [tappingOn]);
@@ -454,26 +455,17 @@ const CameraScreen = (props) => {
               </View>
             ))}
         </View>
-        {tappingOn && <Animated.View
-          style={
-            {
-              position: 'absolute',
-              top: tapY - tapSpotDiameter / 2 * tapScale,
-              left: tapX - tapSpotDiameter / 2 * tapScale,
-              width: tapSpotDiameter * tapScale,
-              height: tapSpotDiameter * tapScale,
-            }
-          }
-        >
-          <RadialGradient
-            style={{
-              width: "100%",
-              height: "100%",
-            }}
-            colors={theme.COLORS.CAMERA_TAP_SPOT_GRADIENT}
-            radius={tapSpotDiameter / 2 * tapScale}
-          />
-        </Animated.View>}
+        {tappingOn && <RadialGradient
+          style={{
+            position: 'absolute',
+            top: tapY - tapSpotDiameter / 2 * tapScale,
+            left: tapX - tapSpotDiameter / 2 * tapScale,
+            width: tapSpotDiameter * tapScale,
+            height: tapSpotDiameter * tapScale,
+          }}
+          colors={theme.COLORS.CAMERA_TAP_SPOT_GRADIENT}
+          radius={tapSpotDiameter / 2 * tapScale}
+        />}
         <Pressable
           style={
             {

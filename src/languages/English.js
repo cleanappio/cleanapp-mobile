@@ -445,7 +445,7 @@ export default {
       ok: 'OK',
       newreward: '+1 KITN',
       photouploaded: 'Photo Uploaded',
-      prompt: 'Put the camera on litter, tap on where the litter is located and hold for 2 sec.',
+      prompt: 'Put the camera on litter, tap screen on the litter location and hold for 1 sec.',
     },
     cachescreen: {
       copiedtoclipboard: 'Copied to clipboard',
