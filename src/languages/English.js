@@ -135,7 +135,7 @@ export default {
       ok: 'OK',
       newreward: '+1 KITN',
       photouploaded: 'Photo Uploaded',
-      prompt: 'Put the camera on litter, tap screen on the litter location and hold for 1 sec.',
+      prompt: 'Tap the object you want cleaned up!',
     },
     cachescreen: {
       copiedtoclipboard: 'Copied to clipboard',
@@ -180,6 +180,12 @@ export default {
       swapyourkitnintodogsor:
         'Swap your kitn into dogs or whatever you want :)',
       referCleanapp: 'Refer CleanApp',
+      total: 'Total',
+      fromReports: 'From reports',
+      fromReferrals: 'From referrals',
+      todaysReports: 'Litterbox (today\'s) reports',
+      todaysReferrals: 'Litterbox (today\'s) referrals',
+      todaysLitterbox: 'Litterbox (today\'s)',
     },
     createyourguild: {
       createyourguild: 'Create your Guild',

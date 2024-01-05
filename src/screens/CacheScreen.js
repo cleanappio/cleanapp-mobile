@@ -480,39 +480,39 @@ const CacheScreen = (props) => {
           {/** balance */}
           <View style={styles.balanceContainer}>
             <Row>
+              <Text style={styles.txt16}>{t('cachescreen.total')}</Text>
               <Text style={{ ...styles.txt16, lineHeight: 16 }}>
                 {cacheVault.total || 0} <Text style={styles.txt16}>{'KITN'}</Text>
               </Text>
-              <Text style={styles.txt16}>{'Total'}</Text>
             </Row>
             <Row>
+              <Text style={styles.txt9}>{t('cachescreen.fromReports')}</Text>
               <Text style={styles.txt9}>
                 {cacheVault.reports || 0} <Text style={styles.txt9}>{'KITN'}</Text>
               </Text>
-              <Text style={styles.txt9}>{'Reports'}</Text>
             </Row>
             <Row>
+              <Text style={styles.txt9}>{t('cachescreen.fromReferrals')}</Text>
               <Text style={styles.txt9}>
                 {cacheVault.referrals || 0} <Text style={styles.txt9}>{'KITN'}</Text>
               </Text>
-              <Text style={styles.txt9}>{'Referrals'}</Text>
             </Row>
             <Row>
+              <Text style={styles.txt9}>{t('cachescreen.todaysReports')}</Text>
               <Text style={styles.txt9}>
                 {cacheVault.dailyReports} <Text style={styles.txt9}>{'KITN'}</Text>
               </Text>
-              <Text style={styles.txt9}>{'Litterbox(daily) reports'}</Text>
             </Row>
             <Row>
+              <Text style={styles.txt9}>{t('cachescreen.todaysReferrals')}</Text>
               <Text style={styles.txt9}>
                 {cacheVault.dailyReferrals} <Text style={styles.txt9}>{'KITN'}</Text>
               </Text>
-              <Text style={styles.txt9}>{'Litterbox(daily) referrals'}</Text>
             </Row>
           </View>
           <View style={styles.balanceContainer}>
             <Row>
-              <Text style={styles.txt12}>{'Litterbox(daily)'}</Text>
+              <Text style={styles.txt12}>{t('cachescreen.todaysLitterbox')}</Text>
             </Row>
             <Text style={styles.txt24}>
               {`${cacheVault.dailyTotal || 0} `}
