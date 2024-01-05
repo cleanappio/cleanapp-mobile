@@ -14,16 +14,4 @@ export const settings = {
     getTopScores: 'get_top_scores',
     getStats: 'get_stats',
   },
-
-  //Authentification
-  auth: {
-    refreshToken: 'refresh',
-    login: 'login',
-    logout: 'logout',
-    get_nounce: 'get-nonce?public_address=$[public_address]',
-    register: 'register',
-    user_name: 'get_or_create_username',
-    usageFlag: 'usage-flag',
-    change_user_name: 'update_username',
-  },
 };
