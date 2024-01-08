@@ -32,6 +32,13 @@ import { getLocation } from '../functions/geolocation';
 import { getReverseGeocodingData } from '../services/API/MapboxAPI';
 import { getWalletAddress } from '../services/DataManager';
 
+import Svg, {
+  Circle,
+  Defs,
+  RadialGradient as SvgRadialGradient,
+  Stop,
+} from 'react-native-svg';
+
 const tapSpotDiameter = 400;
 const tapSpotInitFraction = 0.2;
 const tapDuration = 1000;
@@ -40,12 +47,8 @@ const CameraScreen = (props) => {
   const [hasPermission, setHasPermission] = useState(false);
   const [useFront, setUseFront] = useState(false);
   const [isActive, setIsActive] = useState(true);
-  const [frameWidth, setFrameWidth] = useState(1280);
-  const [frameHeight, setFrameHeight] = useState(720);
-  const [regionEnabled, setRegionEnabled] = useState(false);
   const [torchEnabled, setTorchEnabled] = useState(false);
   const camera = useRef(null);
-  const [photoPath, setPhotoPath] = useState('');
   const [{ cameraAction }, dispatch] = useStateValue();
   const [phototaken, setPhototaken] = useState(false);
   const [animatedValue] = useState(new Animated.Value(0));
@@ -282,7 +285,7 @@ const CameraScreen = (props) => {
   const animateStyleBottom = {
     bottom: animatedValue.interpolate({
       inputRange: [0, 1],
-      outputRange: [-200, Platform.OS === 'ios' ? 0 : 0],
+      outputRange: [-200, 0],
     }),
   };
 
@@ -455,17 +458,41 @@ const CameraScreen = (props) => {
               </View>
             ))}
         </View>
-        {tappingOn && <RadialGradient
-          style={{
-            position: 'absolute',
-            top: tapY - tapSpotDiameter / 2 * tapScale,
-            left: tapX - tapSpotDiameter / 2 * tapScale,
-            width: tapSpotDiameter * tapScale,
-            height: tapSpotDiameter * tapScale,
-          }}
-          colors={theme.COLORS.CAMERA_TAP_SPOT_GRADIENT}
-          radius={tapSpotDiameter / 2 * tapScale}
-        />}
+        {tappingOn &&
+          <View style={{
+            ...styles.tapSpotContainer,
+            top: tapY - tapSpotDiameter / 2,
+            left: tapX - tapSpotDiameter / 2,
+          }}>
+            <Animated.View>
+              <Svg
+                height={tapSpotDiameter * tapScale}
+                width={tapSpotDiameter * tapScale}
+                viewBox={`0 0 ${tapSpotDiameter} ${tapSpotDiameter}`}>
+                <Defs>
+                  <SvgRadialGradient
+                    id="grad"
+                    cx={tapSpotDiameter / 2}
+                    cy={tapSpotDiameter / 2}
+                    fx={tapSpotDiameter / 2}
+                    fy={tapSpotDiameter / 2}
+                    rx={tapSpotDiameter / 2 * tapScale}
+                    ry={tapSpotDiameter / 2 * tapScale}
+                    gradientUnits="userSpaceOnUse">
+                    <Stop offset="0" stopColor={theme.COLORS.CAMERA_TAP_SPOT_GRADIENT} stopOpacity="1" />
+                    <Stop offset="1" stopColor={theme.COLORS.CAMERA_TAP_SPOT_GRADIENT} stopOpacity="0" />
+                  </SvgRadialGradient>
+                </Defs>
+                <Circle
+                  cx={tapSpotDiameter / 2}
+                  cy={tapSpotDiameter / 2}
+                  r={tapSpotDiameter / 2 * tapScale}
+                  fill="url(#grad)"
+                />
+              </Svg>
+            </Animated.View>
+          </View>
+        }
         <Pressable
           style={
             {
@@ -519,6 +546,13 @@ const styles = StyleSheet.create({
   gradientFrame: {
     width: 200,
     height: 200,
+  },
+  tapSpotContainer: {
+    position: 'absolute',
+    width: tapSpotDiameter,
+    height: tapSpotDiameter,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   blurview: {
     borderRadius: 20,

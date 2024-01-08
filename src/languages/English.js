@@ -135,7 +135,7 @@ export default {
       ok: 'OK',
       newreward: '+1 KITN',
       photouploaded: 'Photo Uploaded',
-      prompt: 'Tap the object you want cleaned up!',
+      prompt: 'Tap the object you want cleaned up and hold for 1 second',
     },
     cachescreen: {
       copiedtoclipboard: 'Copied to clipboard',
