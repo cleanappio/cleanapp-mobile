@@ -23,7 +23,7 @@ Make sure the Node.js related software has versions as expected.
 
 ```
 yarn -v  # Expected to be >= 1.22.4
-node -v  # Expected to be >= v18.17.1 
+node -v  # Expected to be exactly = v18.17.1 
 ```
 
 Use nvm to switch to a desired version.
