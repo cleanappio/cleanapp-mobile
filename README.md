@@ -79,18 +79,27 @@ All environment variables are stored in the .env file in the project directory. 
 Take the .env file from the Google Drive `CleanApp/Engineering/Mobile App Env` folder. Ask project admins for the link. Copy the .env file into a project root directory.
 
 ### Configure Mapbox
+1.  Make sure the Mapbox download token is created.
+    *   All public scopes are to be checked
+    *   DOWNLOADS:READ from secret scopes is to be checked
 
-Please signup to Mapbox and create a correct .netrc file in your home directory so you can install the CocoaPods package for Mapbox. Here are tutorials that help to do that:
-https://github.com/mapbox/mapbox-gl-native-ios/blob/d89e7139e5f6a9a3ea5ad57782b41579b8a0bbb1/platform/ios/INSTALL.md#cocoapods
-Discussion about this on GitHub:
-https://github.com/mapbox/mapbox-gl-native/issues/16581
+1.  Do platform specific setups
+    1.  iOS
+        Please signup to Mapbox and create a correct .netrc file in your home directory so you can install the CocoaPods package for Mapbox. Here are tutorials that help to do that:
+        https://github.com/mapbox/mapbox-gl-native-ios/blob/d89e7139e5f6a9a3ea5ad57782b41579b8a0bbb1/platform/ios/INSTALL.md#cocoapods
+        Discussion about this on GitHub: https://github.com/mapbox/mapbox-gl-native/issues/16581
 
-Here is a schema for the ~/.netrc file:
-```
-machine api.mapbox.com
-    login mapbox
-    password sk.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-```
+        Here is a schema for the ~/.netrc file:
+        ```
+        machine api.mapbox.com
+            login mapbox
+            password sk.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+        ```
+    1. Android
+        Modify the cleanapp.properties file created in the step above. Add the following line there:
+        ```
+        mapbox.downloadsToken=<The key>
+        ```
 
 ## iOS
 
@@ -201,17 +210,6 @@ yarn install && yarn react-native link
     *   Set the actual path to your cleanapp.properties file generated on previous step.
         
         ***You have to set a full path like /home/... or /Users/..., without variables like $HOME etc.***
-
-#### Configure Mapbox API dowload API key
-
-1. Make sure the Mapbox download token is created.
-    *   All public scopes are to be checked
-    *   DOWNLOADS:READ from secret scopes is to be checked
-
-1. Modify the cleanapp.properties file created in the step above. Add the following line there:
-    ```
-    mapbox.downloadsToken=<The key>
-    ```
 
 #### Install and test the release version on the device
 1.  Make sure the developer mode on the devise is enabled, https://developer.android.com/studio/debug/dev-options?authuser=3
