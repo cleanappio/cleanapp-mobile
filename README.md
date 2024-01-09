@@ -19,6 +19,19 @@ You can find detailed instructions on using React Native and many tips in [its d
 
 **Node.js**
 
+First you have to install node.js. 
+
+*   MacOS: https://nodejs.org/en/download/package-manager#macos
+*   Linux, Debian based: https://github.com/nodesource/distributions?tab=readme-ov-file#installation-instructions
+*   General Linux: https://github.com/nodesource/distributions?tab=readme-ov-file
+*   Other approaches: https://stackoverflow.com/questions/39981828/installing-nodejs-and-npm-on-linux
+
+Then install yarn.
+
+```
+sudo npm install --global yarn
+```
+
 Make sure the Node.js related software has versions as expected.
 
 ```
