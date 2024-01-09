@@ -4,18 +4,21 @@ CleanApp.app's mobile app to use the platform on mobile phones.
 
 The software is developed using React Native, so if you encounter any issues because of React Native you can search with that additional information.
 
+# Installing and Running the app
+
+The setup is currently available on MacOS only.
+
+## Pre-requisites
+
+**React Native**
 The first step to run the software is to setup React Native development setup on your machine. React Native has tutorials for different operating systems and mobile platforms here:
 https://reactnative.dev/docs/environment-setup
 
-# Installing and Running the app
-
-## User Guide
 You can find detailed instructions on using React Native and many tips in [its documentation](https://reactnative.dev/docs/getting-started).
 
-## Dependencies:
+**Node.js**
 
-Common:
-pod --version => >= 1.10.1
+Make sure the Node.js related software has versions as expected.
 
 yarn -v => >= 1.22.4
 
@@ -25,7 +28,7 @@ node -v => = v18.17.1
 nvm use 18.17.1
 ```
 
-Android:
+**Android**
 
 Have Android studio installed
 
@@ -34,11 +37,16 @@ Make sure Jetifier is installed.
 npx jetify
 ```
 
-iOS:
+**iOS**
 
 Make sure you installed XCode and Simulator
 
-Please use an iPhone 12 or better in the simulator as this is the minimum requirement right now.
+Please use an iPhone 12 or newer in the simulator as this is the minimum requirement right now.
+
+Make sure you installed cocoa pod with version >= 1.10.1
+```
+pod --version
+```
 
 ## Clone this repository
 Change to the directory that you want to clone the code into.
@@ -52,16 +60,16 @@ cd cleanapp-mobile
 ### Prepare .env File
 All environment variables are stored in the .env file in the project directory. The .env file is never to be pushed to git.
 
-Take a local copy of .env and put into a project root directory.
+Take the .env file from the CleanApp/Engineering/Mobile App Env folder. Ask for the link from project admins. Copy the .env file into a project root directory.
 
 ### Configure Mapbox
 
-Please signup to Mapbox and create a correct .netrc file so you can install the CocoaPods package for Mapbox. Here are tutorials that help to do that:
+Please signup to Mapbox and create a correct .netrc file in your home directory so you can install the CocoaPods package for Mapbox. Here are tutorials that help to do that:
 https://github.com/mapbox/mapbox-gl-native-ios/blob/d89e7139e5f6a9a3ea5ad57782b41579b8a0bbb1/platform/ios/INSTALL.md#cocoapods
 Discussion about this on GitHub:
 https://github.com/mapbox/mapbox-gl-native/issues/16581
 
-Here is a schema for the .netrc file:
+Here is a schema for the ~/.netrc file:
 ```
 machine api.mapbox.com
     login mapbox
