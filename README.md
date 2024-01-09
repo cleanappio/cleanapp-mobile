@@ -22,17 +22,11 @@ You can find detailed instructions on using React Native and many tips in [its d
 Make sure the Node.js related software has versions as expected.
 
 ```
-yarn -v
+yarn -v  # Expected to be >= 1.22.4
+node -v  # Expected to be >= v18.17.1 
 ```
 
-Expected to be >= 1.22.4
-
-```
-node -v 
-```
-
-Expected to be >= v18.17.1
-
+Use nvm to switch to a desired version.
 ```
 nvm use 18.17.1
 ```
