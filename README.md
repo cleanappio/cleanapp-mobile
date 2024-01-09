@@ -76,7 +76,7 @@ cd cleanapp-mobile
 ### Prepare .env File
 All environment variables are stored in the .env file in the project directory. The .env file is never to be pushed to git.
 
-Take the .env file from the CleanApp/Engineering/Mobile App Env folder. Ask for the link from project admins. Copy the .env file into a project root directory.
+Take the .env file from the Google Drive `CleanApp/Engineering/Mobile App Env` folder. Ask for the link from project admins. Copy the .env file into a project root directory.
 
 ### Configure Mapbox
 
