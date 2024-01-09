@@ -165,9 +165,9 @@ android {
             keyPassword 'android'
         }
        release {
-            if (new File(project.gradle.gradleUserHomeDir + "/.signing/cleanapp.properties").exists()) {
+            if (new File("${project.gradle.gradleUserHomeDir.parent}/.signing/cleanapp.properties").exists()) {
                 Properties props = new Properties()
-                props.load(new FileInputStream(file(project.gradle.gradleUserHomeDir + "/.signing/cleanapp.properties")))
+                props.load(new FileInputStream(file("${project.gradle.gradleUserHomeDir.parent}/.signing/cleanapp.properties")))
                 storeFile file(props['keystore'])
                 storePassword props['keystore.password']
                 keyAlias props['keystore.alias']
