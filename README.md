@@ -220,7 +220,7 @@ yarn install && yarn react-native link
 
 #### Install and test the release version on the device
 1.  Make sure the developer mode on the devise is enabled, https://developer.android.com/studio/debug/dev-options?authuser=3
-1.  Uninstall any existing CleanApp applicationon teh device
+1.  Uninstall any existing CleanApp application on the device
 1.  Connect the device to your computer by USB
 1.  build the APK
     ```
