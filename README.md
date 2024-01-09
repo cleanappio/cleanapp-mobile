@@ -217,11 +217,6 @@ yarn install && yarn react-native link
     ```
     echo "keystore=<your homedir>/.signing/release.keystore\nkeystore.password=<your keystore password>\nkeystore.alias=<your keystore alias>" >> $HOME/.signing/cleanapp.properties
     ```
-1. Modify the file ```android/gradle.properties```.
-    *   Find the line ```CleanApp.properties=...```
-    *   Set the actual path to your cleanapp.properties file generated on previous step.
-        
-        ***You have to set a full path like /home/... or /Users/..., without variables like $HOME etc.***
 
 #### Install and test the release version on the device
 1.  Make sure the developer mode on the devise is enabled, https://developer.android.com/studio/debug/dev-options?authuser=3
