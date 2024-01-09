@@ -6,7 +6,7 @@ The software is developed using React Native, so if you encounter any issues bec
 
 # Installing and Running the app
 
-The setup is currently available on MacOS only.
+The full setup is currently available on MacOS only. The Android only build can be done on Linus as well. In that case you can skip iOS related steps in this README.
 
 ## Pre-requisites
 
@@ -21,9 +21,16 @@ You can find detailed instructions on using React Native and many tips in [its d
 
 Make sure the Node.js related software has versions as expected.
 
-yarn -v => >= 1.22.4
+```yarn -v
+```
 
-node -v => = v18.17.1
+Expected to be >= 1.22.4
+
+```
+node -v 
+```
+
+Expected to be >= v18.17.1
 
 ```
 nvm use 18.17.1
