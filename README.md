@@ -21,7 +21,8 @@ You can find detailed instructions on using React Native and many tips in [its d
 
 Make sure the Node.js related software has versions as expected.
 
-```yarn -v
+```
+yarn -v
 ```
 
 Expected to be >= 1.22.4
