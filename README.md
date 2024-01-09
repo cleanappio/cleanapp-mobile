@@ -11,6 +11,7 @@ The setup is currently available on MacOS only.
 ## Pre-requisites
 
 **React Native**
+
 The first step to run the software is to setup React Native development setup on your machine. React Native has tutorials for different operating systems and mobile platforms here:
 https://reactnative.dev/docs/environment-setup
 
