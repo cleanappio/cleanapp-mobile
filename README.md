@@ -83,6 +83,8 @@ Take the .env file from the Google Drive `CleanApp/Engineering/Mobile App Env` f
     *   All public scopes are to be checked
     *   DOWNLOADS:READ from secret scopes is to be checked
 
+    The token can be taken from the .env file if it already exists.
+
 1.  Do platform specific setups
     1.  iOS
 
@@ -94,7 +96,7 @@ Take the .env file from the Google Drive `CleanApp/Engineering/Mobile App Env` f
         ```
         machine api.mapbox.com
             login mapbox
-            password sk.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+            password <Download token>
         ```
     1. Android
         1.  Create the signing directory in your home directory.
@@ -109,7 +111,7 @@ Take the .env file from the Google Drive `CleanApp/Engineering/Mobile App Env` f
 
         1.  Add the following line into the cleanapp.properties:
             
-            `mapbox.downloadsToken=sk.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`
+            `mapbox.downloadsToken=<Download token>`
 
 ## iOS
 
