@@ -1,14 +1,22 @@
-import {settings as s} from './Settings';
-import {setLastActivity} from '../DataManager';
-import {getAuthToken, setAuthToken} from '../DataManager';
+import Config from 'react-native-config';
+import { settings as s } from './Settings';
 
-// === API 2.0
-
-const getEndpoint20Url = (path) => `${s.baseLocalUrl}${path}`
+const getEndpointUrl = (path) => {
+  var baseUrl = s.baseLocalUrl;
+  switch (Config.APP_MODE) {
+    case 'local':
+      baseUrl = s.baseLocalUrl
+    case 'dev':
+      baseUrl = s.baseDevUrl
+    case 'prod':
+      baseUrl = s.baseProdUrl
+  }
+  return `${s.baseUrl}${path}`
+}
 
 export const postJSONData = async (path, data) => {
   try {
-    const url = getEndpoint20Url(path);
+    const url = getEndpointUrl(path);
     const config = {
       method: 'post',
       headers: {
@@ -20,6 +28,6 @@ export const postJSONData = async (path, data) => {
       .then((res) => res);
     return response;
   } catch (err) {
-    return {ok: false, error: err};
+    return { ok: false, error: err };
   }
 };

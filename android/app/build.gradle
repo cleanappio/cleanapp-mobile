@@ -164,7 +164,7 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
-       release {
+        release {
             if (new File("${project.gradle.gradleUserHomeDir.parent}/.signing/cleanapp.properties").exists()) {
                 Properties props = new Properties()
                 props.load(new FileInputStream(file("${project.gradle.gradleUserHomeDir.parent}/.signing/cleanapp.properties")))

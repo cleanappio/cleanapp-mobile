@@ -1,6 +1,6 @@
 export const settings = {
-  baseUrl: 'https://crab.dev.dataunion.app/',
-  baseUrl20: 'http://34.132.121.53:80/',  // Cleanapp Google Cloud
+  baseProdUrl: 'http://api.cleanapp.io:8080',  // Cleanapp Google Cloud Prod
+  baseDevUrl: 'http://dev.api.cleanapp.io:8080/',  // Cleanapp Google Cloud Dev
   baseLocalUrl: 'http://192.168.86.124:8080/',  // Cleanapp Local
   v2api: {
     updateOrCreateUser: 'update_or_create_user',

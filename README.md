@@ -78,6 +78,14 @@ All environment variables are stored in the .env file in the project directory. 
 
 Take the .env file from the Google Drive `CleanApp/Engineering/Mobile App Env` folder. Ask project admins for the link. Copy the .env file into a project root directory.
 
+### Choose the application mode
+
+*   Open .env prepared in the previous step
+*   Modify the value of the APP_MODE variable. Set one of values:
+    * **local** - for the local build & testing with backend running locally;
+    * **dev** - for build and testing with the backend running on dev cloud environment;
+    * **prod** - for production build;
+
 ### Configure Mapbox
 1.  Make sure the Mapbox download token is created.
     *   All public scopes are to be checked
