@@ -14,13 +14,6 @@ export const getReverseGeocodingData = async (
     searchParams
     : `https://api.mapbox.com/search/v1/reverse/${coordinates[0]},${coordinates[1]}?` +
     searchParams;
-  console.log('==============');
-  console.log('==============');
-  console.log('==============');
-  console.log(url);
-  console.log('==============');
-  console.log('==============');
-  console.log('==============');
   const response = await fetch(url);
   const result = await response.json();
   return result;
@@ -36,13 +29,6 @@ export const getCoordinatesFromLocation = async (location) => {
     const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
       location,
     )}.json?` + searchParams;
-    console.log('==============');
-    console.log('==============');
-    console.log('==============');
-    console.log(url);
-    console.log('==============');
-    console.log('==============');
-    console.log('==============');
     const response = await fetch(url);
 
     if (response) {
@@ -65,13 +51,6 @@ export const getMapSearchItems = async (text) => {
         session_token: '',
         language: 'en',
       });
-    console.log('==============');
-    console.log('==============');
-    console.log('==============');
-    console.log(url);
-    console.log('==============');
-    console.log('==============');
-    console.log('==============');
 
     let response = await fetch(url);
     const { suggestions } = await response.json();
@@ -100,13 +79,6 @@ export const getMapSearchItem = async (item) => {
         access_token: Config.MAPBOX_ACCESS_TOKEN,
         session_token: '',
       });
-    console.log('==============');
-    console.log('==============');
-    console.log('==============');
-    console.log(url);
-    console.log('==============');
-    console.log('==============');
-    console.log('==============');
 
     let response = await fetch(
       url,

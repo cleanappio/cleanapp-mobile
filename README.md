@@ -84,7 +84,7 @@ Take the .env file from the Google Drive `CleanApp/Engineering/Mobile App Env` f
 *   Modify the value of the APP_MODE variable. Set one of values:
     * `local` - for the local build & testing with backend running locally;
     * `dev` - for build and testing with the backend running on dev cloud environment;
-    * **`prod`** - for production build;
+    * `prod` - for production build;
 
 ### Configure Mapbox
 1.  Make sure the Mapbox download token is created.

@@ -6,7 +6,6 @@ import publicIP from 'react-native-public-ip';
 export const retrieveReferral = async () => {
   var key = await getReferralKey();
   var refid = await getReferral();
-  console.log('+++', key, refid);
   if (!key) {
     const dimensions = Dimensions.get('screen');
     ip = await publicIP();

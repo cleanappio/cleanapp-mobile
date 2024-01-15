@@ -1,7 +1,7 @@
 export const settings = {
   baseProdUrl: 'http://api.cleanapp.io:8080',  // Cleanapp Google Cloud Prod
-  baseDevUrl: 'http://dev.api.cleanapp.io:8080/',  // Cleanapp Google Cloud Dev
-  baseLocalUrl: 'http://192.168.86.124:8080/',  // Cleanapp Local
+  baseDevUrl: 'http://dev.api.cleanapp.io:8080',  // Cleanapp Google Cloud Dev
+  baseLocalUrl: 'http://192.168.86.124:8080',  // Cleanapp Local
   v2api: {
     updateOrCreateUser: 'update_or_create_user',
     updatePrivacyAndToc: 'update_privacy_and_toc',

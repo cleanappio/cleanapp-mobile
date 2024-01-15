@@ -201,7 +201,6 @@ const WelcomeScreen = ({
 
   useEffect(async () => {
     setInProgress(true);
-    console.log('+++', 'useEffect in Onboarding');
     const [refKey, referral] = await retrieveReferral();
     setRefKey(refKey);
     setReferralCode(referral);
