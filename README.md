@@ -141,10 +141,10 @@ yarn ios:bundle
     *  Run command ```yarn start```
 1.  Open Xcode
 1.  In menu: File -> Open...
-1.  Click the ios/CleanApp.xcworkspace. The project will open
-1.  In menu: Product / Clean build folder...
-1.  Choose CleanApp > iPhone 14 or any desired simulator on top of Xcode window in the center
-1.  In menu: Product > Run
+1.  Click the `ios/CleanApp.xcworkspace`. The project will open
+1.  In menu: `Product / Clean build folder...`
+1.  Choose `CleanApp > iPhone 14` or any desired simulator on top of Xcode window in the center
+1.  In menu: `Product > Run`
 
 The application will run on the chosen simulator.
 
@@ -156,12 +156,12 @@ The application will run on the chosen simulator.
     *  Run command ```yarn start```
 1.  Open Xcode
 1.  In menu: File -> Open...
-1.  Click the ios/CleanApp.xcworkspace. The project will open
+1.  Click the `ios/CleanApp.xcworkspace`. The project will open
 1.  On the left panel click CleanApp, make sure General tab is opened.
 1.  Increment Build by 1
 1.  Choose CleanApp > Any iOS Device (arm64) on top of Xcode window in the center
-1.  In menu: Product / Clean build folder...
-1.  In menu: Product > Archive
+1.  In menu: `Product / Clean build folder...`
+1.  In menu: `Product > Archive`
 1.  After build is done, an Archives window will be opened. Click Distribute App button. Follow prompts.
 1.  Go to https://appstoreconnect.apple.com in browser, login and monitor build rollout.
 
@@ -230,6 +230,18 @@ yarn install && yarn react-native link
 1.  Make sure the developer mode on the devise is enabled, https://developer.android.com/studio/debug/dev-options?authuser=3
 1.  Uninstall any existing CleanApp application on the device
 1.  Connect the device to your computer by USB
+1.  Change the version code (build number) and the version name (versionName) if necessary
+    ```
+    android {
+        . . .
+        defaultConfig {
+            . . .
+            versionCode 2
+            versionName "2.0.1"
+            . . .
+        }
+    }
+    ```
 1.  build the APK
     ```
     yarn android:bundle &&
@@ -252,7 +264,7 @@ yarn install && yarn react-native link
     ./gradlew bundleRelease -x bundleReleaseJsAndAssets &&
     cd ../
     ```
-1. The bundle release android/app/build/outputs/bundle/release/app-release.aab is ready for upload to PlayStore
+1. The bundle release `android/app/build/outputs/bundle/release/app-release.aab` is ready for upload to PlayStore
 
 # Tips for building on Macbook m1/2
 
