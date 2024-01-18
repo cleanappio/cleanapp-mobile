@@ -1,25 +1,8 @@
-import Config from 'react-native-config';
-import { settings as s } from './Settings';
-
-const getEndpointUrl = (path) => {
-  var baseUrl = s.baseLocalUrl;
-  switch (Config.APP_MODE) {
-    case 'local':
-      baseUrl = s.baseLocalUrl;
-      break;
-    case 'dev':
-      baseUrl = s.baseDevUrl;
-      break;
-    case 'prod':
-      baseUrl = s.baseProdUrl;
-      break;
-  }
-  return `${baseUrl}/${path}`
-}
+import { getUrls } from './Settings';
 
 export const postJSONData = async (path, data) => {
   try {
-    const url = getEndpointUrl(path);
+    const url = `${getUrls().apiUrl}/${path}`;
     const config = {
       method: 'post',
       headers: {

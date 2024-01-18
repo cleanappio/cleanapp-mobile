@@ -2,6 +2,7 @@ import { Dimensions } from 'react-native'
 import { fetchReferral, generateReferral } from '../services/API/APIManager';
 import { getReferral, getReferralKey, getWalletAddress, setReferral, setReferralKey } from '../services/DataManager';
 import publicIP from 'react-native-public-ip';
+import { getUrls } from '../services/API/Settings';
 
 export const retrieveReferral = async () => {
   var key = await getReferralKey();
@@ -27,5 +28,5 @@ export const generateReferralUrl = async() => {
   if (!response.ok) {
     return null;
   }
-  return `https://app.cleanapp.io/ref?refid=${response.refid}`
+  return `${getUrls().webUrl}/ref?refid=${response.refid}`
 }
