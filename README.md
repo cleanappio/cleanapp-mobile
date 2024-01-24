@@ -47,6 +47,7 @@ nvm use 18.17.1
 **Android**
 
 Have Android studio installed
+*  Check that all available versions of CMake are installed 
 
 Make sure Jetifier is installed.
 ```

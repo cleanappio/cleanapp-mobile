@@ -1,24 +1,5 @@
 import Config from 'react-native-config';
 
-export const getReverseGeocodingData = async (
-  coordinates,
-  isReverse = false,
-) => {
-  let searchParams = new URLSearchParams({
-    access_token: Config.MAPBOX_ACCESS_TOKEN,
-    language: 'en',
-    limit: 1,
-  });
-  const url = isReverse
-    ? `https://api.mapbox.com/geocoding/v5/mapbox.places/${coordinates[0]},${coordinates[1]}.json?` +
-    searchParams
-    : `https://api.mapbox.com/search/v1/reverse/${coordinates[0]},${coordinates[1]}?` +
-    searchParams;
-  const response = await fetch(url);
-  const result = await response.json();
-  return result;
-};
-
 export const getCoordinatesFromLocation = async (location) => {
   let searchParams = new URLSearchParams({
     access_token: Config.MAPBOX_ACCESS_TOKEN,

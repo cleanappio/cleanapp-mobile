@@ -339,7 +339,7 @@ PODS:
     - React-Core
   - RNFS (2.18.0):
     - React
-  - RNGestureHandler (1.10.3):
+  - RNGestureHandler (2.14.1):
     - React-Core
   - rnmapbox-maps (10.0.15):
     - MapboxMaps (~> 10.16.0)
@@ -356,7 +356,7 @@ PODS:
     - React
   - RNPermissions (3.8.4):
     - React-Core
-  - RNReanimated (2.2.4):
+  - RNReanimated (2.17.0):
     - DoubleConversion
     - FBLazyVector
     - FBReactNativeSpec
@@ -364,7 +364,6 @@ PODS:
     - RCT-Folly
     - RCTRequired
     - RCTTypeSafety
-    - React
     - React-callinvoker
     - React-Core
     - React-Core/DevSupport
@@ -382,7 +381,6 @@ PODS:
     - React-RCTNetwork
     - React-RCTSettings
     - React-RCTText
-    - React-RCTVibration
     - ReactCommon/turbomodule/core
     - Yoga
   - RNScreens (3.10.2):
@@ -632,10 +630,10 @@ SPEC CHECKSUMS:
   boost-for-react-native: 39c7adb57c4e60d6c5479dd8623128eb5b3f0f2c
   BVLinearGradient: e3aad03778a456d77928f594a649e96995f1c872
   Charts: ce0768268078eee0336f122c3c4ca248e4e204c5
-  DoubleConversion: cf9b38bf0b2d048436d9a82ad2abe1404f11e7de
+  DoubleConversion: 831926d9b8bf8166fd87886c4abab286c2422662
   FBLazyVector: fa8275d5086566e22a26ddc385ab5772e7f9b1bd
   FBReactNativeSpec: aadc4b95b99c0eb4f85eec7fe271d1f90c59b6eb
-  glog: 73c2498ac6884b13ede40eda8228cb1eee9d9d62
+  glog: 5337263514dd6f09803962437687240c5dc39aa4
   MapboxCommon: 8592a003eae487508461d452d62cfc5906a9682a
   MapboxCoreMaps: faa14a797417dc32088c98019a3ce72e46cda5cd
   MapboxMaps: f10aecadbfb7cf96368852ca313101eb4171da53
@@ -689,11 +687,11 @@ SPEC CHECKSUMS:
   RNCPicker: 0991c56da7815c0cf946d6f63cf920b25296e5f6
   RNCPushNotificationIOS: 87b8d16d3ede4532745e05b03c42cff33a36cc45
   RNFS: 3ab21fa6c56d65566d1fb26c2228e2b6132e5e32
-  RNGestureHandler: a479ebd5ed4221a810967000735517df0d2db211
+  RNGestureHandler: e98441928705d9d1184b599d7c1c6df2dd4f7724
   rnmapbox-maps: b6219b7432508ae2cea169365116a811f822612e
   RNOS: 6f2f9a70895bbbfbdad7196abd952e7b01d45027
   RNPermissions: f1b49dd05fa9b83993cd05a9ee115247944d8f1a
-  RNReanimated: 024eff8202342abf4b24e11575a16afc441dabfe
+  RNReanimated: 39e61976e5b5c8a891ea8916fb264ae176e8765d
   RNScreens: d6da2b9e29cf523832c2542f47bf1287318b1868
   RNShare: a5dc3b9c53ddc73e155b8cd9a94c70c91913c43c
   RNSVG: 8ba35cbeb385a52fd960fd28db9d7d18b4c2974f

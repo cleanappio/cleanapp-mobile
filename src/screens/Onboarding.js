@@ -416,15 +416,12 @@ export const Onboarding = (props) => {
   const [inProgress, setInProgress] = useState(false)
 
   const initData = async () => {
-    setInProgress(true);
     const _address = await createLocalWallet();
     if (_address === null) {
       return;
     }
 
     setWalletAddress(_address);
-
-    setInProgress(false);
   };
 
   useEffect(() => {
@@ -507,7 +504,6 @@ export const Onboarding = (props) => {
             </View>
           </View>
         </ImageBackground>
-        <InProgress isVisible={inProgress} />
       </KeyboardAvoidingView>
     </TouchableWithoutFeedback>
   );

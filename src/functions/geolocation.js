@@ -1,7 +1,6 @@
 import Geolocation from 'react-native-geolocation-service';
 import {Alert, Platform} from 'react-native';
 import {setUserLocation} from '../services/DataManager';
-import {getReverseGeocodingData} from '../services/API/MapboxAPI';
 import {
   PERMISSIONS,
   RESULTS,
