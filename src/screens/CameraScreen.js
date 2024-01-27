@@ -202,7 +202,7 @@ const CameraScreen = (props) => {
           t('camerascreen.invalidlocation'),
           [{ text: t('camerascreen.ok'), onPress: () => { } }],
           { cancelable: false },
-          );
+        );
         return null;
       }
 
