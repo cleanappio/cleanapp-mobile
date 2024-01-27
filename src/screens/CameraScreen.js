@@ -50,7 +50,7 @@ import Svg, {
 
 const tapSpotDiameter = 450;
 const tapSpotInitFraction = 0.0;
-const tapSpotDelayMillis = 100;
+const tapSpotDelayMillis = 50;
 const tapDuration = 1000;
 
 Reanimated.addWhitelistedNativeProps({
@@ -135,27 +135,17 @@ const CameraScreen = (props) => {
   }, [useFront]);
 
   useEffect(() => {
-    if (cameraAction && cameraAction.requestCameraShot) {
-      takePhoto().then(() => {
-        setPhototaken(true);
-      });
-    } else {
-      setPhototaken(false);
-    }
-  }, [cameraAction]);
-
-  useEffect(() => {
     if (tappingOn) {
       Animated.timing(tapAnimatedValue, {
         toValue: 1,
-        duration: tapDuration,
+        duration: tapDuration - tapSpotDelayMillis,
         delay: tapSpotDelayMillis,  // Used for preventing false spot actlivation
         useNativeDriver: true,
       }).start();
     } else {
       Animated.timing(tapAnimatedValue, {
         toValue: tapSpotInitFraction,
-        duration: tapSpotInitFraction,
+        duration: 0,
         useNativeDriver: true,
       }).start();
     }
@@ -170,10 +160,7 @@ const CameraScreen = (props) => {
       }).start();
 
       setTimeout(() => {
-        dispatch({
-          type: actions.SET_CAMERA_ACTION,
-          cameraAction: { requestCameraShot: false },
-        });
+        setPhototaken(false);
       }, 5000);
     } else {
       Animated.timing(animatedValue, {
