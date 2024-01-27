@@ -211,9 +211,11 @@ const CameraScreen = (props) => {
     if (userLocation && userLocation.latitude && userLocation.longitude) {
       if (userLocation.longitude === 0 && userLocation.latitude === 0) {
         Alert.alert(
-          'Notice',
-          'User Location is invalid. Will you go to Settings and check for Location Setting?',
-        );
+          t('camerascreen.notice'),
+          t('camerascreen.invalidlocation'),
+          [{ text: t('camerascreen.ok'), onPress: () => { } }],
+          { cancelable: false },
+          );
         return null;
       }
 
@@ -228,34 +230,46 @@ const CameraScreen = (props) => {
         tapY / cameraLayout.height,
         imageData);
       return res;
+    } else {
+      Alert.alert(
+        t('camerascreen.notice'),
+        t('camerascreen.invalidlocation'),
+        [{ text: t('camerascreen.ok'), onPress: () => { } }],
+        { cancelable: false },
+      );
+      return null;
     }
-    return null;
   };
 
   const takePhoto = async () => {
-    if (camera.current) {
-      try {
-        if (camera.current === null) throw new Error('Camera is null!');
-        const photo = await camera.current.takePhoto(takePhotoOptions);
-
-        uploadPhoto({
-          uri:
-            Platform.OS === 'ios'
-              ? photo.path.replace('file://', '')
-              : 'file://' + photo.path,
-          type: 'image/jpeg',
-          name: 'photo.jpg',
-        }).catch((err) => {
-          Alert.alert(
-            t('camerascreen.saveimage'),
-            t('camerascreen.failedtosaveimage') + err.message,
-            [{ text: t('camerascreen.ok'), onPress: () => { } }],
-            { cancelable: false },
-          );
-        });
-      } catch (e) {
-        // error occured while saving photo
+    try {
+      if (!camera || !camera.current) {
+        throw new Error('Camera is null!');
       }
+      const photo = await camera.current.takePhoto(takePhotoOptions);
+
+      uploadPhoto({
+        uri:
+          Platform.OS === 'ios'
+            ? photo.path.replace('file://', '')
+            : 'file://' + photo.path,
+        type: 'image/jpeg',
+        name: 'photo.jpg',
+      }).catch((err) => {
+        Alert.alert(
+          t('camerascreen.notice'),
+          t('camerascreen.failedtosaveimage') + err.message,
+          [{ text: t('camerascreen.ok'), onPress: () => { } }],
+          { cancelable: false },
+        );
+      });
+    } catch (e) {
+      Alert.alert(
+        t('camerascreen.notice'),
+        t('camerascreen.failedtotakephoto') + err.message,
+        [{ text: t('camerascreen.ok'), onPress: () => { } }],
+        { cancelable: false },
+      );
     }
   };
 
