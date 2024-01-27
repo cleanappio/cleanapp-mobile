@@ -50,7 +50,7 @@ import Svg, {
 
 const tapSpotDiameter = 450;
 const tapSpotInitFraction = 0.0;
-const tapSpotDelayMillis = 50;
+const tapSpotDelayMillis = 0;
 const tapDuration = 1000;
 
 Reanimated.addWhitelistedNativeProps({
@@ -298,9 +298,9 @@ const CameraScreen = (props) => {
       setTapY(event.y);
     }).onStart(() => {
       setTappingOn(false);
-      takePhoto().then(() => {
-        setPhototaken(true);
-      });
+      // Set photo taken w/o waiting for taking the photo and uploading it.
+      takePhoto();
+      setPhototaken(true);
     }).onTouchesUp(() => {
       setTappingOn(false);
     }).onTouchesMove(() => {
