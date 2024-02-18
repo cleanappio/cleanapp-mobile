@@ -50,7 +50,6 @@ import Svg, {
 
 const tapSpotDiameter = 450;
 const tapSpotInitFraction = 0.0;
-const tapSpotDelayMillis = 0;
 const tapDuration = 1000;
 
 Reanimated.addWhitelistedNativeProps({
@@ -138,8 +137,7 @@ const CameraScreen = (props) => {
     if (tappingOn) {
       Animated.timing(tapAnimatedValue, {
         toValue: 1,
-        duration: tapDuration - tapSpotDelayMillis,
-        delay: tapSpotDelayMillis,  // Used for preventing false spot actlivation
+        duration: tapDuration,
         useNativeDriver: true,
       }).start();
     } else {

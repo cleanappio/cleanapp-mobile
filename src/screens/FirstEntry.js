@@ -38,6 +38,10 @@ const FirstEntry = ({t, navigation}) => {
       if (ret && ret.firstRun) {
         const walletAddress = await getWalletAddress();
         const userAvatar = await getUserName();
+        if (!walletAddress || !userAvatar || !userAvatar.userName) {
+          navigateOnboarding();
+          return;
+        }
         const privacySetting = await getPrivacySetting();
         const termAccepted = await isPrivacyAndTermsAccepted();
         await updateOrCreateUser(walletAddress, userAvatar.userName);
