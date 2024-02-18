@@ -1,9 +1,8 @@
 import React from 'react'
 import Svg, { Circle } from "react-native-svg";
-import { StyleSheet, Text, View } from 'react-native';
-import {theme} from '../services/Common/theme'
+import {   PixelRatio,
+  StyleSheet, Text, View } from 'react-native';
 import { fontFamilies } from '../utils/fontFamilies';
-import { color } from 'react-native-reanimated';
 
 export const AggregatedMarker = ({ count, bgColor, numColor }) => {
   var coeff;
@@ -18,17 +17,18 @@ export const AggregatedMarker = ({ count, bgColor, numColor }) => {
     coeff = 20;
     style = styles.numberTextMedium;
   } else if (count < 1000) {
-    coeff = 27;
+    coeff = 26;
     style = styles.numberTextLarge;
   } else {
     coeff = 40;
     style = styles.numberTextHuge;
   }
+  coeff *= PixelRatio.getFontScale();
 
   return (
     <Svg
-      width={coeff * 2}
-      height={coeff * 2}
+      width={coeff * 2 + 1}
+      height={coeff * 2 + 1}
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
