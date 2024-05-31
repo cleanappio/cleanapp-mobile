@@ -169,7 +169,7 @@ The application will run on the chosen simulator.
 
 ### Pre-build
 ```
-yarn install && yarn react-native link
+yarn install
 
 ```
 
