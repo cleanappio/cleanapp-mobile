@@ -36,12 +36,12 @@ Make sure the Node.js related software has versions as expected.
 
 ```
 yarn -v  # Expected to be >= 1.22.4
-node -v  # Expected to be exactly = v18.17.1 
+node -v  # Expected to be exactly = v18.20.2 
 ```
 
 Use nvm to switch to a desired version.
 ```
-nvm use 18.17.1
+nvm use 18.20.2
 ```
 
 **Android**
@@ -134,7 +134,7 @@ yarn ios:bundle
 
 ### Run app on iOS simulator
 
-*There is no way to build and run on simulator fro the command line due to* ***error:0308010C:digital envelope routines::unsupported***
+*There is no way to build and run on simulator from the command line due to* ***error:0308010C:digital envelope routines::unsupported***
 
 1.  Run Metro
     *  Open a new terminal window
