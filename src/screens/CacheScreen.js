@@ -1,33 +1,20 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { Pressable, ScrollView, StyleSheet, View, Text, ToastAndroid, Alert, Platform } from 'react-native';
 import { fontFamilies } from '../utils/fontFamilies';
 import { theme } from '../services/Common/theme';
 import Ripple from '../components/Ripple';
-import { Camera } from 'react-native-vision-camera';
 
-import CameraIcon from '../assets/ico_btn_camera.svg';
 import WalletSettingsIcon from '../assets/ico_cache_settings.svg';
-import CopyIcon from '../assets/ico_copy.svg';
-import ShareIcon from '../assets/ico_share.svg';
 import BottomSheetDialog from '../components/BotomSheetDialog';
 
 import CopySmallIcon from '../assets/ico_copy_small.svg';
 import EyeSmallIcon from '../assets/ico_eye_small.svg';
 import EyeOffIcon from '../assets/ico_eye_off.svg';
-import MMIcon from '../assets/ico_metamask_outline.svg';
-
-import MetamaskIcon from '../assets/ico_metamask.svg';
-import TorusIcon from '../assets/ico_torus.svg';
-import CoinbaseIcon from '../assets/ico_coinbase.svg';
 import { BlurView } from '@react-native-community/blur';
 import { Row } from '../components/Row';
 import { useNavigation } from '@react-navigation/native';
-import Share, { Social } from 'react-native-share';
 import Clipboard from '@react-native-clipboard/clipboard';
-import Toast from 'react-native-simple-toast';
-// import MetaMaskSDK from '@metamask/sdk';
-import BackgroundTimer from 'react-native-background-timer';
-import { ethers } from 'ethers';
 import {
   getPrivacySetting,
   getWalletAddress,
@@ -42,22 +29,16 @@ import {
 } from '../services/API/APIManager';
 import { useStateValue } from '../services/State/State';
 import { actions } from '../services/State/Reducer';
-import { ReferralSharing } from './ReferralSharing';
-import { generateReferralUrl } from '../functions/referral';
 
 const CacheScreen = (props) => {
   const [privacyOpened, setPrivacyOpened] = useState(false);
   const [cacheSettingOpened, setCacheSettingOpened] = useState(false);
   const [walletAddress, setWalletAddress] = useState('');
   const [walletInfo, setWalletInfo] = useState(null);
-  const [isReferralVisible, setIsReferralVisible] = useState(false);
-  const [referralUrl, setReferralUrl] = useState('');
 
   const [shareDataStatus, setShareDataStatus] = useState(0);
   const [{ cacheVault }, dispatch] = useStateValue();
 
-  const [nextRunTime, setNextRunTime] = useState(0);
-  const navigation = useNavigation();
   const { t } = useTranslation();
 
   const privacy_values = [
@@ -70,23 +51,6 @@ const CacheScreen = (props) => {
       sub_value: t('cachescreen.Nodatacollectedwhileflagging'),
     },
   ];
-
-  // const MMSDK = new MetaMaskSDK({
-  //   openDeeplink: (link) => {
-  //     Linking.openURL(link); // Use React Native Linking method or another way of opening deeplinks.
-  //   },
-  //   timer: BackgroundTimer, // To keep the dapp alive once it goes to background.
-  //   dappMetadata: {
-  //     name: 'Cleanapp', // The name of your dapp.
-  //     url: 'https://cleanapp.io', // The URL of your website.
-  //   },
-  // });
-
-  // const ethereum = MMSDK.getProvider();
-
-  const openCamera = () => {
-    navigation.navigate('Camera');
-  };
 
   const editPrivacy = () => {
     setPrivacyOpened(true);
@@ -101,43 +65,40 @@ const CacheScreen = (props) => {
     setWalletInfo(walletData);
   };
 
-  useEffect(async () => {
-    await initWallet();
-    generateReferralUrl().then((url) => {
-      if (url) {
-        setReferralUrl(url);
-      }
-    });
+  useFocusEffect(
+    React.useCallback(async () => {
+      await initWallet();
 
-    getPrivacySetting().then((resp) => {
-      if (resp) {
-        setShareDataStatus(resp);
-      }
-    });
-    const wa = await getWalletAddress();
-    setWalletAddress(await getWalletAddress(wa));
-    getRewardStats(wa).then((resp) => {
-      if (resp && resp.ok) {
-        let cacheResult = {
-          reports: resp.stats.kitns_daily + resp.stats.kitns_disbursed || 0,
-          referrals: resp.stats.kitns_ref_daily + resp.stats.kitns_ref_disbursed || 0,
-          dailyReports: resp.stats.kitns_daily || 0,
-          dailyReferrals: resp.stats.kitns_ref_daily || 0,
-          disbursedReports: resp.stats.kitns_disbursed || 0,
-          disbursedReferrals: resp.stats.kitns_ref_disbursed || 0,
-          disbursedTotal: resp.stats.kitns_disbursed + resp.stats.kitns_ref_disbursed || 0,
-          dailyTotal: resp.stats.kitns_daily + resp.stats.kitns_ref_daily || 0,
-          total: resp.stats.kitns_daily + resp.stats.kitns_ref_daily +
-                 resp.stats.kitns_disbursed + resp.stats.kitns_ref_disbursed || 0,
-        };
-        dispatch({
-          type: actions.SET_CACHE_VAULT,
-          cacheVault: cacheResult,
-        });
-        setCacheVault(cacheResult);
-      }
-    });
-  }, []);
+      getPrivacySetting().then((resp) => {
+        if (resp) {
+          setShareDataStatus(resp);
+        }
+      });
+      const wa = await getWalletAddress();
+      setWalletAddress(await getWalletAddress(wa));
+      getRewardStats(wa).then((resp) => {
+        if (resp && resp.ok) {
+          let cacheResult = {
+            reports: resp.stats.kitns_daily + resp.stats.kitns_disbursed || 0,
+            referrals: resp.stats.kitns_ref_daily + resp.stats.kitns_ref_disbursed || 0,
+            dailyReports: resp.stats.kitns_daily || 0,
+            dailyReferrals: resp.stats.kitns_ref_daily || 0,
+            disbursedReports: resp.stats.kitns_disbursed || 0,
+            disbursedReferrals: resp.stats.kitns_ref_disbursed || 0,
+            disbursedTotal: resp.stats.kitns_disbursed + resp.stats.kitns_ref_disbursed || 0,
+            dailyTotal: resp.stats.kitns_daily + resp.stats.kitns_ref_daily || 0,
+            total: resp.stats.kitns_daily + resp.stats.kitns_ref_daily +
+                   resp.stats.kitns_disbursed + resp.stats.kitns_ref_disbursed || 0,
+          };
+          dispatch({
+            type: actions.SET_CACHE_VAULT,
+            cacheVault: cacheResult,
+          });
+          setCacheVault(cacheResult);
+        }
+      });
+    }, []),
+  );
 
   const PrivacySheet = ({
     isVisible = false,
@@ -202,29 +163,8 @@ const CacheScreen = (props) => {
   };
 
   const CacheSettingSheet = ({ isVisible = false, onClose = () => { } }) => {
-    // const [cacheSettingStep, setCacheSettingStep] = useState('main'); // main | connectMM
-    const [metamaskStatus, setMetamaskStatus] = useState(''); // '' | connecting | connected
-    const [metamaskLabel, setMetamaskLabel] = useState('Metamask');
     const [isShowPrivateKey, setIsShowPrivateKey] = useState(true);
     const [isShowMnemonics, setIsShowMnemonics] = useState(true);
-
-    const connectMetamask = async () => {
-      // setMetamaskStatus('connecting');
-      // const accounts = await ethereum.request({method: 'eth_requestAccounts'});
-      // //const provider = new ethers.providers.Web3Provider(ethereum);
-      // if (accounts) {
-      //   setWalletAddress(accounts[0]);
-      //   setMetamaskStatus('connected');
-      // }
-      // /* setMetamaskStatus('connecting');
-      // setTimeout(() => {
-      //   setMetamaskStatus('connected');
-      // }, 10000); */
-    };
-
-    // const switchStep = (step) => {
-    //   setCacheSettingStep(step);
-    // };
 
     const showMnemonics = () => {
       setIsShowMnemonics(!isShowMnemonics);
@@ -233,70 +173,6 @@ const CacheScreen = (props) => {
     const showPrivateKey = () => {
       setIsShowPrivateKey(!isShowPrivateKey);
     };
-
-    // const ConnectMMView = () => {
-    //   return (
-    //     <>
-    //       <Ripple
-    //         onPress={connectMetamask}
-    //         style={{
-    //           ...styles.blackCard,
-    //           marginTop: 24,
-    //           opacity: 0.5,
-    //           paddingHorizontal: 8,
-    //           borderColor: theme.COLORS.ORANGE,
-    //           borderWidth: metamaskStatus === 'connecting' ? 1 : 0,
-    //           backgroundColor:
-    //             metamaskStatus === 'connected'
-    //               ? theme.COLORS.ORANGE
-    //               : theme.COLORS.BG,
-    //         }}>
-    //         <View style={styles.rowcenter}>
-    //           <Text style={styles.txt16}>
-    //             {metamaskStatus === 'connecting'
-    //               ? t('cachescreen.connecting')
-    //               : metamaskStatus === 'connected'
-    //               ? t('cachescreen.connected')
-    //               : t('cachescreen.metamask')}
-    //           </Text>
-    //           <MetamaskIcon />
-    //         </View>
-    //       </Ripple>
-    //       <Ripple
-    //         style={{
-    //           ...styles.blackCard,
-    //           marginTop: 24,
-    //           opacity: 0.5,
-    //           paddingHorizontal: 8,
-    //         }}>
-    //         <View style={styles.rowcenter}>
-    //           <Text style={styles.txt16}>{t('cachescreen.coinbase')}</Text>
-    //           <CoinbaseIcon />
-    //         </View>
-    //       </Ripple>
-    //       <Ripple
-    //         style={{
-    //           ...styles.blackCard,
-    //           marginTop: 24,
-    //           opacity: 0.5,
-    //           paddingHorizontal: 8,
-    //         }}>
-    //         <View style={styles.rowcenter}>
-    //           <Text style={styles.txt16}>{t('cachescreen.torus')}</Text>
-    //           <TorusIcon />
-    //         </View>
-    //       </Ripple>
-    //       <Ripple
-    //         containerStyle={{marginTop: 24}}
-    //         style={styles.bigBtnBlack}
-    //         onPress={() => {
-    //           switchStep('main');
-    //         }}>
-    //         <Text style={styles.txt16bold}>{t('cachescreen.back')}</Text>
-    //       </Ripple>
-    //     </>
-    //   );
-    // };
 
     const onCopyWalletAddress = (address) => {
       Clipboard.setString(address);
@@ -418,28 +294,6 @@ const CacheScreen = (props) => {
               </View>
             </View>
           </View>
-          {/* <View
-            style={{
-              ...styles.blackCard,
-              marginTop: 24,
-              opacity: 0.5,
-              paddingHorizontal: 8,
-            }}>
-            <View style={styles.row}>
-              <Text style={styles.txt16}>
-                {t('cachescreen.connectMM')}
-                <Text style={styles.txt12italic}>
-                  {t('cachescreen.comingsoon')}
-                </Text>
-              </Text>
-              <Ripple
-                onPress={() => {
-                  // switchStep('connectMM');
-                }}>
-                <MMIcon />
-              </Ripple>
-            </View>
-          </View> */}
           <Ripple
             containerStyle={{ marginTop: 24 }}
             style={styles.bigBtnBlack}
@@ -454,18 +308,8 @@ const CacheScreen = (props) => {
       <BottomSheetDialog
         isVisible={isVisible}
         onClose={onClose}
-        // title={
-        //   cacheSettingStep === 'connectMM'
-        //     ? t('cachescreen.connectMM')
-        //     : t('cachescreen.cachesettings')
-        // }
-        // headerIcon={
-        //   cacheSettingStep === 'connectMM' ? <MMIcon /> : <WalletSettingsIcon />
-        // }
         title={t('cachescreen.cachesettings')}
         headerIcon={<WalletSettingsIcon />}>
-        {/* {cacheSettingStep === 'connectMM' && <ConnectMMView />} */}
-        {/* {cacheSettingStep === 'main' && <CacheSettingView />} */}
 
         <CacheSettingView />
       </BottomSheetDialog>
@@ -519,18 +363,6 @@ const CacheScreen = (props) => {
               <Text style={styles.txt16}>{'KITN'}</Text>
             </Text>
           </View>
-          <View style={styles.block}>
-            <View style={{ ...styles.blueCard, marginTop: 8 }}>
-              <View style={styles.row}>
-                <Text style={styles.txt16bold}>
-                  {t('cachescreen.earnmorekitn')}
-                </Text>
-                <Ripple onPress={openCamera}>
-                  <CameraIcon />
-                </Ripple>
-              </View>
-            </View>
-          </View>
           {/** Privacy */}
           <View style={styles.block}>
             <View style={styles.row}>
@@ -567,43 +399,6 @@ const CacheScreen = (props) => {
               </View>
             </View>
           </View>
-          {/** referral */}
-          <View style={styles.block}>
-            <View style={styles.row}>
-              <Text style={styles.txt12}>
-                {t('cachescreen.earn10kitnperreferral')}
-              </Text>
-              <View style={styles.border} />
-            </View>
-            <View style={{ ...styles.blankCard, marginTop: 8 }}>
-              <View style={styles.oneButtonRow}>
-                <Pressable
-                  style={styles.btnBlue}
-                  onPress={() => {
-                    setIsReferralVisible(true);
-                  }}>
-                  <Text style={styles.btnBlueText}>
-                    {t('cachescreen.referCleanapp')}
-                  </Text>
-                </Pressable>
-              </View>
-            </View>
-          </View>
-          {/** Coming Soon */}
-          {/* <View style={styles.block}>
-            <View style={styles.row}>
-              <Text style={styles.txt12}>{t('cachescreen.comingsoon2')}</Text>
-              <View style={styles.border} />
-            </View>
-            <View style={{ ...styles.blueCard, marginTop: 8 }}>
-              <View style={styles.row}>
-                <Text style={styles.txt16bold}>{t('cachescreen.swap')}</Text>
-                <Text style={styles.txt9}>
-                  {t('cachescreen.swapyourkitnintodogsor')}
-                </Text>
-              </View>
-            </View>
-          </View> */}
         </View>
       </ScrollView>
       <PrivacySheet
@@ -618,11 +413,6 @@ const CacheScreen = (props) => {
         onClose={() => {
           setCacheSettingOpened(false);
         }}
-      />
-      <ReferralSharing
-        isVisible={isReferralVisible}
-        setIsVisible={setIsReferralVisible}
-        refUrl={referralUrl}
       />
     </>
   );

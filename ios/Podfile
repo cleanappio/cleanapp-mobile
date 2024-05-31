@@ -1,10 +1,43 @@
 source 'https://github.com/CocoaPods/Specs.git'
 
-require_relative '../node_modules/react-native/scripts/react_native_pods'
-require_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'
+def node_require(script)
+  # Resolve script with node to allow for hoisting
+  require Pod::Executable.execute_command('node', ['-p',
+    "require.resolve(
+      '#{script}',
+      {paths: [process.argv[1]]},
+    )", __dir__]).strip
+end
+
+node_require('react-native/scripts/react_native_pods.rb')
+node_require('react-native-permissions/scripts/setup.rb')
 
 project './CleanApp.xcodeproj'
-platform :ios, '13.0'
+platform :ios, '14.0'
+prepare_react_native_project!
+
+setup_permissions([
+  # 'AppTrackingTransparency',
+  # 'Bluetooth',
+  # 'Calendars',
+  # 'CalendarsWriteOnly',
+  'Camera',
+  # 'Contacts',
+  # 'FaceID',
+  'LocationAccuracy',
+  'LocationAlways',
+  'LocationWhenInUse',
+  # 'MediaLibrary',
+  # 'Microphone',
+  # 'Motion',
+  # 'Notifications',
+  # 'PhotoLibrary',
+  # 'PhotoLibraryAddOnly',
+  # 'Reminders',
+  # 'Siri',
+  # 'SpeechRecognition',
+  # 'StoreKit',
+])
 
 install! 'cocoapods', :deterministic_uuids => false
 
@@ -21,10 +54,9 @@ target 'CleanApp' do
 
   pod 'react-native-charts-wrapper', :path => '../node_modules/react-native-charts-wrapper' # do not delete this 
   pod 'react-native-webview', :path => '../node_modules/react-native-webview'
-  permissions_path = '../node_modules/react-native-permissions/ios'
-  pod 'Permission-LocationWhenInUse', :path => "#{permissions_path}/LocationWhenInUse"
-  pod 'Permission-Camera', :path => "#{permissions_path}/Camera"
+  pod 'RNPermissions', :path => '../node_modules/react-native-permissions'
   pod 'react-native-config', :path => '../node_modules/react-native-config'
+  pod 'TcpSockets', :path => '../node_modules/react-native-tcp'
 
   target 'CleanAppTests' do
     inherit! :complete

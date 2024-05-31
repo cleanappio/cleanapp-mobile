@@ -110,8 +110,9 @@ export default {
       close: 'Close',
     },
     referral: {
-      content:
-        'Get points for your ranking and reward crypto tokens for referring other subject matter expert physicians',
+      title: 'Share CleanApp',
+      content: 'Get points for your ranking and reward crypto tokens',
+      howto: 'Give this QR code for scanning or tap "Share"',
       MyReferrals: 'My Referrals',
       REFERRALS: 'REFERRALS',
       secondContent:

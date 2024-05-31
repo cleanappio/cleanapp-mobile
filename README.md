@@ -128,7 +128,6 @@ Take the .env file from the Google Drive `CleanApp/Engineering/Mobile App Env` f
 
 ```
 yarn install &&
-yarn react-native link &&
 npx pod-install &&
 yarn ios:bundle
 ```

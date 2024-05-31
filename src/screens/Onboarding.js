@@ -1,9 +1,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { StackActions } from '@react-navigation/native';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  ActivityIndicator,
   Alert,
   Animated,
   Dimensions,
@@ -35,7 +34,6 @@ import {
   setTeam,
 } from '../services/DataManager';
 import { fontFamilies } from '../utils/fontFamilies';
-// import { useWalletConnect } from '@walletconnect/react-native-dapp';
 import { InProgress } from '../components/InProgress';
 
 const background = require('../assets/onboard_background.jpg');
@@ -46,8 +44,9 @@ import { Row } from '../components/Row';
 import { createLocalWallet } from '../functions/walletconnect';
 import { TermsAndConditions } from './TermsAndConditions';
 import { retrieveReferral } from '../functions/referral';
+import { init } from 'i18next';
 
-const steps = [/* 'walletSelect', */ 'name', 'privacy'];
+const steps = ['name', 'privacy'];
 
 const IndicatorView = ({ step = 'walletSelect' }) => {
   const stepIndex = steps.findIndex((ele) => ele === step);
@@ -79,63 +78,11 @@ const Heading = ({ title = '', subTitle = '' }) => {
   );
 };
 
-// const WalletSelect = ({ onComplete = () => { } }) => {
-//   const { t } = useTranslation();
-//   const [cwLoading, setCwLoading] = useState(false);
-//   const [wcLoading, setWcLoading] = useState(false);
-
-//   const createNewWallet = () => {
-//     setCwLoading(true);
-//     setTimeout(() => {
-//       onComplete();
-//     }, 2000);
-//   };
-
-//   const connectWallet = () => {
-//     setWcLoading(true);
-//   };
-
-//   return (
-//     <View style={styles.slideBlock}>
-//       <Ripple style={styles.btn} onPress={createNewWallet}>
-//         <Row justifyContent={'center'}>
-//           {cwLoading && (
-//             <ActivityIndicator
-//               color={theme.COLORS.WHITE}
-//               size="small"
-//               style={{ marginRight: 10 }}
-//             />
-//           )}
-//           <Text style={styles.btnText}>{t('onboarding.createNewWallet')}</Text>
-//         </Row>
-//       </Ripple>
-//       <Ripple
-//         containerStyle={{ marginTop: 16 }}
-//         style={styles.btn}
-//         onPress={() => {
-//           connectWallet();
-//         }}>
-//         <Row justifyContent={'center'}>
-//           {wcLoading && (
-//             <ActivityIndicator
-//               color={theme.COLORS.WHITE}
-//               size="small"
-//               style={{ marginRight: 10 }}
-//             />
-//           )}
-//           <Text style={styles.btnText}>{t('onboarding.wcconnect')}</Text>
-//         </Row>
-//       </Ripple>
-//     </View>
-//   );
-// };
-
 const WelcomeScreen = ({
   userName = '',
   walletAddress = '',
   onComplete = () => { },
 }) => {
-  const web3 = useSelector((state) => state.web3);
   const { t } = useTranslation();
 
   const [name, setName] = useState(userName);
@@ -199,12 +146,15 @@ const WelcomeScreen = ({
     return name === ''
   }
 
-  useEffect(async () => {
-    setInProgress(true);
-    const [refKey, referral] = await retrieveReferral();
-    setRefKey(refKey);
-    setReferralCode(referral);
-    setInProgress(false);
+  useEffect(() => {
+    initRef = async () => {
+      setInProgress(true);
+      const [refKey, referral] = await retrieveReferral();
+      setRefKey(refKey);
+      setReferralCode(referral);
+      setInProgress(false);
+    }
+    initRef();
   }, []);
 
   return (
@@ -276,7 +226,7 @@ const WelcomeScreen = ({
   );
 };
 
-const PrivacyScreen = ({ onStartTutorial = () => { }, onComplete = () => { } }) => {
+const PrivacyScreen = ({ onComplete = () => { } }) => {
   const { t } = useTranslation();
   const [privacy, setPrivacy] = useState(0);
   const [agreeTOC, setAgreeTOC] = useState(true);
@@ -303,7 +253,7 @@ const PrivacyScreen = ({ onStartTutorial = () => { }, onComplete = () => { } }) 
     onComplete();
   };
 
-  const onPressStartCleanup = async () => {
+  const onPressStartCleanApp = async () => {
     setInProgress(true);
     await doCompleteAction();
     setInProgress(false);
@@ -375,7 +325,7 @@ const PrivacyScreen = ({ onStartTutorial = () => { }, onComplete = () => { } }) 
       <Pressable
         disabled={!agreeTOC && !inProgress}
         style={agreeTOC ? styles.btn : styles.disabledBtn}
-        onPress={onPressStartCleanup}>
+        onPress={onPressStartCleanApp}>
         <Text style={agreeTOC ? styles.btnText : styles.disabledBtnText}>
           {t('onboarding.startCleanup')}
         </Text>
@@ -386,20 +336,10 @@ const PrivacyScreen = ({ onStartTutorial = () => { }, onComplete = () => { } }) 
   );
 };
 
-export const Onboarding = (props) => {
+export const Onboarding = ({completeOnboarding = () => {}}) => {
   const web3 = useSelector((state) => state.web3);
 
   const { t } = useTranslation();
-  const { navigation } = props;
-  // const connector = useWalletConnect();
-
-  /**
-   * 1. choose wallet - local or walletconnect
-   * 2. if local, then, choose create or load
-   * 3. if walletconnec, then, do walletconnect
-   * 4. if already exist, then, load username, else new username
-   * 5. end
-   */
   const [step, setStep] = useState('name'); // name | privacy
   const [walletAddress, setWalletAddress] = useState(null);
 
@@ -412,7 +352,6 @@ export const Onboarding = (props) => {
     setActiveIndex(viewableItems[0].index);
   });
   const [name, setName] = useState('');
-  // const [connected, setConnected] = useState(false);
   const [inProgress, setInProgress] = useState(false)
 
   const initData = async () => {
@@ -428,50 +367,14 @@ export const Onboarding = (props) => {
     initData();
   }, []);
 
-  // const onWalletConnect = () => {
-  //   setStep('name');
-  // };
-
   const onCompleteName = () => {
     setStep('privacy');
   };
 
   const onCompletePrivacy = () => {
     setFirstRun(true);
-    navigation.dispatch(StackActions.replace('Home'));
+    completeOnboarding();
   };
-
-  // const connectWallet = useCallback(async () => {
-  //   let result = await connector.connect();
-  //   if (result) {
-  //     // connection flag
-  //     setConnected(true);
-  //   }
-
-  //   return result;
-  // }, [connector]);
-
-  // const wcLogin = async () => {
-  //   // Login From Wallet
-  //   const response = await LoginFromWalletConnect(
-  //     connector,
-  //     web3,
-  //     '', // referralCode,
-  //   );
-  //   setConnected(false);
-  //   // move to user name input
-  //   const username = await getUserName();
-  //   if (username && username.userName) {
-  //     setName(username.userName);
-  //   }
-  //   setStep('name');
-  // };
-
-  // useEffect(() => {
-  //   if (connected) {
-  //     wcLogin();
-  //   }
-  // }, [connected]);
 
   return (
     <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>

@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {createStore, applyMiddleware, compose} from 'redux';
 import {persistStore, persistReducer} from 'redux-persist'; // Imports: Redux
 import thunk from 'redux-thunk';
-import {createLogger} from 'redux-logger';
+import {logger} from 'redux-logger';
 import rootReducer from '../reducers/index.js'; // Middleware: Redux Persist Config
 
 const persistConfig = {
@@ -14,12 +14,10 @@ const persistConfig = {
   blacklist: ['web3', 'reducers'],
 };
 
-const middlewares = [thunk];
-
 // Redux: Store
 const store = createStore(
   persistReducer(persistConfig, rootReducer),
-  compose(applyMiddleware(createLogger(), ...middlewares), compose),
+  // applyMiddleware(logger, thunk),
 );
 
 // Middleware: Redux Persist Persister

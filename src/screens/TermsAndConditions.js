@@ -1,48 +1,45 @@
 import React, { useTransition } from 'react';
-import {Modal, Pressable, StyleSheet, Text, View} from 'react-native';
-import {theme} from '../services/Common/theme';
-import {ScrollView} from 'react-native-gesture-handler';
-import {fontFamilies} from '../utils/fontFamilies';
-import {useTranslation} from 'react-i18next';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Modal, Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { theme } from '../services/Common/theme';
+import { ScrollView, GestureHandlerRootView } from 'react-native-gesture-handler';
+import { fontFamilies } from '../utils/fontFamilies';
+import { useTranslation } from 'react-i18next';
 import HTMLView from 'react-native-htmlview';
 
-export const TermsAndConditions = ({isVisible, setIsVisible}) => {
-  const {t} = useTranslation();
+export const TermsAndConditions = ({ isVisible, setIsVisible }) => {
+  const { t } = useTranslation();
 
   return (
-    <View style={styles.centeredView}>
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={isVisible}
-        >
-        <SafeAreaView style={{...styles.centeredView, ...styles.frameView}}>
+    <Modal
+      animationType="slide"
+      transparent={true}
+      visible={isVisible}
+    >
+      <SafeAreaView style={styles.frameView}>
+        <GestureHandlerRootView>
           <ScrollView style={styles.contentView}>
             <HTMLView style={styles.contentText} value={t('privacy.content')} />
           </ScrollView>
-          <Pressable
-            style={styles.btn}
-            onPress={() => {
-              setIsVisible(false);
-            }}>
-            <Text style={styles.btnText}>
-              {t('onboarding.close')}
-            </Text>
-          </Pressable>
-        </SafeAreaView>
-      </Modal>
-    </View>
+        </GestureHandlerRootView>
+        <Pressable
+          style={styles.btn}
+          onPress={() => {
+            setIsVisible(false);
+          }}>
+          <Text style={styles.btnText}>
+            {t('onboarding.close')}
+          </Text>
+        </Pressable>
+      </SafeAreaView>
+    </Modal>
   );
 }
 
 const styles = StyleSheet.create({
-  centeredView: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   frameView: {
+    flex: 1,
+    justifyContent: 'flex-start',
+    alignItems: 'center',
     backgroundColor: theme.APP_COLOR_2,
   },
   contentView: {

@@ -13,26 +13,24 @@ import {
 import {
   Gesture,
   GestureDetector,
+  GestureHandlerRootView,
 } from 'react-native-gesture-handler'
 import Reanimated, {
-  Extrapolate,
+  Extrapolation,
   interpolate,
-  runOnJS,
   useAnimatedProps,
   useSharedValue,
 } from 'react-native-reanimated';
 import {
   Camera,
-  useCameraDevices,
+  useCameraDevice,
+  useCameraPermission,
 } from 'react-native-vision-camera';
 import RNFS from 'react-native-fs';
 import { theme } from '../services/Common/theme';
 
-import { useNavigation } from '@react-navigation/native';
 import { useStateValue } from '../services/State/State';
 import { actions } from '../services/State/Reducer';
-import { openSettings } from 'react-native-permissions';
-import RadialGradient from 'react-native-radial-gradient';
 import { fontFamilies } from '../utils/fontFamilies';
 import CheckBigIcon from '../assets/ico_check_big.svg';
 import { BlurView } from '@react-native-community/blur';
@@ -43,6 +41,7 @@ import { getWalletAddress } from '../services/DataManager';
 
 import Svg, {
   Circle,
+  Ellipse,
   Defs,
   RadialGradient as SvgRadialGradient,
   Stop,
@@ -57,64 +56,118 @@ Reanimated.addWhitelistedNativeProps({
 })
 const ReanimatedCamera = Reanimated.createAnimatedComponent(Camera)
 
+const GreenFlash = ({
+  flashDiameterX,
+  flashDiameterY,
+  x,
+  y,
+  scaleX,
+  scaleY,
+}) => {
+  return (
+    <Animated.View
+      style={{
+        position: 'absolute',
+        width: flashDiameterX,
+        height: flashDiameterY,
+        justifyContent: 'center',
+        alignItems: 'center',
+        top: y - flashDiameterY / 2,
+        left: x - flashDiameterX / 2,
+      }}
+    >
+      <Svg
+        height={flashDiameterY * scaleY[0]}
+        width={flashDiameterX * scaleX[0]}
+        viewBox={`0 0 ${flashDiameterX} ${flashDiameterY}`}>
+        <Defs>
+          <SvgRadialGradient
+            id="grad"
+            cx={flashDiameterX / 2}
+            cy={flashDiameterY / 2}
+            fx={flashDiameterX / 2}
+            fy={flashDiameterY / 2}
+            rx={flashDiameterX / 2 * scaleX[0]}
+            ry={flashDiameterY / 2 * scaleY[0]}
+            gradientUnits="userSpaceOnUse">
+            <Stop offset="0" stopColor={theme.COLORS.CAMERA_GRADIENT[0]} stopOpacity="0.8" />
+            <Stop offset="1" stopColor={theme.COLORS.CAMERA_GRADIENT[0]} stopOpacity="0" />
+          </SvgRadialGradient>
+        </Defs>
+        <Ellipse
+          cx={flashDiameterX / 2}
+          cy={flashDiameterY / 2}
+          rx={flashDiameterX / 2 * scaleX[0]}
+          ry={flashDiameterY / 2 * scaleY[0]}
+          fill="url(#grad)"
+        />
+      </Svg>
+    </Animated.View>
+  )
+}
+
 const CameraScreen = (props) => {
-  const [hasPermission, setHasPermission] = useState(false);
   const [useFront, setUseFront] = useState(false);
   const [isActive, setIsActive] = useState(true);
   const [torchEnabled, setTorchEnabled] = useState(false);
   const camera = useRef(null);
   const [{ cameraAction }, dispatch] = useStateValue();
   const [phototaken, setPhototaken] = useState(false);
-  const [animatedValue] = useState(new Animated.Value(0));
-  const tapAnimatedValue = useRef(new Animated.Value(0.2)).current;
-  const [tapScale, setTapScale] = useState(0);
+  const flashAnimatedValue = useRef(new Animated.Value(0));
+  const tapAnimatedValue = useRef(new Animated.Value(0.2));
+  const flashScale = useState(0);
+  const flashScaleStatic = useState(1);
+  const tapScale = useState(0);
   const [tapX, setTapX] = useState(0.0);
   const [tapY, setTapY] = useState(0.0);
   const [tappingOn, setTappingOn] = useState(false);
   const [cameraLayout, setCameraLayout] = useState({});
   const { t } = useTranslation();
+  const { hasPermission, requestPermission } = useCameraPermission();
 
-  tapAnimatedValue.addListener((state) => {
-    setTapScale(state.value)
+  tapAnimatedValue.current.addListener((state) => {
+    tapScale[1](state.value);
   });
 
-  const navigation = useNavigation();
+  flashAnimatedValue.current.addListener((state) => {
+    flashScale[1](state.value);
+  });
 
-  const devices = useCameraDevices();
-  const device = devices.back;
-  const minZoom = device ? device.minZoom : 1.0;
-  const maxZoom = device ? device.maxZoom : (Platform.OS === 'ios' ? 123 : 6);
-  const minCameraZoom = 0.0;
-  const maxCameraZoom = Platform.OS === 'ios' ? 0.5 : 1.0;
-  const zoom = useSharedValue(minCameraZoom);
+  const device = useCameraDevice('back');
+  const minCameraZoom = device ? device.minZoom : 1.0;
+  const maxCameraZoom = device ? device.maxZoom : (Platform.OS === 'ios' ? 123 : 6);
+
+  const minZoom = 1.0;
+  const maxZoom = 50.0;
+  const zoom = useSharedValue(device.neutralZoom);
   const zoomOffset = useSharedValue(minZoom);
   const currZoomOffset = useSharedValue(minZoom);
 
-  const requestPermission = async () => {
-    const status = await Camera.requestCameraPermission();
-    if (status !== 'authorized') {
-      Alert.alert(
-        t('camerascreen.alert'),
-        t('camerascreen.cameraaccesspermissionnotgranted'),
-        [
-          {
-            text: t('camerascreen.no'),
-            onPress: () => { },
-            style: 'cancel',
-          },
-          {
-            text: t('camerascreen.yes'),
-            onPress: () => {
-              openSettings();
-            },
-          },
-        ],
-      );
-      return;
-    }
+  // const requestPermission = async () => {
+  //   const status = await Camera.requestCameraPermission();
+  //   if (status !== 'authorized') {
+  //     Alert.alert(
+  //       t('camerascreen.alert'),
+  //       t('camerascreen.cameraaccesspermissionnotgranted'),
+  //       [
+  //         {
+  //           text: t('camerascreen.no'),
+  //           onPress: () => { },
+  //           style: 'cancel',
+  //         },
+  //         {
+  //           text: t('camerascreen.yes'),
+  //           onPress: () => {
+  //             openSettings();
+  //           },
+  //         },
+  //       ],
+  //     );
+  //     return;
+  //   }
 
-    setHasPermission(status === 'authorized');
-  };
+  //   setHasPermission(status === 'authorized');
+  // };
 
   const format = React.useMemo(() => {
     const desiredWidth = 720;
@@ -135,23 +188,23 @@ const CameraScreen = (props) => {
 
   useEffect(() => {
     if (tappingOn) {
-      Animated.timing(tapAnimatedValue, {
+      Animated.timing(tapAnimatedValue.current, {
         toValue: 1,
         duration: tapDuration,
         useNativeDriver: true,
       }).start();
     } else {
-      Animated.timing(tapAnimatedValue, {
+      Animated.timing(tapAnimatedValue.current, {
         toValue: tapSpotInitFraction,
         duration: 0,
         useNativeDriver: true,
       }).start();
     }
-  }, [tappingOn]);
+  }, [tappingOn, tapAnimatedValue]);
 
   useEffect(() => {
     if (phototaken) {
-      Animated.timing(animatedValue, {
+      Animated.timing(flashAnimatedValue.current, {
         toValue: 1,
         duration: 50,
         useNativeDriver: false,
@@ -161,13 +214,13 @@ const CameraScreen = (props) => {
         setPhototaken(false);
       }, 5000);
     } else {
-      Animated.timing(animatedValue, {
+      Animated.timing(flashAnimatedValue.current, {
         toValue: 0,
         duration: 0,
         useNativeDriver: false,
       }).start();
     }
-  }, [phototaken]);
+  }, [phototaken, flashAnimatedValue]);
 
   useEffect(() => {
     dispatch({
@@ -258,35 +311,8 @@ const CameraScreen = (props) => {
     }
   };
 
-  const animateStyleTop = {
-    top: animatedValue.interpolate({
-      inputRange: [0, 1],
-      outputRange: [-200, Platform.OS === 'ios' ? -100 : -150],
-    }),
-  };
-
-  const animateStyleBottom = {
-    bottom: animatedValue.interpolate({
-      inputRange: [0, 1],
-      outputRange: [-200, 0],
-    }),
-  };
-
-  const animateStyleLeft = {
-    left: animatedValue.interpolate({
-      inputRange: [0, 1],
-      outputRange: [-200, Platform.OS === 'ios' ? -100 : -150],
-    }),
-  };
-
-  const animateStyleRight = {
-    right: animatedValue.interpolate({
-      inputRange: [0, 1],
-      outputRange: [-200, Platform.OS === 'ios' ? -100 : -150],
-    }),
-  };
-
-  const longPressGesture = runOnJS(Gesture.LongPress())
+  const longPressGestureInit = Gesture.LongPress()
+  const longPressGesture = longPressGestureInit
     .onBegin((event) => {
       if (phototaken) {
         return;
@@ -305,7 +331,8 @@ const CameraScreen = (props) => {
       setTappingOn(false);
     }).minDuration(tapDuration);
 
-  const pinchGesture = runOnJS(Gesture.Pinch())
+  const pinchGestureInit = Gesture.Pinch()
+  const pinchGesture = pinchGestureInit
     .onStart(() => setTappingOn(false))
     .onUpdate((event) => {
       currZoomOffset.value = Math.min(maxZoom, Math.max(minZoom, zoomOffset.value * event.scale));
@@ -313,7 +340,7 @@ const CameraScreen = (props) => {
         currZoomOffset.value,
         [minZoom, maxZoom],
         [minCameraZoom, maxCameraZoom],
-        Extrapolate.CLAMP,
+        Extrapolation.CLAMP,
       );
     }).onEnd(() => {
       zoomOffset.value = currZoomOffset.value;
@@ -321,7 +348,8 @@ const CameraScreen = (props) => {
 
   const allGestures = Gesture.Race(
     longPressGesture,
-    pinchGesture);
+    pinchGesture,
+  );
 
   const animatedProps = useAnimatedProps(
     () => ({ zoom: zoom.value }),
@@ -330,197 +358,181 @@ const CameraScreen = (props) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <GestureDetector gesture={allGestures}>
-        <View
-          style={styles.container}
-          onLayout={({ nativeEvent }) => {
-            setCameraLayout(nativeEvent.layout);
-          }}
-        >
-          {hasPermission && !!device && (
-            <ReanimatedCamera
-              ref={camera}
-              hdr={true}
-              style={StyleSheet.absoluteFill}
-              device={device}
-              isActive={isActive}
-              format={format}
-              photo={true}
-              torch={torchEnabled ? 'on' : 'off'}
-              animatedProps={animatedProps}
-            />
-          )}
-          {/* flashVisible && (
-          <View style={styles.flashOverlay}>
-            <BlurView style={styles.blurview} blurType="light" blurAmount={6}>
-              <CheckBigIcon width={72} height={72} />
-              <Text style={styles.bottomText}>
-                {t('camerascreen.newreward')}
-              </Text>
-            </BlurView>
-          </View>
-        ) */}
-          <View style={styles.gradientContainer} pointerEvents="box-none">
-            <Animated.View
-              style={{
-                position: 'absolute',
-                ...animateStyleTop,
-              }}>
-              <RadialGradient
-                style={{ ...styles.gradientFrame, transform: [{ scaleX: 4 }] }}
-                colors={theme.COLORS.CAMERA_GRADIENT}
-                radius={100}
+      <GestureHandlerRootView>
+        <GestureDetector gesture={allGestures}>
+          <View
+            style={styles.container}
+            onLayout={({ nativeEvent }) => {
+              setCameraLayout(nativeEvent.layout);
+            }}
+          >
+            {hasPermission && !!device && (
+              <ReanimatedCamera
+                ref={camera}
+                hdr={true}
+                style={StyleSheet.absoluteFill}
+                device={device}
+                isActive={isActive}
+                format={format}
+                photo={true}
+                torch={torchEnabled ? 'on' : 'off'}
+                animatedProps={animatedProps}
               />
-            </Animated.View>
-            <Animated.View
-              style={{
-                position: 'absolute',
-                ...animateStyleBottom,
-              }}>
-              <RadialGradient
-                style={{ ...styles.gradientFrame, transform: [{ scaleX: 4 }] }}
-                colors={theme.COLORS.CAMERA_GRADIENT}
-                radius={100}
+            )}
+            <View style={styles.gradientContainer} pointerEvents="box-none">
+              {/* Top */}
+              <GreenFlash
+                x={Dimensions.get('window').width / 2}
+                y={0}
+                flashDiameterX={Dimensions.get('window').width}
+                flashDiameterY={200}
+                scaleX={flashScaleStatic}
+                scaleY={flashScale}
               />
-            </Animated.View>
-            <Animated.View
-              style={{
-                position: 'absolute',
-                ...animateStyleLeft,
-              }}>
-              <RadialGradient
-                style={{ ...styles.gradientFrame, transform: [{ scaleY: 4 }] }}
-                colors={theme.COLORS.CAMERA_GRADIENT}
-                radius={100}
+              {/* Bottom */}
+              <GreenFlash
+                x={Dimensions.get('window').width / 2}
+                y={Dimensions.get('window').height - 150}
+                flashDiameterX={Dimensions.get('window').width}
+                flashDiameterY={200}
+                scaleX={flashScaleStatic}
+                scaleY={flashScale}
               />
-            </Animated.View>
-            <Animated.View
-              style={{
-                position: 'absolute',
-                ...animateStyleRight,
-              }}>
-              <RadialGradient
-                style={{ ...styles.gradientFrame, transform: [{ scaleY: 4 }] }}
-                colors={theme.COLORS.CAMERA_GRADIENT}
-                radius={100}
+              {/* Left */}
+              <GreenFlash
+                x={0}
+                y={Dimensions.get('window').height / 2 - 70}
+                flashDiameterX={200}
+                flashDiameterY={Dimensions.get('window').height}
+                scaleX={flashScale}
+                scaleY={flashScaleStatic}
               />
-            </Animated.View>
-            {!phototaken &&
-              (Platform.OS === 'ios' ? (
-                <BlurView
-                  style={
+              {/* Right */}
+              <GreenFlash
+                x={Dimensions.get('window').width}
+                y={Dimensions.get('window').height / 2 - 70}
+                flashDiameterX={200}
+                flashDiameterY={Dimensions.get('window').height}
+                scaleX={flashScale}
+                scaleY={flashScaleStatic}
+              />
+              {!phototaken &&
+                (Platform.OS === 'ios' ? (
+                  <BlurView
+                    style={
+                      {
+                        ...styles.blurview,
+                        position: 'absolute',
+                        top: 40,
+                        left: 40,
+                        width: Dimensions.get('screen').width - 80,
+                      }
+                    }
+                    blurType="light"
+                  >
+                    <Text style={styles.centerText}>
+                      {t('camerascreen.prompt')}
+                    </Text>
+                  </BlurView>
+                ) : (
+                  <View
+                    style={
+                      {
+                        ...styles.blurview2,
+                        position: 'absolute',
+                        top: 40,
+                        left: 40,
+                        width: Dimensions.get('screen').width - 80,
+                      }
+                    }
+                  >
+                    <Text style={styles.centerText}>
+                      {t('camerascreen.prompt')}
+                    </Text>
+                  </View>
+                ))
+              }
+              {phototaken &&
+                (Platform.OS === 'ios' ? (
+                  <BlurView style={
                     {
                       ...styles.blurview,
-                      position: 'absolute',
-                      top: 40,
-                      left: 40,
-                      width: Dimensions.get('screen').width - 80,
+                      width: 221,
+                      height: 191,
                     }
-                  }
-                  blurType="light"
-                >
-                  <Text style={styles.centerText}>
-                    {t('camerascreen.prompt')}
-                  </Text>
-                </BlurView>
-              ) : (
-                <View
-                  style={
+                  } blurType="light" blurAmount={6}>
+                    <CheckBigIcon
+                      style={{
+                        width: 72,
+                        height: 72,
+                      }}
+                      width={72}
+                      height={72}
+                    />
+                    <Text style={styles.bottomText}>
+                      {t('camerascreen.newreward')}
+                    </Text>
+                  </BlurView>
+                ) : (
+                  <View style={
                     {
                       ...styles.blurview2,
-                      position: 'absolute',
-                      top: 40,
-                      left: 40,
-                      width: Dimensions.get('screen').width - 80,
+                      width: 221,
+                      height: 191,
                     }
-                  }
-                >
-                  <Text style={styles.centerText}>
-                    {t('camerascreen.prompt')}
-                  </Text>
-                </View>
-              ))
-            }
-            {phototaken &&
-              (Platform.OS === 'ios' ? (
-                <BlurView style={
-                  {
-                    ...styles.blurview,
-                    width: 221,
-                    height: 191,
-                  }
-                } blurType="light" blurAmount={6}>
-                  <CheckBigIcon
-                    style={{
-                      width: 72,
-                      height: 72,
-                    }}
-                    width={72}
-                    height={72}
-                  />
-                  <Text style={styles.bottomText}>
-                    {t('camerascreen.newreward')}
-                  </Text>
-                </BlurView>
-              ) : (
-                <View style={
-                  {
-                    ...styles.blurview2,
-                    width: 221,
-                    height: 191,
-                  }
-                }>
-                  <CheckBigIcon
-                    style={{
-                      width: 72,
-                      height: 72,
-                    }}
-                    width={72}
-                    height={72}
-                  />
-                  <Text style={styles.bottomText}>
-                    {t('camerascreen.newreward')}
-                  </Text>
-                </View>
-              ))}
-          </View>
-          {tappingOn &&
-            <View style={{
-              ...styles.tapSpotContainer,
-              top: tapY - tapSpotDiameter / 2,
-              left: tapX - tapSpotDiameter / 2,
-            }}>
-              <Animated.View>
-                <Svg
-                  height={tapSpotDiameter * tapScale}
-                  width={tapSpotDiameter * tapScale}
-                  viewBox={`0 0 ${tapSpotDiameter} ${tapSpotDiameter}`}>
-                  <Defs>
-                    <SvgRadialGradient
-                      id="grad"
+                  }>
+                    <CheckBigIcon
+                      style={{
+                        width: 72,
+                        height: 72,
+                      }}
+                      width={72}
+                      height={72}
+                    />
+                    <Text style={styles.bottomText}>
+                      {t('camerascreen.newreward')}
+                    </Text>
+                  </View>
+                ))}
+            </View>
+            {tappingOn &&
+              <View style={{
+                ...styles.tapSpotContainer,
+                top: tapY - tapSpotDiameter / 2,
+                left: tapX - tapSpotDiameter / 2,
+              }}>
+                <Animated.View>
+                  <Svg
+                    height={tapSpotDiameter * tapScale[0]}
+                    width={tapSpotDiameter * tapScale[0]}
+                    viewBox={`0 0 ${tapSpotDiameter} ${tapSpotDiameter}`}>
+                    <Defs>
+                      <SvgRadialGradient
+                        id="grad"
+                        cx={tapSpotDiameter / 2}
+                        cy={tapSpotDiameter / 2}
+                        fx={tapSpotDiameter / 2}
+                        fy={tapSpotDiameter / 2}
+                        rx={tapSpotDiameter / 2 * tapScale[0]}
+                        ry={tapSpotDiameter / 2 * tapScale[0]}
+                        gradientUnits="userSpaceOnUse">
+                        <Stop offset="0" stopColor={theme.COLORS.CAMERA_TAP_SPOT_GRADIENT} stopOpacity="1" />
+                        <Stop offset="1" stopColor={theme.COLORS.CAMERA_TAP_SPOT_GRADIENT} stopOpacity="0" />
+                      </SvgRadialGradient>
+                    </Defs>
+                    <Circle
                       cx={tapSpotDiameter / 2}
                       cy={tapSpotDiameter / 2}
-                      fx={tapSpotDiameter / 2}
-                      fy={tapSpotDiameter / 2}
-                      rx={tapSpotDiameter / 2 * tapScale}
-                      ry={tapSpotDiameter / 2 * tapScale}
-                      gradientUnits="userSpaceOnUse">
-                      <Stop offset="0" stopColor={theme.COLORS.CAMERA_TAP_SPOT_GRADIENT} stopOpacity="1" />
-                      <Stop offset="1" stopColor={theme.COLORS.CAMERA_TAP_SPOT_GRADIENT} stopOpacity="0" />
-                    </SvgRadialGradient>
-                  </Defs>
-                  <Circle
-                    cx={tapSpotDiameter / 2}
-                    cy={tapSpotDiameter / 2}
-                    r={tapSpotDiameter / 2 * tapScale}
-                    fill="url(#grad)"
-                  />
-                </Svg>
-              </Animated.View>
-            </View>
-          }
-        </View>
-      </GestureDetector>
+                      r={tapSpotDiameter / 2 * tapScale[0]}
+                      fill="url(#grad)"
+                    />
+                  </Svg>
+                </Animated.View>
+              </View>
+            }
+          </View>
+        </GestureDetector>
+      </GestureHandlerRootView>
     </SafeAreaView>
   );
 };

@@ -29,7 +29,7 @@ import {
 } from '../services/API/APIManager';
 // import {actions} from '../services/State/Reducer';
 import { useStateValue } from '../services/State/State';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
 
 // import {setUserName} from '../services/DataManager';
 import LinearGradient from 'react-native-linear-gradient';

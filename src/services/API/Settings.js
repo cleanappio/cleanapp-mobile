@@ -10,8 +10,9 @@ export const settings = {
     webUrl: 'http://dev.app.cleanapp.io:3000'
   },
   local: {  // Cleanapp Local
-    apiUrl: 'http://192.168.86.124:8080',
-    webUrl: 'http://192.168.86.124:3000',
+    // URLs need to be tweaked dependent on the local environment
+    apiUrl: 'http://192.168.86.125:8080',
+    webUrl: 'http://192.168.86.125:3000',
   },
   v2api: {
     updateOrCreateUser: 'update_or_create_user',

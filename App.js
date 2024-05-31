@@ -26,7 +26,6 @@ import {
   getGuilds,
 } from './src/services/DataManager';
 import {store} from './src/store/store.js';
-import {getWeb3_} from './src/web3/getWeb3';
 import {Provider} from 'react-redux';
 import {persistStore} from 'redux-persist';
 import i18next from 'i18next';
@@ -41,9 +40,6 @@ import Config from 'react-native-config';
 import {FABCameraButton} from './src/components/FABCameraButton';
 import SplashScreen from 'react-native-splash-screen';
 
-getWeb3_.catch((err) => {
-  //console.warn('Error in web3 initialization.', err));
-});
 MapboxGL.setAccessToken(Config.MAPBOX_ACCESS_TOKEN);
 
 const persistor = persistStore(store);
