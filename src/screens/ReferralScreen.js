@@ -42,12 +42,9 @@ const ReferralScreen = (props) => {
         <View style={{...styles.row, marginTop: 20, marginHorizontal: 30}}>
           <Text style={styles.txt18}>{t('referral.content')}</Text>
         </View>
-        <View style={{...styles.row, marginTop: 20, marginHorizontal: 30}}>
-          <Text style={styles.txt18}>{t('referral.howto')}</Text>
-        </View>
         <View style={{ ...styles.row, marginTop: 20 }}>
           <QRCode
-            size={300}
+            size={250}
             value={refUrl}
             color={theme.COLORS.BLACK}
             backgroundColor={theme.COLORS.WHITE}

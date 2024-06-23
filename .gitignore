@@ -39,7 +39,8 @@ index.android.bundle
 
 # node.js
 #
-**/node_modules/
+/node_modules/
+/ios/assets/node_modules/
 npm-debug.log
 yarn-error.log
 yarn.lock

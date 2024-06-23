@@ -111,7 +111,7 @@ export default {
     },
     referral: {
       title: 'Share CleanApp',
-      content: 'Get points for your ranking and reward crypto tokens',
+      content: 'Share and get more KITN!',
       howto: 'Give this QR code for scanning or tap "Share"',
       MyReferrals: 'My Referrals',
       REFERRALS: 'REFERRALS',
@@ -137,7 +137,7 @@ export default {
       ok: 'OK',
       newreward: '+1 KITN',
       photouploaded: 'Photo Uploaded',
-      prompt: 'Tap the object you want cleaned up and hold for 1 second',
+      prompt: 'Put the object you want cleaned up into the target and take a picture',
       invalidlocation: 'User Location is invalid. Will you go to Settings and check for Location Setting?',
     },
     cachescreen: {

@@ -45,13 +45,19 @@ const styles = StyleSheet.create({
     height: 60,
     justifyContent: 'center',
     alignItems: 'center',
-},
+  },
+  centralIcon: {
+    width: 50,
+    height: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 });
 
 const icons = {
   Cache: <BasketIcon />,
   Leaderboard: <LeaderboardIcon />,
-  Camera: <Image source={CleanAppIcon} style={styles.icon} />,
+  Camera: <Image source={CleanAppIcon} style={styles.centralIcon} />,
   Referral: <ShareIcon />,
   Map: <MapIcon />,
 };

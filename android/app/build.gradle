@@ -1,4 +1,5 @@
 apply plugin: "com.android.application"
+apply plugin: "com.facebook.react"
 
 project.ext.envConfigFiles = [
     debug: ".env",
@@ -88,12 +89,15 @@ project.ext.react = [
     enableHermes: false,  // clean and rebuild if changing
 ]
 
-apply from: "../../node_modules/react-native/react.gradle"
+// apply from: "../../node_modules/react-native/react.gradle"
 
 project.ext.vectoricons = [
     iconFontNames: [ 'Fontisto.ttf', 'Zocial.ttf', 'Octicons.ttf', 'SimpleLineIcons.ttf', 'MaterialCommunityIcons.ttf', 'Ionicons.ttf', 'Foundation.ttf', 'FontAwesome5_Solid.ttf', 'FontAwesome5_Regular.ttf', 'FontAwesome5_Brands.ttf', 'FontAwesome.ttf', 'Feather.ttf', 'Entypo.ttf', 'MaterialIcons.ttf', 'EvilIcons.ttf', 'AntDesign.ttf' ] // Name of the font files you want to copy
 ]
+
+// apply from: "../../node_modules/react-native-code-push/android/codepush.gradle"
 apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"
+apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)
 
 /**
  * Set this to true to create two separate APKs instead of one:
@@ -133,6 +137,8 @@ def jscFlavor = 'org.webkit:android-jsc:+'
 def enableHermes = project.ext.react.get("enableHermes", false);
 
 android {
+    namespace "com.cleanapp"
+
     ndkVersion rootProject.ext.ndkVersion
 
     compileSdkVersion rootProject.ext.compileSdkVersion
@@ -146,7 +152,7 @@ android {
         applicationId "com.cleanapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
+        versionCode 3
         versionName "2.1.1"
     }
     splits {
@@ -233,7 +239,9 @@ android {
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
     //noinspection GradleDynamicVersion
-    implementation "com.facebook.react:react-native:0.64.4"  // From node_modules
+    implementation "com.facebook.react:react-native:0.74.1"  // From node_modules
+    // implementation "com.facebook.react:react-android"
+    // implementation "com.facebook.react:hermes-android"
 
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.0.0"
 
@@ -268,8 +276,12 @@ dependencies {
 // Run this once to be able to run the application with BUCK
 // puts all compile dependencies into folder libs for BUCK to use
 task copyDownloadableDepsToLibs(type: Copy) {
-    from configurations.compile
+    from configurations.implementation
     into 'libs'
 }
 
-apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(22))
+    }
+}

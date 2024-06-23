@@ -33,6 +33,8 @@ import { useStateValue } from '../services/State/State';
 import { actions } from '../services/State/Reducer';
 import { fontFamilies } from '../utils/fontFamilies';
 import CheckBigIcon from '../assets/ico_check_big.svg';
+import CameraShootIcon from '../assets/ico_camera_shoot.svg';
+import TargetIcon from '../assets/ico_target.svg';
 import { BlurView } from '@react-native-community/blur';
 import { useTranslation } from 'react-i18next';
 import { report } from '../services/API/APIManager';
@@ -40,7 +42,6 @@ import { getLocation } from '../functions/geolocation';
 import { getWalletAddress } from '../services/DataManager';
 
 import Svg, {
-  Circle,
   Ellipse,
   Defs,
   RadialGradient as SvgRadialGradient,
@@ -48,8 +49,6 @@ import Svg, {
 } from 'react-native-svg';
 
 const tapSpotDiameter = 450;
-const tapSpotInitFraction = 0.0;
-const tapDuration = 1000;
 
 Reanimated.addWhitelistedNativeProps({
   zoom: true,
@@ -64,6 +63,8 @@ const GreenFlash = ({
   scaleX,
   scaleY,
 }) => {
+  left = x - flashDiameterX / 2;
+  top = y - flashDiameterY / 2;
   return (
     <Animated.View
       style={{
@@ -72,8 +73,8 @@ const GreenFlash = ({
         height: flashDiameterY,
         justifyContent: 'center',
         alignItems: 'center',
-        top: y - flashDiameterY / 2,
-        left: x - flashDiameterX / 2,
+        top: top,
+        left: left,
       }}
     >
       <Svg
@@ -83,14 +84,12 @@ const GreenFlash = ({
         <Defs>
           <SvgRadialGradient
             id="grad"
-            cx={flashDiameterX / 2}
-            cy={flashDiameterY / 2}
             fx={flashDiameterX / 2}
             fy={flashDiameterY / 2}
             rx={flashDiameterX / 2 * scaleX[0]}
             ry={flashDiameterY / 2 * scaleY[0]}
             gradientUnits="userSpaceOnUse">
-            <Stop offset="0" stopColor={theme.COLORS.CAMERA_GRADIENT[0]} stopOpacity="0.8" />
+            <Stop offset="0" stopColor={theme.COLORS.CAMERA_GRADIENT[0]} stopOpacity="1" />
             <Stop offset="1" stopColor={theme.COLORS.CAMERA_GRADIENT[0]} stopOpacity="0" />
           </SvgRadialGradient>
         </Defs>
@@ -138,36 +137,10 @@ const CameraScreen = (props) => {
   const maxCameraZoom = device ? device.maxZoom : (Platform.OS === 'ios' ? 123 : 6);
 
   const minZoom = 1.0;
-  const maxZoom = 50.0;
-  const zoom = useSharedValue(device.neutralZoom);
+  const maxZoom = (Platform.OS === 'ios' ? 50.0 : 5.0);
+  const zoom = useSharedValue(device ? device.neutralZoom : minZoom);
   const zoomOffset = useSharedValue(minZoom);
   const currZoomOffset = useSharedValue(minZoom);
-
-  // const requestPermission = async () => {
-  //   const status = await Camera.requestCameraPermission();
-  //   if (status !== 'authorized') {
-  //     Alert.alert(
-  //       t('camerascreen.alert'),
-  //       t('camerascreen.cameraaccesspermissionnotgranted'),
-  //       [
-  //         {
-  //           text: t('camerascreen.no'),
-  //           onPress: () => { },
-  //           style: 'cancel',
-  //         },
-  //         {
-  //           text: t('camerascreen.yes'),
-  //           onPress: () => {
-  //             openSettings();
-  //           },
-  //         },
-  //       ],
-  //     );
-  //     return;
-  //   }
-
-  //   setHasPermission(status === 'authorized');
-  // };
 
   const format = React.useMemo(() => {
     const desiredWidth = 720;
@@ -186,21 +159,18 @@ const CameraScreen = (props) => {
     return undefined;
   }, [useFront]);
 
-  useEffect(() => {
-    if (tappingOn) {
-      Animated.timing(tapAnimatedValue.current, {
-        toValue: 1,
-        duration: tapDuration,
-        useNativeDriver: true,
-      }).start();
-    } else {
-      Animated.timing(tapAnimatedValue.current, {
-        toValue: tapSpotInitFraction,
-        duration: 0,
-        useNativeDriver: true,
-      }).start();
+  const cameraShootButtonPosition = React.useMemo(() => {
+    const left = Dimensions.get('screen').width / 2 - styles.cameraShootButton.width / 2;
+    const top = Dimensions.get('screen').height - 210 - styles.cameraShootButton.height / 2;
+    const right = left + styles.cameraShootButton.width;
+    const bottom = top + styles.cameraShootButton.height;
+    return {
+      left: left,
+      top: top,
+      right: right,
+      bottom: bottom,
     }
-  }, [tappingOn, tapAnimatedValue]);
+  }, []);
 
   useEffect(() => {
     if (phototaken) {
@@ -311,27 +281,19 @@ const CameraScreen = (props) => {
     }
   };
 
-  const longPressGestureInit = Gesture.LongPress()
-  const longPressGesture = longPressGestureInit
-    .onBegin((event) => {
-      if (phototaken) {
-        return;
+  const tapGestureInit = Gesture.Tap();
+  const tapGesture = tapGestureInit
+    .onStart((event) => {
+      if (event.x >= cameraShootButtonPosition.left &&
+        event.x <= cameraShootButtonPosition.right &&
+        event.y >= cameraShootButtonPosition.top &&
+        event.y <= cameraShootButtonPosition.bottom) {
+        takePhoto();
+        setPhototaken(true);
       }
-      setTappingOn(true);
-      setTapX(event.x);
-      setTapY(event.y);
-    }).onStart(() => {
-      setTappingOn(false);
-      // Set photo taken w/o waiting for taking the photo and uploading it.
-      takePhoto();
-      setPhototaken(true);
-    }).onTouchesUp(() => {
-      setTappingOn(false);
-    }).onTouchesMove(() => {
-      setTappingOn(false);
-    }).minDuration(tapDuration);
+    })
 
-  const pinchGestureInit = Gesture.Pinch()
+  const pinchGestureInit = Gesture.Pinch();
   const pinchGesture = pinchGestureInit
     .onStart(() => setTappingOn(false))
     .onUpdate((event) => {
@@ -347,7 +309,7 @@ const CameraScreen = (props) => {
     });
 
   const allGestures = Gesture.Race(
-    longPressGesture,
+    tapGesture,
     pinchGesture,
   );
 
@@ -391,9 +353,9 @@ const CameraScreen = (props) => {
               />
               {/* Bottom */}
               <GreenFlash
-                x={Dimensions.get('window').width / 2}
-                y={Dimensions.get('window').height - 150}
-                flashDiameterX={Dimensions.get('window').width}
+                x={Dimensions.get('screen').width / 2}
+                y={Dimensions.get('screen').height - (Platform.OS === 'ios' ? 150 : 100)}
+                flashDiameterX={Dimensions.get('screen').width}
                 flashDiameterY={200}
                 scaleX={flashScaleStatic}
                 scaleY={flashScale}
@@ -401,39 +363,52 @@ const CameraScreen = (props) => {
               {/* Left */}
               <GreenFlash
                 x={0}
-                y={Dimensions.get('window').height / 2 - 70}
+                y={Dimensions.get('screen').height / 2 - 70}
                 flashDiameterX={200}
-                flashDiameterY={Dimensions.get('window').height}
+                flashDiameterY={Dimensions.get('screen').height}
                 scaleX={flashScale}
                 scaleY={flashScaleStatic}
               />
               {/* Right */}
               <GreenFlash
-                x={Dimensions.get('window').width}
-                y={Dimensions.get('window').height / 2 - 70}
+                x={Dimensions.get('screen').width}
+                y={Dimensions.get('screen').height / 2 - 70}
                 flashDiameterX={200}
-                flashDiameterY={Dimensions.get('window').height}
+                flashDiameterY={Dimensions.get('screen').height}
                 scaleX={flashScale}
                 scaleY={flashScaleStatic}
               />
-              {!phototaken &&
+              {!phototaken && hasPermission &&
                 (Platform.OS === 'ios' ? (
-                  <BlurView
-                    style={
-                      {
-                        ...styles.blurview,
-                        position: 'absolute',
-                        top: 40,
-                        left: 40,
-                        width: Dimensions.get('screen').width - 80,
+                  <>
+                    <BlurView
+                      style={
+                        {
+                          ...styles.blurview,
+                          position: 'absolute',
+                          top: 40,
+                          left: 40,
+                          width: Dimensions.get('screen').width - 80,
+                        }
                       }
-                    }
-                    blurType="light"
-                  >
-                    <Text style={styles.centerText}>
-                      {t('camerascreen.prompt')}
-                    </Text>
-                  </BlurView>
+                      blurType="light"
+                    >
+                      <Text style={styles.centerText}>
+                        {t('camerascreen.prompt')}
+                      </Text>
+                    </BlurView>
+                    <View style={
+                      {
+                        ...styles.target,
+                        left: Dimensions.get('screen').width / 2 - Dimensions.get('screen').width / 1.5 / 2,
+                        top: Dimensions.get('screen').height / 2 - Dimensions.get('screen').width / 1.5 / 2 - 50,
+                        width: Dimensions.get('screen').width / 1.5,
+                        height: Dimensions.get('screen').width / 1.5,
+                      }
+                    }>
+                      <TargetIcon />
+                    </View>
+                  </>
                 ) : (
                   <View
                     style={
@@ -495,41 +470,15 @@ const CameraScreen = (props) => {
                   </View>
                 ))}
             </View>
-            {tappingOn &&
-              <View style={{
-                ...styles.tapSpotContainer,
-                top: tapY - tapSpotDiameter / 2,
-                left: tapX - tapSpotDiameter / 2,
-              }}>
-                <Animated.View>
-                  <Svg
-                    height={tapSpotDiameter * tapScale[0]}
-                    width={tapSpotDiameter * tapScale[0]}
-                    viewBox={`0 0 ${tapSpotDiameter} ${tapSpotDiameter}`}>
-                    <Defs>
-                      <SvgRadialGradient
-                        id="grad"
-                        cx={tapSpotDiameter / 2}
-                        cy={tapSpotDiameter / 2}
-                        fx={tapSpotDiameter / 2}
-                        fy={tapSpotDiameter / 2}
-                        rx={tapSpotDiameter / 2 * tapScale[0]}
-                        ry={tapSpotDiameter / 2 * tapScale[0]}
-                        gradientUnits="userSpaceOnUse">
-                        <Stop offset="0" stopColor={theme.COLORS.CAMERA_TAP_SPOT_GRADIENT} stopOpacity="1" />
-                        <Stop offset="1" stopColor={theme.COLORS.CAMERA_TAP_SPOT_GRADIENT} stopOpacity="0" />
-                      </SvgRadialGradient>
-                    </Defs>
-                    <Circle
-                      cx={tapSpotDiameter / 2}
-                      cy={tapSpotDiameter / 2}
-                      r={tapSpotDiameter / 2 * tapScale[0]}
-                      fill="url(#grad)"
-                    />
-                  </Svg>
-                </Animated.View>
-              </View>
-            }
+            <View style={
+              {
+                ...styles.cameraShootButton,
+                left: cameraShootButtonPosition.left,
+                top: cameraShootButtonPosition.top,
+              }
+            }>
+              <CameraShootIcon />
+            </View>
           </View>
         </GestureDetector>
       </GestureHandlerRootView>
@@ -540,15 +489,6 @@ const CameraScreen = (props) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  bottomView: {
-    position: 'absolute',
-    bottom: 0,
-    height: 80,
-    backgroundColor: theme.APP_COLOR_1,
-    width: '100%',
-    borderTopLeftRadius: 8,
-    borderTopRightRadius: 8,
   },
   gradientContainer: {
     position: 'absolute',
@@ -565,6 +505,18 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: tapSpotDiameter,
     height: tapSpotDiameter,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cameraShootButton: {
+    position: 'absolute',
+    width: 70,
+    height: 70,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  target: {
+    position: 'absolute',
     justifyContent: 'center',
     alignItems: 'center',
   },

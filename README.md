@@ -128,6 +128,7 @@ Take the .env file from the Google Drive `CleanApp/Engineering/Mobile App Env` f
 
 ```
 yarn install &&
+./patches/apply.sh &&
 npx pod-install &&
 yarn ios:bundle
 ```
@@ -169,7 +170,7 @@ The application will run on the chosen simulator.
 
 ### Pre-build
 ```
-yarn install
+yarn install && ./patches/apply.sh
 
 ```
 
@@ -247,7 +248,7 @@ yarn install
     yarn android:bundle &&
     cd android &&
     ./gradlew clean &&
-    ./gradlew assembleRelease -x bundleReleaseJsAndAssets &&
+    ./gradlew assembleRelease &&
     cd ../
     ```
 1.  Install apk to the device
@@ -261,7 +262,7 @@ yarn install
     yarn android:bundle &&
     cd android &&
     ./gradlew clean &&
-    ./gradlew bundleRelease -x bundleReleaseJsAndAssets &&
+    ./gradlew bundleRelease &&
     cd ../
     ```
 1. The bundle release `android/app/build/outputs/bundle/release/app-release.aab` is ready for upload to PlayStore
