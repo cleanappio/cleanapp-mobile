@@ -256,7 +256,7 @@ const CameraScreen = (props) => {
       }
       const photo = await camera.current.takePhoto(takePhotoOptions);
 
-      uploadPhoto({
+      const res = uploadPhoto({
         uri:
           Platform.OS === 'ios'
             ? photo.path.replace('file://', '')
@@ -271,6 +271,14 @@ const CameraScreen = (props) => {
           { cancelable: false },
         );
       });
+      if (!res.ok) {
+        Alert.alert(
+          t('camerascreen.notice'),
+          t('camerascreen.failedtosaveimage') + err.message,
+          [{ text: t('camerascreen.ok'), onPress: () => { } }],
+          { cancelable: false },
+        );
+      }
     } catch (e) {
       Alert.alert(
         t('camerascreen.notice'),
