@@ -40,6 +40,7 @@ import { useTranslation } from 'react-i18next';
 import { report } from '../services/API/APIManager';
 import { getLocation } from '../functions/geolocation';
 import { getWalletAddress } from '../services/DataManager';
+import { InProgress } from '../components/InProgress';
 
 import Svg, {
   Ellipse,
@@ -123,6 +124,7 @@ const CameraScreen = (props) => {
   const [cameraLayout, setCameraLayout] = useState({});
   const { t } = useTranslation();
   const { hasPermission, requestPermission } = useCameraPermission();
+  const [inProgress, setInProgress] = useState(false)
 
   tapAnimatedValue.current.addListener((state) => {
     tapScale[1](state.value);
@@ -182,7 +184,7 @@ const CameraScreen = (props) => {
 
       setTimeout(() => {
         setPhototaken(false);
-      }, 5000);
+      }, 3000);
     } else {
       Animated.timing(flashAnimatedValue.current, {
         toValue: 0,
@@ -255,8 +257,8 @@ const CameraScreen = (props) => {
         throw new Error('Camera is null!');
       }
       const photo = await camera.current.takePhoto(takePhotoOptions);
-
-      const res = uploadPhoto({
+      setInProgress(true);
+      const res = await uploadPhoto({
         uri:
           Platform.OS === 'ios'
             ? photo.path.replace('file://', '')
@@ -271,14 +273,17 @@ const CameraScreen = (props) => {
           { cancelable: false },
         );
       });
+      setInProgress(false);
       if (!res.ok) {
         Alert.alert(
           t('camerascreen.notice'),
-          t('camerascreen.failedtosaveimage') + err.message,
+          t('camerascreen.failedtosaveimage') + res.error,
           [{ text: t('camerascreen.ok'), onPress: () => { } }],
           { cancelable: false },
         );
+        return;
       }
+      setPhototaken(true);
     } catch (e) {
       Alert.alert(
         t('camerascreen.notice'),
@@ -297,7 +302,6 @@ const CameraScreen = (props) => {
         event.y >= cameraShootButtonPosition.top &&
         event.y <= cameraShootButtonPosition.bottom) {
         takePhoto();
-        setPhototaken(true);
       }
     })
 
@@ -487,6 +491,7 @@ const CameraScreen = (props) => {
             }>
               <CameraShootIcon />
             </View>
+            <InProgress isVisible={inProgress} />
           </View>
         </GestureDetector>
       </GestureHandlerRootView>
