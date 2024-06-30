@@ -269,7 +269,6 @@ const MapView = ({ onMarkerPress = () => { }, selectedMarker = null }) => {
   return (
     <View style={styles.container}>
       <View style={styles.searchContainer}>
-        <Text style={styles.heading}>{t('mapscreen.maps')}</Text>
         <View style={styles.inputBox}>
           <SearchIcon />
           <TextInput

@@ -122,9 +122,6 @@ export const Leaderboard = (props) => {
       <View style={styles.container}>
         <View style={{ marginTop: 25 }}>
           <View style={{ ...styles.card, paddingHorizontal: 0 }}>
-            <Text style={{ ...styles.title, marginLeft: 16 }}>
-              {t('leaderboard.social')}
-            </Text>
             {(joined || created) && (
               <View style={styles.guildstatcontainer}>
                 <Text style={styles.guildstat}>

@@ -328,7 +328,6 @@ const CacheScreen = (props) => {
     <>
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.container}>
-          <Text style={styles.txt12}>{t('cachescreen.mycache')}</Text>
           {/** balance */}
           <View style={styles.balanceContainer}>
             <Row>
