@@ -43,6 +43,7 @@ const BottomTabs = ({ navigation }) => {
     <>
       <Tab.Navigator
         initialRouteName="Camera"
+        detachInactiveScreens={true}
         screenOptions={{
           tabBarStyle: {
             alignItems: "center",
@@ -115,9 +116,7 @@ const RootScreen = () => {
   const [isOnboarding, setIsOnboarding] = useState(false);
 
   const completeOnboarding = () => {
-    console.log('completeOnboarding...');
     setIsOnboarding(false);
-    console.log('Done!');
   }
 
   useEffect(() => {
@@ -144,7 +143,6 @@ const RootScreen = () => {
     });
   }, []);
 
-
   return (
     <>
       {isOnboarding && <Onboarding completeOnboarding={completeOnboarding} />}
@@ -161,68 +159,4 @@ const CreateRootNavigator = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  leftIcon: {
-    width: 40,
-    height: 24,
-  },
-  rightIcon: {
-    width: 32,
-    height: 30,
-  },
-  leftButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 25,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: theme.APP_COLOR_2,
-  },
-  languageButtonOuter: {
-    borderRadius: 30,
-    overflow: 'hidden',
-    backgroundColor: theme.APP_COLOR_2,
-  },
-  rightButton: {
-    padding: 5,
-    borderRadius: 30,
-  },
-  languageOptionsContainer: {
-    borderRadius: 30,
-    backgroundColor: theme.COLORS.BLACK,
-  },
-  flagIcon: {
-    width: 16,
-    height: 16,
-    marginRight: 14,
-  },
-  languageBox: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 17,
-    paddingVertical: 8,
-  },
-  languageOption: {
-    paddingHorizontal: 17,
-    paddingVertical: 8,
-    borderColor: theme.COLORS.WHITE_OPACITY_3P,
-  },
-  languageOptionText: {
-    fontSize: 14,
-    height: 20,
-    marginTop: 4,
-    fontFamily: fontFamilies.DefaultBold,
-    color: theme.COLORS.WHITE_OPACITY_3P,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  logo: {
-    width: 54,
-    height: 42,
-    marginRight: 5,
-  },
-});
 export default CreateRootNavigator;

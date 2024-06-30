@@ -1,4 +1,4 @@
-import { getUrls } from './Settings';
+import { getUrls, settings } from './Settings';
 
 export const postJSONData = async (path, data) => {
   try {
@@ -10,9 +10,15 @@ export const postJSONData = async (path, data) => {
       },
       body: JSON.stringify(data),
     }
-    const response = await fetch(url, config)
-      .then((res) => res);
-    return response;
+    var response;
+    for (const i = 0; i < settings.apiSettings.sendingAttempts; i++) {
+      response = await fetch(url, config)
+        .then((res) => res);
+      if (response.ok) {
+        return response;
+      }
+    }
+    return response;  // Fetch failed after all attempts, returning failure response
   } catch (err) {
     return { ok: false, error: err };
   }

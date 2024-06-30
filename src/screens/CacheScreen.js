@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
-import { Pressable, ScrollView, StyleSheet, View, Text, ToastAndroid, Alert, Platform } from 'react-native';
+import { Linking, Pressable, ScrollView, StyleSheet, View, Text, ToastAndroid, Alert, Platform } from 'react-native';
 import { fontFamilies } from '../utils/fontFamilies';
 import { theme } from '../services/Common/theme';
 import Ripple from '../components/Ripple';
@@ -13,7 +13,6 @@ import EyeSmallIcon from '../assets/ico_eye_small.svg';
 import EyeOffIcon from '../assets/ico_eye_off.svg';
 import { BlurView } from '@react-native-community/blur';
 import { Row } from '../components/Row';
-import { useNavigation } from '@react-navigation/native';
 import Clipboard from '@react-native-clipboard/clipboard';
 import {
   getPrivacySetting,
@@ -24,6 +23,7 @@ import {
 } from '../services/DataManager';
 import { useTranslation } from 'react-i18next';
 import {
+  getBlockchainLink,
   getRewardStats,
   updatePrivacyAndTOC,
 } from '../services/API/APIManager';
@@ -38,6 +38,7 @@ const CacheScreen = (props) => {
 
   const [shareDataStatus, setShareDataStatus] = useState(0);
   const [{ cacheVault }, dispatch] = useStateValue();
+  const [blockchainLink, setBlockchainLink] = useState('');
 
   const { t } = useTranslation();
 
@@ -66,37 +67,44 @@ const CacheScreen = (props) => {
   };
 
   useFocusEffect(
-    React.useCallback(async () => {
-      await initWallet();
-
-      getPrivacySetting().then((resp) => {
-        if (resp) {
-          setShareDataStatus(resp);
-        }
-      });
-      const wa = await getWalletAddress();
-      setWalletAddress(await getWalletAddress(wa));
-      getRewardStats(wa).then((resp) => {
-        if (resp && resp.ok) {
-          let cacheResult = {
-            reports: resp.stats.kitns_daily + resp.stats.kitns_disbursed || 0,
-            referrals: resp.stats.kitns_ref_daily + resp.stats.kitns_ref_disbursed || 0,
-            dailyReports: resp.stats.kitns_daily || 0,
-            dailyReferrals: resp.stats.kitns_ref_daily || 0,
-            disbursedReports: resp.stats.kitns_disbursed || 0,
-            disbursedReferrals: resp.stats.kitns_ref_disbursed || 0,
-            disbursedTotal: resp.stats.kitns_disbursed + resp.stats.kitns_ref_disbursed || 0,
-            dailyTotal: resp.stats.kitns_daily + resp.stats.kitns_ref_daily || 0,
-            total: resp.stats.kitns_daily + resp.stats.kitns_ref_daily +
-                   resp.stats.kitns_disbursed + resp.stats.kitns_ref_disbursed || 0,
-          };
-          dispatch({
-            type: actions.SET_CACHE_VAULT,
-            cacheVault: cacheResult,
-          });
-          setCacheVault(cacheResult);
-        }
-      });
+    React.useCallback(() => {
+      internalFunc = async () => {
+        await initWallet();
+        getPrivacySetting().then((resp) => {
+          if (resp) {
+            setShareDataStatus(resp);
+          }
+        });
+        const wa = await getWalletAddress();
+        setWalletAddress(await getWalletAddress(wa));
+        getRewardStats(wa).then((resp) => {
+          if (resp && resp.ok) {
+            let cacheResult = {
+              reports: resp.stats.kitns_daily + resp.stats.kitns_disbursed || 0,
+              referrals: resp.stats.kitns_ref_daily + resp.stats.kitns_ref_disbursed || 0,
+              dailyReports: resp.stats.kitns_daily || 0,
+              dailyReferrals: resp.stats.kitns_ref_daily || 0,
+              disbursedReports: resp.stats.kitns_disbursed || 0,
+              disbursedReferrals: resp.stats.kitns_ref_disbursed || 0,
+              disbursedTotal: resp.stats.kitns_disbursed + resp.stats.kitns_ref_disbursed || 0,
+              dailyTotal: resp.stats.kitns_daily + resp.stats.kitns_ref_daily || 0,
+              total: resp.stats.kitns_daily + resp.stats.kitns_ref_daily +
+                resp.stats.kitns_disbursed + resp.stats.kitns_ref_disbursed || 0,
+            };
+            dispatch({
+              type: actions.SET_CACHE_VAULT,
+              cacheVault: cacheResult,
+            });
+            setCacheVault(cacheResult);
+          }
+        });
+        getBlockchainLink(wa).then((resp)=> {
+          if (resp && resp.ok) {
+            setBlockchainLink(resp.blockchainLink);
+          }
+        });
+      }
+      internalFunc();
     }, []),
   );
 
@@ -363,6 +371,17 @@ const CacheScreen = (props) => {
               <Text style={styles.txt16}>{'KITN'}</Text>
             </Text>
           </View>
+          <View style={styles.balanceContainer}>
+            <Row>
+              <Text style={styles.txt12}>{t('cachescreen.blockchainLink')}</Text>
+            </Row>
+            <Row style={{marginTop: 12}}>
+              <Text
+                style={{...styles.txt12bold, color: theme.COLORS.GREEN_LINK}}
+                onPress={() => Linking.openURL(blockchainLink)}
+              >{blockchainLink}</Text>
+            </Row>
+          </View>
           {/** Privacy */}
           <View style={styles.block}>
             <View style={styles.row}>
@@ -374,13 +393,15 @@ const CacheScreen = (props) => {
                 <View>
                   <Text style={styles.txt12thin}>
                     {shareDataStatus == 0
-                      ? t('cachescreen.sharemydatawithlapseoftime')
-                      : t('cachescreen.Sharereportsanonymously')}
+                      ? t('cachescreen.Mapreportswithavatar')
+                      : t('cachescreen.Sharereportsanonymously')
+                    }
                   </Text>
                   <Text style={styles.txt12thinitalic}>
                     {shareDataStatus == 0
-                      ? t('cachescreen.unitraceable')
-                      : t('cachescreen.Nodatacollectedwhileflagging')}
+                      ? t('cachescreen.Traceable')
+                      : t('cachescreen.Nodatacollectedwhileflagging')
+                    }
                   </Text>
                 </View>
                 <Pressable style={styles.btnBlack} onPress={editPrivacy}>
@@ -428,38 +449,19 @@ const styles = StyleSheet.create({
     marginTop: 16,
     marginBottom: 36,
   },
-  balanceBlock: {
-    marginTop: 16,
-  },
   balanceContainer: {
     padding: 16,
     marginTop: 16,
     borderRadius: 8,
     backgroundColor: theme.COLORS.PANEL_BG,
   },
-  blockHeader: {},
-  oneButtonRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'stretch',
-  },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  rowcenter: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   greyCard: {
     backgroundColor: theme.APP_COLOR_1,
-    borderRadius: 8,
-    padding: 16,
-  },
-  blackCard: {
-    backgroundColor: theme.COLORS.BG,
     borderRadius: 8,
     padding: 16,
   },
@@ -484,11 +486,6 @@ const styles = StyleSheet.create({
     borderColor: theme.COLORS.BTN_BG_BLUE,
     borderRadius: 8,
   },
-  blankCard: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
-  },
   borderCard: {
     paddingHorizontal: 16,
     paddingVertical: 8,
@@ -501,21 +498,6 @@ const styles = StyleSheet.create({
     height: 1,
     flex: 1,
     backgroundColor: theme.COLORS.BORDER_GREY,
-  },
-  btnBlue: {
-    backgroundColor: theme.COLORS.BTN_BG_BLUE,
-    borderRadius: 8,
-    paddingVertical: 14,
-    marginTop: 8,
-    width: '90%',
-  },
-  btnBlueText: {
-    textAlign: 'center',
-    fontFamily: fontFamilies.Default,
-    fontWeight: '500',
-    fontSize: 16,
-    lineHeight: 24,
-    color: theme.COLORS.WHITE,
   },
   btnBlack: {
     backgroundColor: theme.APP_COLOR_1,
@@ -604,13 +586,6 @@ const styles = StyleSheet.create({
   txt16bold: {
     fontFamily: fontFamilies.Default,
     fontSize: 16,
-    lineHeight: 24,
-    fontWeight: '500',
-    color: theme.COLORS.TEXT_GREY,
-  },
-  txt18: {
-    fontFamily: fontFamilies.Default,
-    fontSize: 18,
     lineHeight: 24,
     fontWeight: '500',
     color: theme.COLORS.TEXT_GREY,

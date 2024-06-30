@@ -189,6 +189,7 @@ export default {
       todaysReports: 'Litterbox (today\'s) reports',
       todaysReferrals: 'Litterbox (today\'s) referrals',
       todaysLitterbox: 'Litterbox (today\'s)',
+      blockchainLink: 'My KITN on blockchain',
     },
     createyourguild: {
       createyourguild: 'Create your Guild',

@@ -298,7 +298,8 @@ const MapView = ({ onMarkerPress = () => { }, selectedMarker = null }) => {
       <MapboxGL.MapView
         styleURL={Config.MAPBOX_STYLE_MONOCHROME}
         style={styles.map}
-        onRegionDidChange={onRegionDidChange}>
+        onRegionDidChange={onRegionDidChange}
+      >
         <MapboxGL.UserLocation
           androidRenderMode={'gps'}
           visible={true}

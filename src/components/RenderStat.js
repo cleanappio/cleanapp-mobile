@@ -95,7 +95,7 @@ const RenderStat = (props) => {
               fontWeight: '300',
               fontSize: indexSize,
               fontFamily: fontFamilies.Default,
-            }}>{`${item.place}${item.place === 1 ? 'st' : item.place === 2 ? 'nd' : item.place === 3 ? 'rd' : 'th'
+            }}>{`${item.place}${item.place % 10 === 1 ? 'st' : item.place % 10 === 2 ? 'nd' : item.place % 10 === 3 ? 'rd' : 'th'
               }`}</Text>
           <View
             style={{

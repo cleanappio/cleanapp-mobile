@@ -1,14 +1,15 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
+  Alert,
+  Animated,
+  AppState,
+  Dimensions,
+  Platform,
   SafeAreaView,
   StyleSheet,
   Text,
   View,
-  Alert,
-  Platform,
-  Dimensions,
-  Animated,
 } from 'react-native';
 import {
   Gesture,
@@ -27,10 +28,8 @@ import {
   useCameraPermission,
 } from 'react-native-vision-camera';
 import RNFS from 'react-native-fs';
-import { theme } from '../services/Common/theme';
 
-import { useStateValue } from '../services/State/State';
-import { actions } from '../services/State/Reducer';
+import { theme } from '../services/Common/theme';
 import { fontFamilies } from '../utils/fontFamilies';
 import CheckBigIcon from '../assets/ico_check_big.svg';
 import CameraShootIcon from '../assets/ico_camera_shoot.svg';
@@ -40,7 +39,6 @@ import { useTranslation } from 'react-i18next';
 import { report } from '../services/API/APIManager';
 import { getLocation } from '../functions/geolocation';
 import { getWalletAddress } from '../services/DataManager';
-import { InProgress } from '../components/InProgress';
 
 import Svg, {
   Ellipse,
@@ -107,24 +105,27 @@ const GreenFlash = ({
 }
 
 const CameraScreen = (props) => {
-  const [useFront, setUseFront] = useState(false);
-  const [isActive, setIsActive] = useState(true);
-  const [torchEnabled, setTorchEnabled] = useState(false);
+  const appState = useRef(AppState.currentState);
   const camera = useRef(null);
-  const [{ cameraAction }, dispatch] = useStateValue();
+  const [isCameraActive, setIsCameraActive] = useState(true);
   const [phototaken, setPhototaken] = useState(false);
   const flashAnimatedValue = useRef(new Animated.Value(0));
   const tapAnimatedValue = useRef(new Animated.Value(0.2));
   const flashScale = useState(0);
   const flashScaleStatic = useState(1);
   const tapScale = useState(0);
-  const [tapX, setTapX] = useState(0.0);
-  const [tapY, setTapY] = useState(0.0);
-  const [tappingOn, setTappingOn] = useState(false);
-  const [cameraLayout, setCameraLayout] = useState({});
   const { t } = useTranslation();
   const { hasPermission, requestPermission } = useCameraPermission();
-  const [inProgress, setInProgress] = useState(false)
+
+  useEffect(() => {
+    const appStateSubscription = AppState.addEventListener('change', nextAppState => {
+      appState.current = nextAppState;
+      setIsCameraActive(appState.current === 'active');
+    });
+    return () => {
+      appStateSubscription.remove();
+    }
+  }, []);
 
   tapAnimatedValue.current.addListener((state) => {
     tapScale[1](state.value);
@@ -159,11 +160,14 @@ const CameraScreen = (props) => {
       }
     }
     return undefined;
-  }, [useFront]);
+  }, []);
 
   const cameraShootButtonPosition = React.useMemo(() => {
     const left = Dimensions.get('screen').width / 2 - styles.cameraShootButton.width / 2;
-    const top = Dimensions.get('screen').height - 210 - styles.cameraShootButton.height / 2;
+    const top =
+      Dimensions.get('screen').height -
+      (Platform.OS === 'ios' ? 210 : 170) -
+      styles.cameraShootButton.height / 2;
     const right = left + styles.cameraShootButton.width;
     const bottom = top + styles.cameraShootButton.height;
     return {
@@ -195,18 +199,7 @@ const CameraScreen = (props) => {
   }, [phototaken, flashAnimatedValue]);
 
   useEffect(() => {
-    dispatch({
-      type: actions.SET_FAB_SHOW,
-      fabShow: true,
-    });
     requestPermission();
-
-    return () => {
-      dispatch({
-        type: actions.SET_FAB_SHOW,
-        fabShow: false,
-      });
-    };
   }, []);
 
   const takePhotoOptions = useMemo(() => ({
@@ -236,8 +229,8 @@ const CameraScreen = (props) => {
         walletAddress,
         userLocation.latitude,
         userLocation.longitude,
-        tapX / cameraLayout.width,
-        tapY / cameraLayout.height,
+        /*tapX=*/0.5,
+        /*tapY=*/0.5,
         imageData);
       return res;
     } else {
@@ -257,7 +250,6 @@ const CameraScreen = (props) => {
         throw new Error('Camera is null!');
       }
       const photo = await camera.current.takePhoto(takePhotoOptions);
-      setInProgress(true);
       const res = await uploadPhoto({
         uri:
           Platform.OS === 'ios'
@@ -273,7 +265,6 @@ const CameraScreen = (props) => {
           { cancelable: false },
         );
       });
-      setInProgress(false);
       if (!res.ok) {
         Alert.alert(
           t('camerascreen.notice'),
@@ -283,7 +274,6 @@ const CameraScreen = (props) => {
         );
         return;
       }
-      setPhototaken(true);
     } catch (e) {
       Alert.alert(
         t('camerascreen.notice'),
@@ -302,12 +292,12 @@ const CameraScreen = (props) => {
         event.y >= cameraShootButtonPosition.top &&
         event.y <= cameraShootButtonPosition.bottom) {
         takePhoto();
+        setPhototaken(true);
       }
     })
 
   const pinchGestureInit = Gesture.Pinch();
   const pinchGesture = pinchGestureInit
-    .onStart(() => setTappingOn(false))
     .onUpdate((event) => {
       currZoomOffset.value = Math.min(maxZoom, Math.max(minZoom, zoomOffset.value * event.scale));
       zoom.value = interpolate(
@@ -336,9 +326,6 @@ const CameraScreen = (props) => {
         <GestureDetector gesture={allGestures}>
           <View
             style={styles.container}
-            onLayout={({ nativeEvent }) => {
-              setCameraLayout(nativeEvent.layout);
-            }}
           >
             {hasPermission && !!device && (
               <ReanimatedCamera
@@ -346,10 +333,10 @@ const CameraScreen = (props) => {
                 hdr={true}
                 style={StyleSheet.absoluteFill}
                 device={device}
-                isActive={isActive}
+                isActive={isCameraActive}
                 format={format}
                 photo={true}
-                torch={torchEnabled ? 'on' : 'off'}
+                torch={'off'}
                 animatedProps={animatedProps}
               />
             )}
@@ -409,34 +396,25 @@ const CameraScreen = (props) => {
                         {t('camerascreen.prompt')}
                       </Text>
                     </BlurView>
-                    <View style={
-                      {
-                        ...styles.target,
-                        left: Dimensions.get('screen').width / 2 - Dimensions.get('screen').width / 1.5 / 2,
-                        top: Dimensions.get('screen').height / 2 - Dimensions.get('screen').width / 1.5 / 2 - 50,
-                        width: Dimensions.get('screen').width / 1.5,
-                        height: Dimensions.get('screen').width / 1.5,
-                      }
-                    }>
-                      <TargetIcon />
-                    </View>
                   </>
                 ) : (
-                  <View
-                    style={
-                      {
-                        ...styles.blurview2,
-                        position: 'absolute',
-                        top: 40,
-                        left: 40,
-                        width: Dimensions.get('screen').width - 80,
+                  <>
+                    <View
+                      style={
+                        {
+                          ...styles.blurview2,
+                          position: 'absolute',
+                          top: 40,
+                          left: 40,
+                          width: Dimensions.get('screen').width - 80,
+                        }
                       }
-                    }
-                  >
-                    <Text style={styles.centerText}>
-                      {t('camerascreen.prompt')}
-                    </Text>
-                  </View>
+                    >
+                      <Text style={styles.centerText}>
+                        {t('camerascreen.prompt')}
+                      </Text>
+                    </View>
+                  </>
                 ))
               }
               {phototaken &&
@@ -482,16 +460,30 @@ const CameraScreen = (props) => {
                   </View>
                 ))}
             </View>
-            <View style={
-              {
-                ...styles.cameraShootButton,
-                left: cameraShootButtonPosition.left,
-                top: cameraShootButtonPosition.top,
-              }
-            }>
-              <CameraShootIcon />
-            </View>
-            <InProgress isVisible={inProgress} />
+            {!phototaken && (
+              <>
+                <View style={
+                  {
+                    ...styles.target,
+                    left: Dimensions.get('screen').width / 2 - Dimensions.get('screen').width / 1.5 / 2,
+                    top: Dimensions.get('screen').height / 2 - Dimensions.get('screen').width / 1.5 / 2 - 50,
+                    width: Dimensions.get('screen').width / 1.5,
+                    height: Dimensions.get('screen').width / 1.5,
+                  }
+                }>
+                  <TargetIcon />
+                </View>
+                <View style={
+                  {
+                    ...styles.cameraShootButton,
+                    left: cameraShootButtonPosition.left,
+                    top: cameraShootButtonPosition.top,
+                  }
+                }>
+                  <CameraShootIcon />
+                </View>
+              </>
+            )}
           </View>
         </GestureDetector>
       </GestureHandlerRootView>

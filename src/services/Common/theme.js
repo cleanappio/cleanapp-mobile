@@ -35,6 +35,7 @@ export const theme = {
     WHITE_OPACITY_10P: '#FFFFFF10',
     GREEN_ITEM_BG_START: '#25C088',
     GREEN_ITEM_BG_END: '#25C08800',
+    GREEN_LINK: '#25C088',
 
     BORDER_GREY: '#D9D9D930',
     ORANGE: '#E45F35',

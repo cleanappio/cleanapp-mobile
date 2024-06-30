@@ -33,11 +33,8 @@ import {I18nextProvider} from 'react-i18next';
 import {MenuProvider} from 'react-native-popup-menu';
 import {ethers} from 'ethers';
 import {NftProvider} from 'use-nft';
-// import {WalletConnectProvider} from '@walletconnect/react-native-dapp/dist/providers';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import MapboxGL from '@rnmapbox/maps';
 import Config from 'react-native-config';
-import {FABCameraButton} from './src/components/FABCameraButton';
 import SplashScreen from 'react-native-splash-screen';
 
 MapboxGL.setAccessToken(Config.MAPBOX_ACCESS_TOKEN);
@@ -181,7 +178,6 @@ const RootNavigator = () => {
         />
         <AppAlert {...getAlertSettings()} />
         <CreateRootNavigator />
-        {/* {fabShow && <FABCameraButton dispatch={dispatch} />} */}
       </SafeAreaView>
     </>
   );
@@ -197,21 +193,11 @@ const App = () => {
     <Provider store={store}>
       <NftProvider fetcher={fetcher}>
         <StateProvider initialState={initialState} reducer={reducer}>
-          {/* <WalletConnectProvider
-            // @ts-ignore
-            redirectUrl={
-              Platform.OS === 'web' ? window.location.origin : 'cleanapp://'
-            }
-            storageOptions={{
-              // @ts-ignore
-              asyncStorage: AsyncStorage,
-            }}> */}
-            <MenuProvider>
-              <I18nextProvider i18n={i18next}>
-                <RootNavigator />
-              </I18nextProvider>
-            </MenuProvider>
-          {/* </WalletConnectProvider> */}
+          <MenuProvider>
+            <I18nextProvider i18n={i18next}>
+              <RootNavigator />
+            </I18nextProvider>
+          </MenuProvider>
         </StateProvider>
       </NftProvider>
     </Provider>

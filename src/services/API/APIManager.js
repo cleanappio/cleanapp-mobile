@@ -213,9 +213,9 @@ export const getTeams = async (publicAddress) => {
       ok: response.ok
     }
     if (response.ok) {
-      resp_json = await response.json();
-      ret.green = resp_json.green;
-      ret.blue = resp_json.blue;
+      respJson = await response.json();
+      ret.green = respJson.green;
+      ret.blue = respJson.blue;
     } else {
       if (response.error) {
         ret.error = response.error;
@@ -268,6 +268,32 @@ export const getRewardStats = async (publicAddress) => {
     if (response.ok) {
       ret.stats = await response.json()
         .then((response) => response);
+    } else {
+      if (response.error) {
+        ret.error = response.error;
+      } else if (response.status) {
+        ret.error = response.statusText;
+      }
+    }
+    return ret;
+  } catch (err) {
+    return null;
+  }
+}
+
+export const getBlockchainLink = async (publicAddress) => {
+  try {
+    const data = {
+      version: '2.0',
+      id: publicAddress,
+    }
+    const response = await postJSONData(s.v2api.getBlockchainLink, data);
+    const ret = {
+      ok:response.ok
+    }
+    if (response.ok) {
+      respJson = await response.json();
+      ret.blockchainLink = respJson.blockchain_link;
     } else {
       if (response.error) {
         ret.error = response.error;

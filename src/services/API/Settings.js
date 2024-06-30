@@ -1,4 +1,5 @@
 import Config from 'react-native-config';
+import { getBlockchainLink } from './APIManager';
 
 export const settings = {
   prod: {  // Cleanapp Google Cloud Prod
@@ -25,7 +26,11 @@ export const settings = {
     getTeams: 'get_teams',
     getTopScores: 'get_top_scores',
     getStats: 'get_stats',
+    getBlockchainLink: 'get_blockchain_link',
   },
+  apiSettings: {
+    sendingAttempts: 3,
+  }
 };
 
 export const getUrls = () => {

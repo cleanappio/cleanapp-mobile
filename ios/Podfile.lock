@@ -10,14 +10,14 @@ PODS:
   - FBLazyVector (0.74.1)
   - fmt (9.1.0)
   - glog (0.3.5)
-  - MapboxCommon (23.9.2)
-  - MapboxCoreMaps (10.17.0):
-    - MapboxCommon (~> 23.9)
-  - MapboxMaps (10.17.0):
-    - MapboxCommon (= 23.9.2)
-    - MapboxCoreMaps (= 10.17.0)
+  - MapboxCommon (23.10.1)
+  - MapboxCoreMaps (10.18.0):
+    - MapboxCommon (~> 23.10)
+  - MapboxMaps (10.18.2):
+    - MapboxCommon (= 23.10.1)
+    - MapboxCoreMaps (= 10.18.0)
     - MapboxMobileEvents (= 1.0.10)
-    - Turf (= 2.7.0)
+    - Turf (= 2.8.0)
   - MapboxMobileEvents (1.0.10)
   - RCT-Folly (2024.01.01.00):
     - boost
@@ -1287,14 +1287,14 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - rnmapbox-maps (10.1.24):
-    - MapboxMaps (~> 10.17.0)
+  - rnmapbox-maps (10.1.27):
+    - MapboxMaps (~> 10.18.2)
     - React
     - React-Core
-    - rnmapbox-maps/DynamicLibrary (= 10.1.24)
+    - rnmapbox-maps/DynamicLibrary (= 10.1.27)
     - Turf
-  - rnmapbox-maps/DynamicLibrary (10.1.24):
-    - MapboxMaps (~> 10.17.0)
+  - rnmapbox-maps/DynamicLibrary (10.1.27):
+    - MapboxMaps (~> 10.18.2)
     - React
     - React-Core
     - Turf
@@ -1375,7 +1375,7 @@ PODS:
   - TcpSockets (4.0.0):
     - React
   - Toast (4.1.1)
-  - Turf (2.7.0)
+  - Turf (2.8.0)
   - VisionCamera (4.0.1):
     - VisionCamera/Core (= 4.0.1)
     - VisionCamera/React (= 4.0.1)
@@ -1679,9 +1679,9 @@ SPEC CHECKSUMS:
   FBLazyVector: 898d14d17bf19e2435cafd9ea2a1033efe445709
   fmt: 4c2741a687cc09f0634a2e2c72a838b99f1ff120
   glog: c5d68082e772fa1c511173d6b30a9de2c05a69a2
-  MapboxCommon: 768660d6fca8193529ecf82eb6f5f9ae7a5acdf9
-  MapboxCoreMaps: be412ff97b16aa7820922c818115a9a0d8211caa
-  MapboxMaps: 87ef0003e6db46e45e7a16939f29ae87e38e7ce2
+  MapboxCommon: 0ff437e44988da6856e280d00ffb266564ed0487
+  MapboxCoreMaps: f1bd9405f5b9d3e343f2fe4138775299699a22fb
+  MapboxMaps: e76b14f52c54c40b76ddecd04f40448e6f35a864
   MapboxMobileEvents: de50b3a4de180dd129c326e09cd12c8adaaa46d6
   RCT-Folly: 02617c592a293bd6d418e0a88ff4ee1f88329b47
   RCTDeprecation: efb313d8126259e9294dc4ee0002f44a6f676aba
@@ -1755,7 +1755,7 @@ SPEC CHECKSUMS:
   RNCPushNotificationIOS: 64218f3c776c03d7408284a819b2abfda1834bc8
   RNFS: 4ac0f0ea233904cb798630b3c077808c06931688
   RNGestureHandler: 9508b860b3709d658dda7a701363a318e329d04b
-  rnmapbox-maps: 8005faa8e35b413ea5f387d8e057e9c2d7bcfbff
+  rnmapbox-maps: 96476b4cb703f9b1cfea97b87ed7da180189d8a0
   RNOS: 6f2f9a70895bbbfbdad7196abd952e7b01d45027
   RNPermissions: 64242b5eabc3ca5ed33f6feb38a183cb1d66d277
   RNReanimated: 6de652b2366c2bea75683f190719d870af7f999f
@@ -1767,7 +1767,7 @@ SPEC CHECKSUMS:
   SwiftyJSON: 36413e04c44ee145039d332b4f4e2d3e8d6c4db7
   TcpSockets: 4ef55305239923b343ed0a378b1fac188b1373b0
   Toast: 1f5ea13423a1e6674c4abdac5be53587ae481c4e
-  Turf: 13d1a92d969ca0311bbc26e8356cca178ce95da2
+  Turf: aa2ede4298009639d10db36aba1a7ebaad072a5e
   VisionCamera: 5787602f86d8521f17af0e606259b6d367754e74
   Yoga: b9a182ab00cf25926e7f79657d08c5d23c2d03b0
 
