@@ -165,14 +165,13 @@ const CameraScreen = (props) => {
   const cameraShootButtonPosition = React.useMemo(() => {
     const left = Dimensions.get('screen').width / 2 - styles.cameraShootButton.width / 2;
     const top =
-      Dimensions.get('screen').height -
-      (Platform.OS === 'ios' ? 210 : 170) -
+      Dimensions.get('screen').height - 210 -
       styles.cameraShootButton.height / 2;
     const right = left + styles.cameraShootButton.width;
     const bottom = top + styles.cameraShootButton.height;
     return {
       left: left,
-      top: top,
+      top: top,         
       right: right,
       bottom: bottom,
     }
@@ -514,7 +513,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   cameraShootButton: {
-    position: 'absolute',
     width: 70,
     height: 70,
     justifyContent: 'center',
