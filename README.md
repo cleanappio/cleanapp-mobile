@@ -115,7 +115,7 @@ Take the .env file from the Google Drive `CleanApp/Engineering/Mobile App Env` f
 
         1.  Create the cleanapp.properties file in this directory
             ```
-            touch $HOME/.signing/mapbox.downloadsToken
+            touch $HOME/.signing/cleanapp.properties
             ```
 
         1.  Add the following line into the cleanapp.properties:

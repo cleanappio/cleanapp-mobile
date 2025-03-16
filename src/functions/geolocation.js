@@ -8,7 +8,7 @@ import {
   openSettings,
   request,
 } from 'react-native-permissions';
-import FlashMessage, {showMessage} from 'react-native-flash-message';
+
 /**
  * Request permission and get the user's location.
  * Currently settings the result in async storage.
@@ -54,12 +54,9 @@ export const getLocation = async () => {
           resolve(false);
         },
         {
-          accuracy: {
-            android: 'high',
-            ios: 'best',
-          },
-          enableHighAccuracy: false,
-          maximumAge: 0,
+          forceLocationManager: true,
+          enableHighAccuracy: true,
+          maximumAge: 10000,
           timeout: 15000,
         },
       );

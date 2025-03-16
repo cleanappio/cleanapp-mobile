@@ -27,6 +27,8 @@ export const settings = {
     getTopScores: 'get_top_scores',
     getStats: 'get_stats',
     getBlockchainLink: 'get_blockchain_link',
+    createOrUpdateArea: 'create_or_update_area',
+    getArea: 'get_areas',
   },
   apiSettings: {
     sendingAttempts: 3,

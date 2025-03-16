@@ -1,5 +1,4 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-  package="com.cleanapp">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <queries>
       <intent>
         <action android:name="android.intent.action.VIEW" />
@@ -14,33 +13,31 @@
         <data android:scheme="wc" />
       </intent>
     </queries>
+
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.CAMERA" />
-     <uses-feature
+    <uses-feature
         android:name="android.hardware.camera.any"
         android:required="false" />
     <uses-feature
         android:name="android.hardware.camera"
         android:required="false" />
     <application
-      android:usesCleartextTraffic="true"
       android:name=".MainApplication"
       android:label="@string/app_name"
       android:icon="@mipmap/ic_launcher"
-      android:roundIcon="@mipmap/ic_launcher"
-      android:requestLegacyExternalStorage="true"
+      android:roundIcon="@mipmap/ic_launcher_round"
       android:allowBackup="false"
-      android:hardwareAccelerated="true"
-      android:theme="@style/AppTheme">
+      android:theme="@style/AppTheme"
+      android:supportsRtl="true">
       <activity
         android:name=".MainActivity"
         android:label="@string/app_name"
-        android:configChanges="keyboard|keyboardHidden|orientation|screenSize|uiMode"
+        android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|screenSize|smallestScreenSize|uiMode"
         android:launchMode="singleTask"
-        android:screenOrientation="portrait" 
-        android:exported="true"
-        android:windowSoftInputMode="stateAlwaysHidden|adjustPan">
+        android:windowSoftInputMode="adjustResize"
+        android:exported="true">
         <intent-filter>
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />
@@ -50,7 +47,7 @@
       <meta-data
         android:name="com.google.android.geo.API_KEY"
         android:value="@string/GEO_API_KEY"/>
-
+     
       <!-- You will also only need to add this uses-library tag -->
       <uses-library android:name="org.apache.http.legacy" android:required="false"/>
     </application>

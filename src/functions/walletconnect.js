@@ -1,10 +1,12 @@
+import 'react-native-get-random-values';
+import '@ethersproject/shims';
 import {ethers} from 'ethers';
 import {getWalletData, setWalletData} from '../services/DataManager';
+import {generatePassword} from './password';
 
 const loadLocalWallet = async (web3, passphrase) => {
   try {
     //check wallet
-    let Web3 = web3.web3Instance;
     var publicKey = '';
     var privateKey = '';
     var seedPhrase = '';
@@ -14,22 +16,11 @@ const loadLocalWallet = async (web3, passphrase) => {
     publicKey = wallet.address;
     seedPhrase = wallet.mnemonic.phrase;
 
-    let arr = new Uint8Array(20);
-    // eslint-disable-next-line no-undef
-    crypto.getRandomValues(arr);
-    // eslint-disable-next-line no-undef
-    let password = btoa(String.fromCharCode(...arr))
-      .split('')
-      .filter((value) => {
-        return !['+', '/', '='].includes(value);
-      })
-      .slice(0, 10)
-      .join('');
     await setWalletData({
       privateKey: privateKey,
       publicKey: publicKey,
       seedPhrase: seedPhrase,
-      password: password,
+      password: '',
     });
   } catch (err) {}
 };
@@ -52,18 +43,8 @@ export const createLocalWallet = async () => {
       privateKey = wallet.privateKey;
       publicKey = wallet.address;
       seedPhrase = wallet.mnemonic.phrase;
+      password = generatePassword();
 
-      let arr = new Uint8Array(20);
-      // eslint-disable-next-line no-undef
-      crypto.getRandomValues(arr);
-      // eslint-disable-next-line no-undef
-      let password = btoa(String.fromCharCode(...arr))
-        .split('')
-        .filter((value) => {
-          return !['+', '/', '='].includes(value);
-        })
-        .slice(0, 10)
-        .join('');
       await setWalletData({
         privateKey: privateKey,
         publicKey: publicKey,

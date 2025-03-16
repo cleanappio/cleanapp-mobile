@@ -2,12 +2,9 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "group:/Users/tierre/Documents/work/CleanApp/ios/CleanApp.xcodeproj">
+      location = "group:CleanApp.xcodeproj">
    </FileRef>
    <FileRef
       location = "group:Pods/Pods.xcodeproj">
-   </FileRef>
-   <FileRef
-      location = "group:CleanApp.xcodeproj">
    </FileRef>
 </Workspace>

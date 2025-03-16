@@ -286,6 +286,7 @@ const CameraScreen = (props) => {
   const tapGestureInit = Gesture.Tap();
   const tapGesture = tapGestureInit
     .onStart((event) => {
+      'worklet';
       if (event.x >= cameraShootButtonPosition.left &&
         event.x <= cameraShootButtonPosition.right &&
         event.y >= cameraShootButtonPosition.top &&
@@ -298,6 +299,7 @@ const CameraScreen = (props) => {
   const pinchGestureInit = Gesture.Pinch();
   const pinchGesture = pinchGestureInit
     .onUpdate((event) => {
+      'worklet';
       currZoomOffset.value = Math.min(maxZoom, Math.max(minZoom, zoomOffset.value * event.scale));
       zoom.value = interpolate(
         currZoomOffset.value,
@@ -306,6 +308,7 @@ const CameraScreen = (props) => {
         Extrapolation.CLAMP,
       );
     }).onEnd(() => {
+      'worklet';
       zoomOffset.value = currZoomOffset.value;
     });
 
@@ -376,27 +379,7 @@ const CameraScreen = (props) => {
                 scaleX={flashScale}
                 scaleY={flashScaleStatic}
               />
-              {!phototaken && hasPermission &&
-                (Platform.OS === 'ios' ? (
-                  <>
-                    <BlurView
-                      style={
-                        {
-                          ...styles.blurview,
-                          position: 'absolute',
-                          top: 40,
-                          left: 40,
-                          width: Dimensions.get('screen').width - 80,
-                        }
-                      }
-                      blurType="light"
-                    >
-                      <Text style={styles.centerText}>
-                        {t('camerascreen.prompt')}
-                      </Text>
-                    </BlurView>
-                  </>
-                ) : (
+              {!phototaken && hasPermission && (
                   <>
                     <View
                       style={
@@ -414,7 +397,7 @@ const CameraScreen = (props) => {
                       </Text>
                     </View>
                   </>
-                ))
+                )
               }
               {phototaken &&
                 (Platform.OS === 'ios' ? (

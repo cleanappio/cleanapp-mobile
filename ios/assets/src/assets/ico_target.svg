@@ -1,0 +1,21 @@
+<!-- <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="100%" height="100%" viewBox="0 0 256 256" xml:space="preserve">
+<g style="stroke: none; stroke-width: 0; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: none; fill-rule: nonzero; opacity: 1;" transform="translate(1.4065934065934016 1.4065934065934016) scale(2.81 2.81)" >
+	<path d="M 90 43 h -7.533 C 81.459 23.899 66.101 8.541 47 7.532 V 0 h -4 v 7.532 C 23.899 8.541 8.541 23.899 7.532 43 H 0 v 4 h 7.532 C 8.541 66.101 23.899 81.459 43 82.467 V 90 h 4 v -7.533 C 66.101 81.459 81.459 66.101 82.467 47 H 90 V 43 z M 47 78.457 v -7.413 h -4 v 7.413 c -16.893 -1 -30.457 -14.564 -31.457 -31.457 h 7.413 v -4 h -7.413 c 1 -16.893 14.564 -30.457 31.457 -31.457 v 7.413 h 4 v -7.413 c 16.893 1 30.457 14.564 31.457 31.457 h -7.413 v 4 h 7.413 C 77.457 63.893 63.893 77.457 47 78.457 z" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: #F3EFE0; fill-rule: nonzero; opacity: 1;" transform=" matrix(1 0 0 1 0 0) " stroke-linecap="round" />
+	<path d="M 45 59.106 c -7.778 0 -14.106 -6.328 -14.106 -14.106 S 37.222 30.894 45 30.894 S 59.106 37.222 59.106 45 S 52.778 59.106 45 59.106 z M 45 34.894 c -5.573 0 -10.106 4.534 -10.106 10.106 c 0 5.572 4.534 10.106 10.106 10.106 c 5.572 0 10.106 -4.534 10.106 -10.106 C 55.106 39.427 50.572 34.894 45 34.894 z" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: #F3EFE0; fill-rule: nonzero; opacity: 1;" transform=" matrix(1 0 0 1 0 0) " stroke-linecap="round" />
+</g>
+</svg> -->
+
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 256 256" id="target">
+<circle cx="128" cy="128" r="127" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke="#F3EFE0" stroke-width="2">
+</circle>
+<circle cx="128" cy="128" r="102" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke="#F3EFE0" stroke-width="2">
+</circle>
+<line x1="1" y1="128" x2="50" y2="128" style="stroke:#F3EFE0;stroke-width:2">
+</line>
+<line x1="206" y1="128" x2="255" y2="128" style="stroke:#F3EFE0;stroke-width:2">
+</line>
+<line x1="128" y1="1" x2="128" y2="50" style="stroke:#F3EFE0;stroke-width:2">
+</line>
+<line x1="128" y1="206" x2="128" y2="255" style="stroke:#F3EFE0;stroke-width:2">
+</line>
+</svg>

@@ -23,3 +23,13 @@ export const postJSONData = async (path, data) => {
     return { ok: false, error: err };
   }
 };
+
+export const getJSONData = async (path, params) => {
+  try {
+    const url = `${getUrls().apiUrl}/${path}?${new URLSearchParams(params)}`;
+    const response = await fetch(url);
+    return response;
+  } catch (err) {
+    return { ok: false, error: err };
+  }
+}

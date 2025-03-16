@@ -337,8 +337,6 @@ const PrivacyScreen = ({ onComplete = () => { } }) => {
 };
 
 export const Onboarding = ({completeOnboarding = () => {}}) => {
-  const web3 = useSelector((state) => state.web3);
-
   const { t } = useTranslation();
   const [step, setStep] = useState('name'); // name | privacy
   const [walletAddress, setWalletAddress] = useState(null);

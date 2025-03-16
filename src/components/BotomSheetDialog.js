@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {StyleSheet, View, Text} from 'react-native';
+import {Image, StyleSheet, View, Text} from 'react-native';
 import {theme} from '../services/Common/theme';
 import {fontFamilies} from '../utils/fontFamilies';
 import Ripple from './Ripple';
@@ -26,7 +26,7 @@ const BottomSheetDialog = ({
             <>{headerIcon}</>
           ) : (
             <Ripple onPress={onClose}>
-              <CloseIcon />
+              <Image source={CloseIcon} />
             </Ripple>
           )}
         </View>

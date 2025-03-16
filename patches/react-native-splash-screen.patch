@@ -1,0 +1,15 @@
+--- a/node_modules/react-native-splash-screen/android/build.gradle	2025-03-03 23:53:10
++++ b/node_modules/react-native-splash-screen/android/build.gradle	2025-03-03 23:41:58
+@@ -28,10 +28,10 @@
+ }
+ 
+ dependencies {
+-    def supportLibVersion = rootProject.hasProperty('supportLibVersion') ? rootProject.supportLibVersion : DEFAULT_SUPPORT_LIB_VERSION
++    // def supportLibVersion = rootProject.hasProperty('supportLibVersion') ? rootProject.supportLibVersion : DEFAULT_SUPPORT_LIB_VERSION
+ 
+     implementation fileTree(dir: 'libs', include: ['*.jar'])
+     testImplementation 'junit:junit:4.12'
+-    implementation "com.android.support:appcompat-v7:$supportLibVersion"
++    // implementation "com.android.support:appcompat-v7:$supportLibVersion"
+     implementation "com.facebook.react:react-native:+" // From node_modules
+ }

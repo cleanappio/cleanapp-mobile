@@ -1,4 +1,4 @@
-import { postJSONData } from './CoreAPICalls';
+import { getJSONData, postJSONData } from './CoreAPICalls';
 import { settings as s } from './Settings';
 
 // === API v.2
@@ -303,6 +303,57 @@ export const getBlockchainLink = async (publicAddress) => {
     }
     return ret;
   } catch (err) {
+    return null;
+  }
+}
+
+export const createOrUpdateArea = async (area) => {
+  try {
+    const data = {
+      version: '2.0',
+      area: area,
+    }
+    const response = await postJSONData(s.v2api.createOrUpdateArea, data);
+    const ret = {
+      ok: response.ok
+    }
+    if (!response.ok) {
+      if (response.error) {
+        ret.error = response.error;
+      } else if (response.status) {
+        ret.error = response.statusText;
+      }
+    }
+  } catch (err) {
+    return null;
+  }
+}
+
+export const getAreas = async (latMin, lonMin, latMax, lonMax) => {
+  try {
+    const params = {
+      sw_lat: `${latMin}`,
+      sw_lon: `${lonMin}`,
+      ne_lat: `${latMax}`,
+      ne_lon: `${lonMax}`,
+    }
+    const response = await getJSONData(s.v2api.getArea, params);
+    const ret = {
+      ok: response.ok
+    }
+    if (response.ok) {
+      ret.areas = await response.json()
+        .then((response) => response);
+    } else {
+      if (response.error) {
+        ret.error = response.error;
+      } else if (response.status) {
+        ret.error = response.statusText;
+      }
+    }
+    return ret;
+  } catch (err) {
+    console.error(err);
     return null;
   }
 }

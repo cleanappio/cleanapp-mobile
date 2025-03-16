@@ -1,40 +1,38 @@
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
-
 buildscript {
     ext {
-        kotlinVersion = "2.0.0"
-        buildToolsVersion = "30.0.3"
-        minSdkVersion = 23
-        compileSdkVersion = 34
-        targetSdkVersion = 34
-        ndkVersion = "23.1.7779620"
-        playServicesVersion = "17.0.0"    // <= 👈
-        androidMapsUtilsVersion = "2.2.0" // <= 👈
+        buildToolsVersion = "35.0.0"
+        minSdkVersion = 24
+        compileSdkVersion = 35
+        targetSdkVersion = 35
+        ndkVersion = "27.1.12297006"
+        kotlinVersion = "2.0.21"
+        LoaderKit_compileSdkVersion = 34
+        LoaderKit_minSdkVersion = 26
+        LoaderKit_targetSdkVersion = 34
 
         RNMapboxMapsImpl = "mapbox" 
     }
+    // subprojects { subproject ->
+    //     afterEvaluate{
+    //         if((subproject.plugins.hasPlugin('android') || subproject.plugins.hasPlugin('android-library'))) {
+    //             android {
+    //                 compileSdkVersion rootProject.ext.compileSdkVersion
+    //                 buildToolsVersion rootProject.ext.buildToolsVersion
+    //             }
+    //         }
+    //     }
+    // }
     repositories {
-        mavenCentral()
         google()
+        mavenCentral()
     }
     dependencies {
-        // classpath("com.android.tools.build:gradle:4.1.0")
-        classpath("com.android.tools.build:gradle:7.3.1")
+        classpath("com.android.tools.build:gradle")
         classpath("com.facebook.react:react-native-gradle-plugin")
-        // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")
     }
 }
-subprojects { project -> 
-    afterEvaluate {
-            if((project.plugins.hasPlugin('android') || project.plugins.hasPlugin('android-library'))) {
-                android {
-                    compileSdkVersion rootProject.ext.compileSdkVersion
-                    buildToolsVersion rootProject.ext.buildToolsVersion
-                }
-            }
-        }
-    }
+
 allprojects {
     repositories {
         google()
@@ -64,11 +62,6 @@ allprojects {
         maven { url 'https://maven.google.com' }
 
         maven {
-           // react-native-background-fetch
-           url("${project(':react-native-background-fetch').projectDir}/libs")
-        }
-
-        maven {
             url 'https://api.mapbox.com/downloads/v2/releases/maven'
             authentication {
                 basic(BasicAuthentication)
@@ -88,3 +81,5 @@ allprojects {
         }
     }
 }
+
+apply plugin: "com.facebook.react.rootproject"
