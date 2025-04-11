@@ -13,6 +13,8 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import Svg, { Polygon, Circle } from 'react-native-svg';
+import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import SlidingUpPanel from 'rn-sliding-up-panel';
 import Config from 'react-native-config';
 import {
@@ -42,9 +44,11 @@ import { getWalletAddress, setMapLocation } from '../services/DataManager';
 import { AggregatedMarker } from '../components/AggregatedMarker';
 import { createOrUpdateArea } from '../services/API/APIManager';
 import { osmSearch } from '../services/API/OSMApi';
+import { useIsFocused } from '@react-navigation/native';
 
 const offsetMultiplier = 0.00001;
 const heatmapThresholdLevel = 11;
+const showPolygonsLevel = 6;
 
 const DetailView = memo(
   ({
@@ -102,6 +106,34 @@ const Balloon = ({ title = '' }) => {
   );
 };
 
+const PolygonDrawingView = ({customPoints, setCustomPoints}) => {
+  const tapGestureInitial = Gesture.Tap();
+  const tapGesture = tapGestureInitial
+    .onEnd(e => {
+      setCustomPoints(prev => [...prev, { x: e.x, y: e.y }]);
+    });
+
+  const pointString = customPoints.map(p => `${p.x},${p.y}`).join(' ');
+
+  return (
+    <GestureDetector gesture={tapGesture}>
+      <Svg style={StyleSheet.absoluteFill}>
+        {customPoints.length >= 2 && (
+          <Polygon
+            points={pointString}
+            fill="rgba(0, 128, 255, 0.3)"
+            stroke="blue"
+            strokeWidth="2"
+          />
+        )}
+        {customPoints.map((p, idx) => (
+          <Circle key={idx} cx={p.x} cy={p.y} r="5" fill="blue" />
+        ))}
+      </Svg>
+    </GestureDetector>
+  );
+}
+
 const MapView = ({ onMarkerPress = () => { }, selectedMarker = null }) => {
   const [coordinates, setCoordinates] = useState({
     zoomLevel: 17,
@@ -109,7 +141,10 @@ const MapView = ({ onMarkerPress = () => { }, selectedMarker = null }) => {
   });
   const [reportData, setReportData] = useState({});
   const [areaData, setAreaData] = useState([]);
-  const [areaHeatmapData, setAreaHeatmapData] = useState(null);
+  const [areaHeatmapData, setAreaHeatmapData] = useState({
+    type: 'FeatureCollection',
+    features: []
+  });
   const [resultFeature, setResultFeature] = useState(null);
   const [featureToSave, setFeatureToSave] = useState(null);
   const [searchItems, setSearchItems] = useState([]);
@@ -122,16 +157,33 @@ const MapView = ({ onMarkerPress = () => { }, selectedMarker = null }) => {
   const camera = useRef(null);
   const [showPolygons, setShowPolygons] = useState(false);
   const [isDrawing, setIsDrawing] = useState(false);
-  const [customPolygon, setCustomPolygon] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [polygonName, setPolygonName] = useState('');
   const [contactEmail, setContactEmail] = useState('');
+  const [displayMap, setDisplayMap] = useState(false);
+  const [customPoints, setCustomPoints] = useState([]);
+  
+  const isFocused = useIsFocused();
+
+  useEffect(() => {
+    if (isFocused) {
+      setDisplayMap(true);
+    } else {
+      setDisplayMap(false);
+    }
+  }, [isFocused]);
 
   const mapRef = useRef(null);
 
   const { t } = useTranslation();
 
   const fetchImages = async (latMin, lonMin, latMax, lonMax, latCenter, lonCenter) => {
+    // if (!mapLocation || mapLocation.zoomLevel < 9) {
+    //   setReportData({});
+    //   setAreaData([]);
+    //   setAreaHeatmapData([]);
+    //   return;
+    // }
     const walletAddress = await getWalletAddress();
     getReportsOnMap(
       walletAddress,
@@ -156,6 +208,14 @@ const MapView = ({ onMarkerPress = () => { }, selectedMarker = null }) => {
         }
       }
     });
+    if (coordinates.zoomLevel < showPolygonsLevel) {
+      setAreaData([]);
+      setAreaHeatmapData({
+        type: 'FeatureCollection',
+        features: []
+      });
+      return;
+    }
     getAreas(
       latMin,
       lonMin,
@@ -220,7 +280,6 @@ const MapView = ({ onMarkerPress = () => { }, selectedMarker = null }) => {
         zoomLevel: e.properties.zoomLevel,
         coordinates: [lonCenter, latCenter],
       });
-      setCustomPolygon([]);
       fetchImages(latMin, lonMin, latMax, lonMax, latCenter, lonCenter);
     }
   };
@@ -302,14 +361,14 @@ const MapView = ({ onMarkerPress = () => { }, selectedMarker = null }) => {
           if (foundFeature.type === 'FeatureCollection') {
             const location = getLocationFromFeature(foundFeature.features[0]);
             saveMapLocation(location);
-  
+
             setResultFeature(foundFeature.features[0]);
           } else {
             console.log('Expected GeoJSON of type feature, got:', foundFeature.type);
           }
         }
       });
-  
+
       // getCoordinatesFromLocation(text).then((data) => {
       //   if (data !== null) {
       //     saveMapLocation({
@@ -352,13 +411,22 @@ const MapView = ({ onMarkerPress = () => { }, selectedMarker = null }) => {
   );
 
   const startDrawing = () => {
-    setIsDrawing(!isDrawing);
-    setCustomPolygon([]);
+    setIsDrawing(true);
+    setCustomPoints([]);
   };
 
-  const endDrawing = () => {
-    setIsDrawing(false);
-    customPolygon.push(customPolygon[0]);
+  const endDrawing = async () => {
+    if (!mapRef.current || customPoints.length < 3) {
+      setIsDrawing(false);
+      return;
+    }
+    const customPolygon = [];
+    for (let i = 0; i < customPoints.length; i++) {
+      const point = customPoints[i];
+      const coordinate = await mapRef.current.getCoordinateFromView([point.x, point.y]);
+      customPolygon.push(coordinate);
+    }
+    customPolygon.push(customPolygon[0]); // Close the polygon
     setFeatureToSave({
       type: 'Feature',
       geometry: {
@@ -367,31 +435,7 @@ const MapView = ({ onMarkerPress = () => { }, selectedMarker = null }) => {
       },
       properties: {}
     });
-    console.log('Drawn feature:', featureToSave);
     setIsModalVisible(true);
-  };
-
-  const onTouchMove = async ({nativeEvent}) => {
-    if (isDrawing) {
-      if (!mapRef.current) return;
-      try {
-        // Get the screen point from the touch event
-        const { locationX, locationY } = nativeEvent;
-  
-        // Convert the screen coordinates to LatLng
-        const latLng = await mapRef.current.getCoordinateFromView([locationX, locationY]);
-  
-        setCustomPolygon([...customPolygon, latLng]);
-      } catch (error) {
-        console.error('Error converting point:', error);
-      }
-    }
-  };
-
-  const onTouchEnd = async () => {
-    if (isDrawing) {
-      endDrawing();
-    }
   };
 
   const findArea = (id) => {
@@ -438,12 +482,14 @@ const MapView = ({ onMarkerPress = () => { }, selectedMarker = null }) => {
         console.error('Error saving polygon');
       }
     });
+    setIsDrawing(false);
     setIsModalVisible(false);
     setPolygonName('');
     setContactEmail('');
   };
 
   const cancelPolygon = () => {
+    setIsDrawing(false);
     setIsModalVisible(false);
     setResultFeature(null);
     setPolygonName('');
@@ -451,7 +497,7 @@ const MapView = ({ onMarkerPress = () => { }, selectedMarker = null }) => {
   }
 
   return (
-    <View style={styles.container}>
+    <GestureHandlerRootView style={styles.container}>
       <View style={styles.searchContainer}>
         <View style={styles.inputBox}>
           <SearchIcon />
@@ -479,166 +525,159 @@ const MapView = ({ onMarkerPress = () => { }, selectedMarker = null }) => {
           />
         )}
       </View>
-      <MapboxGL.MapView
-        ref={mapRef}
-        styleURL={Config.MAPBOX_STYLE_MONOCHROME}
-        style={styles.map}
-        zoomEnabled={!isDrawing}
-        scrollEnabled={!isDrawing}
-        pitchEnabled={!isDrawing}
-        rotateEnabled={!isDrawing}
-        onRegionDidChange={onRegionDidChange}
-        onTouchMove={onTouchMove}
-        onTouchEnd={onTouchEnd}
-      >
-        <MapboxGL.UserLocation
-          androidRenderMode={'gps'}
-          visible={true}
-          showsUserHeadingIndicator={true}
-        />
-        <MapboxGL.Camera
-          ref={camera}
-          zoomLevel={mapLocation.zoomLevel}
-          centerCoordinate={mapLocation.coordinates}
-          animationMode="moveTo"
-        />
-        {customPolygon.length > 0 && (
-          <MapboxGL.ShapeSource id="polygon" shape={{
-            type: 'Feature',
-            geometry: {
-              type: 'Polygon',
-              coordinates: [customPolygon]
-            }
-          }}>
-            <MapboxGL.FillLayer id="polygonFill" style={{ fillColor: 'rgba(219, 33, 213, 0.5)' }} />
-            <MapboxGL.LineLayer id="polygonLine" style={{ lineColor: 'rgba(219, 33, 213, 1)', lineWidth: 3 }} />
-          </MapboxGL.ShapeSource>
-        )}
-        {showPolygons && coordinates.zoomLevel > heatmapThresholdLevel && areaData.map((area, index) => {
-          return (
+      {displayMap && (
+        <MapboxGL.MapView
+          ref={mapRef}
+          styleURL={Config.MAPBOX_STYLE_MONOCHROME}
+          style={styles.map}
+          attributionEnabled={false}
+          logoEnabled={false}
+          onRegionDidChange={onRegionDidChange}
+        >
+          <MapboxGL.UserLocation
+            androidRenderMode={'gps'}
+            visible={true}
+            showsUserHeadingIndicator={true}
+          />
+          <MapboxGL.Camera
+            ref={camera}
+            zoomLevel={mapLocation.zoomLevel}
+            centerCoordinate={mapLocation.coordinates}
+            animationMode="moveTo"
+          />
+          {showPolygons && coordinates.zoomLevel > heatmapThresholdLevel && areaData.map((area, index) => {
+            return (
+              <MapboxGL.ShapeSource
+                id={`area-${index}`}
+                key={`area-${index}`}
+                shape={area.coordinates}
+                onPress={(e) => {
+                  setPolygonName(area.name);
+                  setFeatureToSave(e.features[0]);
+                  setIsModalVisible(true);
+                }}
+              >
+                <MapboxGL.FillLayer
+                  id={`areaFill-${index}`}
+                  style={{ fillColor: 'rgba(219, 33, 213, 0.3)' }}
+                />
+                <MapboxGL.LineLayer
+                  id={`areaLine-${index}`}
+                  style={{ lineColor: 'rgb(219, 33, 213)', lineWidth: 1 }}
+                />
+              </MapboxGL.ShapeSource>
+            );
+          }
+          )}
+          {resultFeature && (
             <MapboxGL.ShapeSource
-              id={`area-${index}`}
-              key={`area-${index}`}
-              shape={area.coordinates}
+              id={`found`}
+              key={`found`}
+              shape={resultFeature}
               onPress={(e) => {
-                setPolygonName(area.name);
+                if (resultFeature.properties.name) {
+                  setPolygonName(resultFeature.properties.name);
+                }
                 setFeatureToSave(e.features[0]);
                 setIsModalVisible(true);
               }}
             >
               <MapboxGL.FillLayer
-                id={`areaFill-${index}`}
-                style={{ fillColor: 'rgba(219, 33, 213, 0.3)' }}
+                id={`foundFill`}
+                style={{ fillColor: 'rgba(255, 127, 0, 0.5)' }}
               />
               <MapboxGL.LineLayer
-                id={`areaLine-${index}`}
-                style={{ lineColor: 'rgb(219, 33, 213)', lineWidth: 1 }}
+                id={`foundLine`}
+                style={{ lineColor: 'rgb(255, 0, 0)', lineWidth: 1 }}
               />
             </MapboxGL.ShapeSource>
-          );
-        }
-        )}
-        {resultFeature && (
-          <MapboxGL.ShapeSource
-            id={`found`}
-            key={`found`}
-            shape={resultFeature}
-            onPress={(e) => {
-              if (resultFeature.properties.name) {
-                setPolygonName(resultFeature.properties.name);
-              }
-              setFeatureToSave(e.features[0]);
-              setIsModalVisible(true);
-            }}
-          >
-            <MapboxGL.FillLayer
-              id={`foundFill`}
-              style={{ fillColor: 'rgba(255, 127, 0, 0.5)' }}
-            />
-            <MapboxGL.LineLayer
-              id={`foundLine`}
-              style={{ lineColor: 'rgb(255, 0, 0)', lineWidth: 1 }}
-            />
-          </MapboxGL.ShapeSource>
-        )}
-        {Object.keys(reportData).map((elekey) =>
-          reportData[elekey].map((element, index) => {
-            const latitude = element.latitude;
-            const longitude = element.longitude + offsetMultiplier * index;
-            return (
-              <MapboxGL.PointAnnotation
-                id={`flag-${elekey}-${index}`}
-                key={`flag-${elekey}-${index}`}
-                coordinate={[longitude, latitude]}
-                onSelected={() => onMarkerPress(element, longitude, latitude)}>
-                {element.count === 1 && element.team === 1 && !element.own && <MarkerBlue />}
-                {element.count === 1 && element.team === 2 && !element.own && <MarkerGreen />}
-                {element.count === 1 && element.team === 1 && element.own && <MarkerCircleBlue />}
-                {element.count === 1 && element.team === 2 && element.own && <MarkerCircleGreen />}
-                {element.count > 1 && <AggregatedMarker
-                  bgColor={theme.COLORS.SILVER_SAND}
-                  numColor={theme.COLORS.BLACK}
-                  count={element.count}
-                />}
-              </MapboxGL.PointAnnotation>
-            );
-          }),
-        )}
-        {selectedMarker && selectedMarker.avatar && (
-          <MapboxGL.MarkerView
-            id={'marker'}
-            coordinate={[selectedMarker.longitude, selectedMarker.latitude]}>
-            <Balloon title={`${selectedMarker.locality}`} />
-          </MapboxGL.MarkerView>
-        )}
-        {showPolygons && coordinates.zoomLevel <= heatmapThresholdLevel && (
-          <MapboxGL.ShapeSource
-            id="heatmapSource"
-            shape={areaHeatmapData}
-          >
-            <MapboxGL.HeatmapLayer
-              id="heatmapLayer"
-              style={{
-                heatmapColor: [
-                  'interpolate',
-                  ['linear'],
-                  ['heatmap-density'],
-                  0, 'rgba(219, 33, 213, 0.0)',
-                  0.2, 'rgba(219, 33, 213, 0.2)',
-                  0.4, 'rgba(219, 33, 213, 0.4)',
-                  0.6, 'rgba(219, 33, 213, 0.5)',
-                  0.8, 'rgba(219, 33, 213, 0.6)',
-                  1, 'rgba(219, 33, 213, 0.8)'
-                ],
-                heatmapOpacity: 0.6,
-                heatmapWeight: [
-                  'interpolate',
-                  ['linear'],
-                  ['get', 'weight'],
-                  0, 0,
-                  1, 1
-                ],
-                heatmapRadius: [
-                  'interpolate',
-                  ['linear'],
-                  ['zoom'],
-                  0, 2,
-                  9, 20
-                ],
-              }}
-            />
-          </MapboxGL.ShapeSource>
-        )}
-      </MapboxGL.MapView>
+          )}
+          {Object.keys(reportData).map((elekey) =>
+            reportData[elekey].map((element, index) => {
+              const latitude = element.latitude;
+              const longitude = element.longitude + offsetMultiplier * index;
+              return (
+                <MapboxGL.PointAnnotation
+                  id={`flag-${elekey}-${index}`}
+                  key={`flag-${elekey}-${index}`}
+                  coordinate={[longitude, latitude]}
+                  onSelected={() => onMarkerPress(element, longitude, latitude)}>
+                  {element.count === 1 && element.team === 1 && !element.own && <MarkerBlue />}
+                  {element.count === 1 && element.team === 2 && !element.own && <MarkerGreen />}
+                  {element.count === 1 && element.team === 1 && element.own && <MarkerCircleBlue />}
+                  {element.count === 1 && element.team === 2 && element.own && <MarkerCircleGreen />}
+                  {element.count > 1 && <AggregatedMarker
+                    bgColor={theme.COLORS.SILVER_SAND}
+                    numColor={theme.COLORS.BLACK}
+                    count={element.count}
+                  />}
+                </MapboxGL.PointAnnotation>
+              );
+            }),
+          )}
+          {selectedMarker && selectedMarker.avatar && (
+            <MapboxGL.MarkerView
+              id={'marker'}
+              coordinate={[selectedMarker.longitude, selectedMarker.latitude]}>
+              <Balloon title={`${selectedMarker.locality}`} />
+            </MapboxGL.MarkerView>
+          )}
+          {showPolygons && areaHeatmapData.features.length > 0 && coordinates.zoomLevel <= heatmapThresholdLevel && (
+            <MapboxGL.ShapeSource
+              id="heatmapSource"
+              shape={areaHeatmapData}
+            >
+              <MapboxGL.HeatmapLayer
+                id="heatmapLayer"
+                style={{
+                  heatmapColor: [
+                    'interpolate',
+                    ['linear'],
+                    ['heatmap-density'],
+                    0, 'rgba(219, 33, 213, 0.0)',
+                    0.2, 'rgba(219, 33, 213, 0.2)',
+                    0.4, 'rgba(219, 33, 213, 0.4)',
+                    0.6, 'rgba(219, 33, 213, 0.5)',
+                    0.8, 'rgba(219, 33, 213, 0.6)',
+                    1, 'rgba(219, 33, 213, 0.8)'
+                  ],
+                  heatmapOpacity: 0.6,
+                  heatmapWeight: [
+                    'interpolate',
+                    ['linear'],
+                    ['get', 'weight'],
+                    0, 0,
+                    1, 1
+                  ],
+                  heatmapRadius: [
+                    'interpolate',
+                    ['linear'],
+                    ['zoom'],
+                    0, 2,
+                    9, 20
+                  ],
+                }}
+              />
+            </MapboxGL.ShapeSource>
+          )}
+        </MapboxGL.MapView>
+      )}
+      {isDrawing && <PolygonDrawingView customPoints={customPoints} setCustomPoints={setCustomPoints} />}
       <TouchableOpacity
         style={[styles.showPolygonButton, showPolygons && styles.activeButton]}
-        onPress={() => {setShowPolygons(!showPolygons)}}
+        onPress={() => { setShowPolygons(!showPolygons) }}
       >
         <ShowPolygonsIcon />
       </TouchableOpacity>
       <TouchableOpacity
         style={[styles.drawButton, isDrawing && styles.activeButton]}
-        onPress={startDrawing}
+        onPress={() => {
+          if (!isDrawing) {
+            startDrawing();
+          } else {
+            endDrawing();
+          }
+        }}
       >
         <EditIcon />
       </TouchableOpacity>
@@ -678,11 +717,11 @@ const MapView = ({ onMarkerPress = () => { }, selectedMarker = null }) => {
           </Pressable>
         </View>
       </Modal>
-    </View>
+    </GestureHandlerRootView>
   );
 };
 
-const MapBoxMapScreen = (props) => {
+const MapScreen = (props) => {
   const slidingPanel = useRef(null);
   const [selectedMarker, setSelectedMarker] = useState(null);
 
@@ -858,8 +897,8 @@ const styles = StyleSheet.create({
   },
   showPolygonButton: {
     position: 'absolute',
-    bottom: 95,
-    right: 11,
+    bottom: 20,
+    right: 18,
     width: 40,
     height: 40,
     borderRadius: 25,
@@ -872,8 +911,8 @@ const styles = StyleSheet.create({
   },
   drawButton: {
     position: 'absolute',
-    bottom: 45,
-    right: 11,
+    bottom: 75,
+    right: 18,
     width: 40,
     height: 40,
     borderRadius: 25,
@@ -891,7 +930,7 @@ const styles = StyleSheet.create({
     padding: 10,
     color: 'white',
     fontSize: 20,
-    fontWeight: 'bold' 
+    fontWeight: 'bold'
   },
   input: {
     width: '80%',
@@ -918,4 +957,4 @@ const styles = StyleSheet.create({
     color: theme.COLORS.WHITE,
   },
 });
-export default MapBoxMapScreen;
+export default MapScreen;

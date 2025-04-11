@@ -6,6 +6,7 @@ import {
   AppState,
   Dimensions,
   Platform,
+  Pressable,
   SafeAreaView,
   StyleSheet,
   Text,
@@ -18,6 +19,7 @@ import {
 } from 'react-native-gesture-handler'
 import Reanimated, {
   Extrapolation,
+  runOnJS,
   interpolate,
   useAnimatedProps,
   useSharedValue,
@@ -28,6 +30,7 @@ import {
   useCameraPermission,
 } from 'react-native-vision-camera';
 import RNFS from 'react-native-fs';
+import { useIsFocused } from '@react-navigation/native';
 
 import { theme } from '../services/Common/theme';
 import { fontFamilies } from '../utils/fontFamilies';
@@ -52,7 +55,7 @@ const tapSpotDiameter = 450;
 Reanimated.addWhitelistedNativeProps({
   zoom: true,
 })
-const ReanimatedCamera = Reanimated.createAnimatedComponent(Camera)
+const ReanimatedCamera = Reanimated.createAnimatedComponent(Camera);
 
 const GreenFlash = ({
   flashDiameterX,
@@ -62,8 +65,8 @@ const GreenFlash = ({
   scaleX,
   scaleY,
 }) => {
-  left = x - flashDiameterX / 2;
-  top = y - flashDiameterY / 2;
+  const left = x - flashDiameterX / 2;
+  const top = y - flashDiameterY / 2;
   return (
     <Animated.View
       style={{
@@ -108,6 +111,7 @@ const CameraScreen = (props) => {
   const appState = useRef(AppState.currentState);
   const camera = useRef(null);
   const [isCameraActive, setIsCameraActive] = useState(true);
+  const [isCameraFocused, setIsCameraFocused] = useState(true);
   const [phototaken, setPhototaken] = useState(false);
   const flashAnimatedValue = useRef(new Animated.Value(0));
   const tapAnimatedValue = useRef(new Animated.Value(0.2));
@@ -116,6 +120,12 @@ const CameraScreen = (props) => {
   const tapScale = useState(0);
   const { t } = useTranslation();
   const { hasPermission, requestPermission } = useCameraPermission();
+
+  const isFocused = useIsFocused();
+
+  useEffect(() => {
+    setIsCameraFocused(isFocused);
+  }, [isFocused]);
 
   useEffect(() => {
     const appStateSubscription = AppState.addEventListener('change', nextAppState => {
@@ -164,14 +174,12 @@ const CameraScreen = (props) => {
 
   const cameraShootButtonPosition = React.useMemo(() => {
     const left = Dimensions.get('screen').width / 2 - styles.cameraShootButton.width / 2;
-    const top =
-      Dimensions.get('screen').height - 210 -
-      styles.cameraShootButton.height / 2;
+    const bottom = 30;
     const right = left + styles.cameraShootButton.width;
-    const bottom = top + styles.cameraShootButton.height;
+    const top = bottom - styles.cameraShootButton.height;
     return {
       left: left,
-      top: top,         
+      top: top,
       right: right,
       bottom: bottom,
     }
@@ -283,23 +291,9 @@ const CameraScreen = (props) => {
     }
   };
 
-  const tapGestureInit = Gesture.Tap();
-  const tapGesture = tapGestureInit
-    .onStart((event) => {
-      'worklet';
-      if (event.x >= cameraShootButtonPosition.left &&
-        event.x <= cameraShootButtonPosition.right &&
-        event.y >= cameraShootButtonPosition.top &&
-        event.y <= cameraShootButtonPosition.bottom) {
-        takePhoto();
-        setPhototaken(true);
-      }
-    })
-
   const pinchGestureInit = Gesture.Pinch();
   const pinchGesture = pinchGestureInit
     .onUpdate((event) => {
-      'worklet';
       currZoomOffset.value = Math.min(maxZoom, Math.max(minZoom, zoomOffset.value * event.scale));
       zoom.value = interpolate(
         currZoomOffset.value,
@@ -308,12 +302,10 @@ const CameraScreen = (props) => {
         Extrapolation.CLAMP,
       );
     }).onEnd(() => {
-      'worklet';
       zoomOffset.value = currZoomOffset.value;
     });
 
   const allGestures = Gesture.Race(
-    tapGesture,
     pinchGesture,
   );
 
@@ -329,7 +321,7 @@ const CameraScreen = (props) => {
           <View
             style={styles.container}
           >
-            {hasPermission && !!device && (
+            {hasPermission && !!device && isCameraActive && isCameraFocused && (
               <ReanimatedCamera
                 ref={camera}
                 hdr={true}
@@ -380,67 +372,45 @@ const CameraScreen = (props) => {
                 scaleY={flashScaleStatic}
               />
               {!phototaken && hasPermission && (
-                  <>
-                    <View
-                      style={
-                        {
-                          ...styles.blurview2,
-                          position: 'absolute',
-                          top: 40,
-                          left: 40,
-                          width: Dimensions.get('screen').width - 80,
-                        }
+                <>
+                  <View
+                    style={
+                      {
+                        ...styles.blurview2,
+                        position: 'absolute',
+                        top: 40,
+                        left: 40,
+                        width: Dimensions.get('screen').width - 80,
                       }
-                    >
-                      <Text style={styles.centerText}>
-                        {t('camerascreen.prompt')}
-                      </Text>
-                    </View>
-                  </>
-                )
-              }
-              {phototaken &&
-                (Platform.OS === 'ios' ? (
-                  <BlurView style={
-                    {
-                      ...styles.blurview,
-                      width: 221,
-                      height: 191,
                     }
-                  } blurType="light" blurAmount={6}>
-                    <CheckBigIcon
-                      style={{
-                        width: 72,
-                        height: 72,
-                      }}
-                      width={72}
-                      height={72}
-                    />
-                    <Text style={styles.bottomText}>
-                      {t('camerascreen.newreward')}
-                    </Text>
-                  </BlurView>
-                ) : (
-                  <View style={
-                    {
-                      ...styles.blurview2,
-                      width: 221,
-                      height: 191,
-                    }
-                  }>
-                    <CheckBigIcon
-                      style={{
-                        width: 72,
-                        height: 72,
-                      }}
-                      width={72}
-                      height={72}
-                    />
-                    <Text style={styles.bottomText}>
-                      {t('camerascreen.newreward')}
+                  >
+                    <Text style={styles.centerText}>
+                      {t('camerascreen.prompt')}
                     </Text>
                   </View>
-                ))}
+                </>
+              )}
+              {phototaken && (
+                <View style={
+                  {
+                    ...styles.blurview2,
+                    width: 221,
+                    height: 191,
+                  }
+                }>
+                  <CheckBigIcon
+                    style={{
+                      width: 72,
+                      height: 72,
+                    }}
+                    width={72}
+                    height={72}
+                  />
+                  <Text style={styles.bottomText}>
+                    {t('camerascreen.newreward')}
+                  </Text>
+                </View>
+              )}
             </View>
             {!phototaken && (
               <>
@@ -455,15 +425,19 @@ const CameraScreen = (props) => {
                 }>
                   <TargetIcon />
                 </View>
-                <View style={
-                  {
+                <Pressable
+                  style={{
                     ...styles.cameraShootButton,
                     left: cameraShootButtonPosition.left,
-                    top: cameraShootButtonPosition.top,
-                  }
-                }>
+                    bottom: cameraShootButtonPosition.bottom,
+                  }}
+                  onPress={() => {
+                    takePhoto();
+                    setPhototaken(true);
+                  }}
+                >
                   <CameraShootIcon />
-                </View>
+                </Pressable>
               </>
             )}
           </View>
@@ -496,6 +470,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   cameraShootButton: {
+    position: 'absolute',
     width: 70,
     height: 70,
     justifyContent: 'center',

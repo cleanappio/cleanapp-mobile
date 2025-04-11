@@ -4,9 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import TabComponent from './components/Tab';
-import { StyleSheet, Image, View, Text, AppState } from 'react-native';
 import { theme } from './services/Common/theme';
-import { useStateValue } from './services/State/State';
 import { Onboarding } from './screens/Onboarding';
 import { Leaderboard } from './screens/Leaderboard';
 import CameraScreen from './screens/CameraScreen';
@@ -15,7 +13,6 @@ import CacheScreen from './screens/CacheScreen';
 import ReferralScreen from './screens/ReferralScreen';
 import { getFirstRun, getPrivacySetting, getUserName, getWalletAddress, isPrivacyAndTermsAccepted } from './services/DataManager';
 import { updateOrCreateUser, updatePrivacyAndTOC } from './services/API/APIManager';
-import { useTheme } from 'react-native-elements';
 
 const Tab = createBottomTabNavigator();
 
@@ -91,7 +88,6 @@ const BottomTabs = ({ navigation }) => {
 };
 
 const RootScreen = () => {
-  console.log('RootScreen');
   const [isOnboarding, setIsOnboarding] = useState(false);
 
   const completeOnboarding = () => {
