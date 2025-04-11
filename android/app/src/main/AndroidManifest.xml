@@ -32,8 +32,7 @@
       android:allowBackup="false"
       android:theme="@style/AppTheme"
       android:supportsRtl="true"
-      android:usesCleartextTraffic="true">
-      <!-- android:networkSecurityConfig="@xml/network_rules" -->
+      android:networkSecurityConfig="@xml/network_rules">
       <activity
         android:name=".MainActivity"
         android:label="@string/app_name"
