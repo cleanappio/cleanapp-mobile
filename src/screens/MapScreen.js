@@ -49,6 +49,7 @@ import { useIsFocused } from '@react-navigation/native';
 const offsetMultiplier = 0.00001;
 const heatmapThresholdLevel = 11;
 const showPolygonsLevel = 6;
+const angleThreshold = 165;
 
 const DetailView = memo(
   ({
@@ -106,17 +107,51 @@ const Balloon = ({ title = '' }) => {
   );
 };
 
-const PolygonDrawingView = ({customPoints, setCustomPoints}) => {
-  const tapGestureInitial = Gesture.Tap();
-  const tapGesture = tapGestureInitial
-    .onEnd(e => {
-      setCustomPoints(prev => [...prev, { x: e.x, y: e.y }]);
+const PolygonDrawingView = ({ customPoints, setCustomPoints, endDrawing = () => { }}) => {
+  const angleBetweenThreePoints = (p1, p2, p3) => {
+    // Create vectors p2->p1 and p2->p3
+    const v1 = { x: p1.x - p2.x, y: p1.y - p2.y };
+    const v2 = { x: p3.x - p2.x, y: p3.y - p2.y };
+
+    // Compute dot product and magnitudes of vectors
+    const dot = v1.x * v2.x + v1.y * v2.y;
+    const mag1 = Math.sqrt(v1.x ** 2 + v1.y ** 2);
+    const mag2 = Math.sqrt(v2.x ** 2 + v2.y ** 2);
+
+    // Compute angle in radians using arccosine
+    const angleRad = Math.acos(dot / (mag1 * mag2));
+
+    // Convert to degrees
+    const angleDeg = angleRad * (180 / Math.PI);
+
+    return angleDeg;
+  }
+
+  const panGestureInitial = Gesture.Pan();
+  const panGesture = panGestureInitial
+    .onBegin(e => {
+      setCustomPoints([{ x: e.x, y: e.y }]);
+    })
+    .onUpdate(e => {
+      if (customPoints.length < 2) {
+        setCustomPoints(prev => [...prev, { x: e.x, y: e.y }]);
+      } else {
+        const angle = angleBetweenThreePoints(customPoints[customPoints.length - 2], customPoints[customPoints.length - 1], { x: e.x, y: e.y });
+        if (angle < angleThreshold) {
+          setCustomPoints(prev => [...prev, { x: e.x, y: e.y }]);
+        } else {
+          setCustomPoints(prev => [...prev.slice(0, -1), { x: e.x, y: e.y }]);
+        }
+      }
+    })
+    .onEnd(() => {
+      endDrawing();
     });
 
   const pointString = customPoints.map(p => `${p.x},${p.y}`).join(' ');
 
   return (
-    <GestureDetector gesture={tapGesture}>
+    <GestureDetector gesture={panGesture}>
       <Svg style={StyleSheet.absoluteFill}>
         {customPoints.length >= 2 && (
           <Polygon
@@ -127,7 +162,7 @@ const PolygonDrawingView = ({customPoints, setCustomPoints}) => {
           />
         )}
         {customPoints.map((p, idx) => (
-          <Circle key={idx} cx={p.x} cy={p.y} r="5" fill="blue" />
+          <Circle key={idx} cx={p.x} cy={p.y} r="4" fill="blue" />
         ))}
       </Svg>
     </GestureDetector>
@@ -162,7 +197,7 @@ const MapView = ({ onMarkerPress = () => { }, selectedMarker = null }) => {
   const [contactEmail, setContactEmail] = useState('');
   const [displayMap, setDisplayMap] = useState(false);
   const [customPoints, setCustomPoints] = useState([]);
-  
+
   const isFocused = useIsFocused();
 
   useEffect(() => {
@@ -662,7 +697,7 @@ const MapView = ({ onMarkerPress = () => { }, selectedMarker = null }) => {
           )}
         </MapboxGL.MapView>
       )}
-      {isDrawing && <PolygonDrawingView customPoints={customPoints} setCustomPoints={setCustomPoints} />}
+      {isDrawing && <PolygonDrawingView customPoints={customPoints} setCustomPoints={setCustomPoints} endDrawing={endDrawing} />}
       <TouchableOpacity
         style={[styles.showPolygonButton, showPolygons && styles.activeButton]}
         onPress={() => { setShowPolygons(!showPolygons) }}
@@ -674,8 +709,6 @@ const MapView = ({ onMarkerPress = () => { }, selectedMarker = null }) => {
         onPress={() => {
           if (!isDrawing) {
             startDrawing();
-          } else {
-            endDrawing();
           }
         }}
       >

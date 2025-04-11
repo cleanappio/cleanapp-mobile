@@ -89,8 +89,8 @@ android {
         applicationId "com.cleanapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 25
-        versionName "2.0"
+        versionCode 27
+        versionName "3.0.1"
     }
     signingConfigs {
         debug {
