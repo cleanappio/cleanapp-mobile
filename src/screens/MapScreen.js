@@ -722,12 +722,14 @@ const MapView = ({ onMarkerPress = () => { }, selectedMarker = null }) => {
           <Text style={styles.saveHeader}>{t('mapscreen.addcontact')}</Text>
           <TextInput
             placeholder={t('mapscreen.areaname')}
+            placeholderTextColor={theme.COLORS.TEXT_GREY_50P}
             value={polygonName}
             onChangeText={setPolygonName}
             style={styles.input}
           />
           <TextInput
             placeholder={t('mapscreen.contactemail')}
+            placeholderTextColor={theme.COLORS.TEXT_GREY_50P}
             value={contactEmail}
             onChangeText={setContactEmail}
             style={styles.input}
