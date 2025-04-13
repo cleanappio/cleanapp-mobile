@@ -12,7 +12,6 @@ import {StateProvider} from './src/services/State/State.js';
 import {initialState} from './src/services/State/InitialState.js';
 import {reducer, actions} from './src/services/State/Reducer.js';
 import {useStateValue} from './src/services/State/State.js';
-import AppAlert from './src/components/AppAlert.js';
 import {theme} from './src/services/Common/theme.js';
 import {
   getLanguage,
@@ -138,34 +137,6 @@ const RootNavigator = () => {
     });
   };
 
-  const getAlertSettings = () => {
-    const onConfirmPressed =
-        settings && settings.onConfirmPressed
-          ? settings.onConfirmPressed
-          : () => {},
-      onCancelPressed =
-        settings && settings.onCancelPressed
-          ? settings.onCancelPressed
-          : () => {};
-    return {
-      ...settings,
-      onConfirmPressed: () => {
-        dispatch({
-          type: actions.SET_ALERT_SETTINGS,
-          alertSettings: null,
-        });
-        onConfirmPressed();
-      },
-      onCancelPressed: () => {
-        dispatch({
-          type: actions.SET_ALERT_SETTINGS,
-          alertSettings: null,
-        });
-        onCancelPressed();
-      },
-    };
-  };
-
   return (
     <>
       <SafeAreaView style={{flex: 0, backgroundColor: theme.APP_COLOR_1}} />
@@ -174,7 +145,6 @@ const RootNavigator = () => {
           barStyle="light-content"
           backgroundColor={theme.APP_COLOR_1}
         />
-        <AppAlert {...getAlertSettings()} />
         <CreateRootNavigator />
       </SafeAreaView>
     </>

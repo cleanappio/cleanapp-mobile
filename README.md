@@ -214,18 +214,7 @@ yarn install && ./patches/apply.sh
 
 #### Configure release keystore
 
-1.  Create the signing directory in your home directory.
-    ```
-    mkdir $HOME/.signing
-    ```
-1.  Create the keystore file in the $HOME/.signing directory. File name should be "release.keystore".
-
-    See e.g. https://instamobile.io/android-development/generate-react-native-release-build-android/
-
-1. Create the properties file pointing to the keystore and containing password.
-    ```
-    echo "keystore=<your homedir>/.signing/release.keystore\nkeystore.password=<your keystore password>\nkeystore.alias=<your keystore alias>" >> $HOME/.signing/cleanapp.properties
-    ```
+Follow the react native guide: https://reactnative.dev/docs/signed-apk-android
 
 #### Install and test the release version on the device
 1.  Make sure the developer mode on the devise is enabled, https://developer.android.com/studio/debug/dev-options?authuser=3
