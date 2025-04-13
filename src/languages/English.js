@@ -245,6 +245,11 @@ export default {
     mapscreen: {
       maps: 'Maps',
       close: 'Close',
+      addcontact: 'Add New Contact',
+      save: 'Save',
+      cancel: 'Cancel',
+      areaname: 'Area Name',
+      contactemail: 'Contact Email',
     },
     location: {
       locationPermissionNotGranted:

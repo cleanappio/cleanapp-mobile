@@ -197,6 +197,7 @@ const MapView = ({ onMarkerPress = () => { }, selectedMarker = null }) => {
   const [contactEmail, setContactEmail] = useState('');
   const [displayMap, setDisplayMap] = useState(false);
   const [customPoints, setCustomPoints] = useState([]);
+  const { t } = useTranslation();
 
   const isFocused = useIsFocused();
 
@@ -209,8 +210,6 @@ const MapView = ({ onMarkerPress = () => { }, selectedMarker = null }) => {
   }, [isFocused]);
 
   const mapRef = useRef(null);
-
-  const { t } = useTranslation();
 
   const fetchImages = async (latMin, lonMin, latMax, lonMax, latCenter, lonCenter) => {
     // if (!mapLocation || mapLocation.zoomLevel < 9) {
@@ -720,15 +719,15 @@ const MapView = ({ onMarkerPress = () => { }, selectedMarker = null }) => {
         animationType="slide"
       >
         <View style={styles.modalContainer}>
-          <Text style={styles.saveHeader}>Save Polygon</Text>
+          <Text style={styles.saveHeader}>{t('mapscreen.addcontact')}</Text>
           <TextInput
-            placeholder="Polygon Name"
+            placeholder={t('mapscreen.areaname')}
             value={polygonName}
             onChangeText={setPolygonName}
             style={styles.input}
           />
           <TextInput
-            placeholder="Contact Email"
+            placeholder={t('mapscreen.contactemail')}
             value={contactEmail}
             onChangeText={setContactEmail}
             style={styles.input}
@@ -740,13 +739,13 @@ const MapView = ({ onMarkerPress = () => { }, selectedMarker = null }) => {
             style={{ ...styles.btnBlue, width: 320 }}
             onPress={savePolygon}
           >
-            <Text style={styles.btnBlueText}>{'Save'}</Text>
+            <Text style={styles.btnBlueText}>{t('mapscreen.save')}</Text>
           </Pressable>
           <Pressable
             style={{ ...styles.btnBlue, width: 320 }}
             onPress={cancelPolygon}
           >
-            <Text style={styles.btnBlueText}>{'Cancel'}</Text>
+            <Text style={styles.btnBlueText}>{t('mapscreen.cancel')}</Text>
           </Pressable>
         </View>
       </Modal>
