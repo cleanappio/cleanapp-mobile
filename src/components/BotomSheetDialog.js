@@ -18,7 +18,9 @@ const BottomSheetDialog = ({
       overlayColor={theme.COLORS.BLACK}
       overlayOpacity={0.5}
       containerStyle={styles.container}
-      isVisible={isVisible}>
+      isVisible={isVisible}
+      keyboardBehavior={'interactive'}
+    >
       <View style={styles.sheetContainer}>
         <View style={styles.header}>
           <Text style={styles.headerTitle}>{title}</Text>

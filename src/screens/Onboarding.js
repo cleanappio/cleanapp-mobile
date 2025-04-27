@@ -94,6 +94,7 @@ const WelcomeScreen = ({
   const referralInput = useRef(null);
 
   const gotoNextStep = async () => {
+    // Step 3: Next step, set user name and referral code.
     setInProgress(true);
     const walletRet = await GetOrCreateLocalWallet();
 
@@ -128,8 +129,8 @@ const WelcomeScreen = ({
         );
         return false;
       } else {
-        setUserName({ userName: name });
-        setTeam(data.team);
+        await setUserName({ userName: name });
+        await setTeam(data.team);
       }
     } else {
       Alert.alert(
@@ -147,6 +148,7 @@ const WelcomeScreen = ({
   }
 
   useEffect(() => {
+    // Step 2: Retrieve referral code.
     initRef = async () => {
       setInProgress(true);
       const [refKey, referral] = await retrieveReferral();
@@ -242,6 +244,7 @@ const PrivacyScreen = ({ onComplete = () => { } }) => {
   };
 
   const doCompleteAction = async () => {
+    // Step 4: Set privacy and terms of use., start CleanApp.
     const walletAddress = await getWalletAddress();
     await setPrivacySetting(privacy);
     await setPrivacyAndTermsAccepted(agreeTOC);
@@ -352,6 +355,7 @@ export const Onboarding = ({completeOnboarding = () => {}}) => {
   const [name, setName] = useState('');
   const [inProgress, setInProgress] = useState(false)
 
+  // Step 1: Create a local wallet
   const initData = async () => {
     const _address = await createLocalWallet();
     if (_address === null) {

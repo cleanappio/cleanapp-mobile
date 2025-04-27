@@ -4,8 +4,8 @@ import React, { useEffect, useState } from 'react';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import TabComponent from './components/Tab';
+import { onboard } from './functions/onboarding';
 import { theme } from './services/Common/theme';
-import { Onboarding } from './screens/Onboarding';
 import { Leaderboard } from './screens/Leaderboard';
 import CameraScreen from './screens/CameraScreen';
 import MapScreen from './screens/MapScreen';
@@ -88,11 +88,6 @@ const BottomTabs = ({ navigation }) => {
 };
 
 const RootScreen = () => {
-  const [isOnboarding, setIsOnboarding] = useState(false);
-
-  const completeOnboarding = () => {
-    setIsOnboarding(false);
-  }
 
   useEffect(() => {
     getFirstRun().then(async (ret) => {
@@ -100,7 +95,7 @@ const RootScreen = () => {
         const walletAddress = await getWalletAddress();
         const userAvatar = await getUserName();
         if (!walletAddress || !userAvatar || !userAvatar.userName) {
-          setIsOnboarding(true);
+          await onboard();
           return;
         }
         const privacySetting = await getPrivacySetting();
@@ -111,18 +106,14 @@ const RootScreen = () => {
           privacySetting === 0 ? 'share_data_live' : 'not_share_data_live',
           termAccepted ? 'ACCEPTED' : 'REJECTED',
         );
-        setIsOnboarding(false);
       } else {
-        setIsOnboarding(true);
+        await onboard();
       }
     });
   }, []);
 
   return (
-    <>
-      {isOnboarding && <Onboarding completeOnboarding={completeOnboarding} />}
-      {!isOnboarding && <BottomTabs />}
-    </>
+    <BottomTabs />
   );
 };
 

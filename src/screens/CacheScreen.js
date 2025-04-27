@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
-import { Linking, Pressable, ScrollView, StyleSheet, View, Text, ToastAndroid, Alert, Platform } from 'react-native';
+import { Linking, Modal, Pressable, ScrollView, StyleSheet, View, Text, TextInput, ToastAndroid, Alert, Platform } from 'react-native';
 import { fontFamilies } from '../utils/fontFamilies';
 import { theme } from '../services/Common/theme';
 import Ripple from '../components/Ripple';
@@ -16,26 +16,31 @@ import { Row } from '../components/Row';
 import Clipboard from '@react-native-clipboard/clipboard';
 import {
   getPrivacySetting,
+  getUserName,
   getWalletAddress,
   getWalletData,
   setCacheVault,
   setPrivacySetting,
+  setUserName,
 } from '../services/DataManager';
 import { useTranslation } from 'react-i18next';
 import {
   getBlockchainLink,
   getRewardStats,
+  updateOrCreateUser,
   updatePrivacyAndTOC,
 } from '../services/API/APIManager';
 import { useStateValue } from '../services/State/State';
 import { actions } from '../services/State/Reducer';
 
 const CacheScreen = (props) => {
+  const [avatarOpened, setAvatarOpened] = useState(false);
   const [privacyOpened, setPrivacyOpened] = useState(false);
   const [cacheSettingOpened, setCacheSettingOpened] = useState(false);
   const [walletAddress, setWalletAddress] = useState('');
   const [walletInfo, setWalletInfo] = useState(null);
 
+  const [avatarName, setAvatarName] = useState('');
   const [shareDataStatus, setShareDataStatus] = useState(0);
   const [{ cacheVault }, dispatch] = useStateValue();
   const [blockchainLink, setBlockchainLink] = useState('');
@@ -53,6 +58,10 @@ const CacheScreen = (props) => {
     },
   ];
 
+  const editAvatar = () => {
+    setAvatarOpened(true);
+  };
+
   const editPrivacy = () => {
     setPrivacyOpened(true);
   };
@@ -68,8 +77,13 @@ const CacheScreen = (props) => {
 
   useFocusEffect(
     React.useCallback(() => {
-      internalFunc = async () => {
+      const internalFunc = async () => {
         await initWallet();
+        getUserName().then((resp) => {
+          if (resp) {
+            setAvatarName(resp.userName);
+          }
+        });
         getPrivacySetting().then((resp) => {
           if (resp) {
             setShareDataStatus(resp);
@@ -98,7 +112,7 @@ const CacheScreen = (props) => {
             setCacheVault(cacheResult);
           }
         });
-        getBlockchainLink(wa).then((resp)=> {
+        getBlockchainLink(wa).then((resp) => {
           if (resp && resp.ok) {
             setBlockchainLink(resp.blockchainLink);
           }
@@ -107,6 +121,54 @@ const CacheScreen = (props) => {
       internalFunc();
     }, []),
   );
+
+  const AvatarSheet = ({
+    isVisible = false,
+    onClose = () => { },
+    onUpdateUser = async () => { },
+  }) => {
+    const [localAvatarName, setLocalAvatarName] = useState(avatarName === walletAddress ? '' : avatarName);
+    return (
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isVisible}
+      >
+        <View style={styles.modalContainer}>
+          <Text style={styles.avatarHeader}>{t('cachescreen.editavatar')}</Text>
+          <TextInput
+            style={{ ...styles.textInput, marginTop: 20, marginBottom: 16 }}
+            color={theme.COLORS.TEXT_GREY}
+            autoCorrect={false}
+            spellCheck={false}
+            value={localAvatarName}
+            placeholder={t('cachescreen.chooseavatar')}
+            placeholderTextColor={theme.COLORS.TEXT_GREY_50P}
+            autoFocus={true}
+            onChangeText={setLocalAvatarName}
+          />
+          <Pressable
+            style={{ ...styles.bigBtn, marginBottom: 16 }}
+            onPress={async () => {
+              const updateUserResult = await onUpdateUser(localAvatarName);
+              if (updateUserResult) {
+                setAvatarName(localAvatarName);
+                onClose();
+              }
+            }}>
+            <Text style={styles.txt16bold}>{t('cachescreen.submit')}</Text>
+          </Pressable>
+          <Pressable
+            style={{ ...styles.bigBtnBlack, marginBottom: 16 }}
+            onPress={() => {
+              onClose();
+            }}>
+            <Text style={styles.txt16bold}>{t('cachescreen.cancel')}</Text>
+          </Pressable>
+        </View>
+      </Modal>
+    );
+  }
 
   const PrivacySheet = ({
     isVisible = false,
@@ -130,43 +192,47 @@ const CacheScreen = (props) => {
     };
 
     return (
-      <BottomSheetDialog
-        isVisible={isVisible}
-        onClose={onClose}
-        title={t('cachescreen.Editprivacyselection')}>
-        {privacy_values.map((element, index) => (
-          <View
-            key={index}
-            style={{
-              ...(index === privacySelected
-                ? styles.blueCard
-                : styles.borderCard),
-              marginTop: 16,
-            }}>
-            <Ripple onPress={() => selectPrivacy(index)}>
-              <View style={styles.row}>
-                <View>
-                  <Text style={styles.txt16}>{element.value}</Text>
-                  <Text style={styles.txt12italic}>{element.sub_value}</Text>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isVisible}
+      >
+        <View style={styles.modalContainer}>
+          <Text style={styles.avatarHeader}>{t('cachescreen.privacysettings')}</Text>
+          {privacy_values.map((element, index) => (
+            <View
+              key={index}
+              style={{
+                ...(index === privacySelected
+                  ? styles.blueCard
+                  : styles.borderCard),
+                marginTop: 16,
+                width: '80%',
+              }}>
+              <Ripple onPress={() => selectPrivacy(index)}>
+                <View style={{ ...styles.row, width: '100%' }}>
+                  <View>
+                    <Text style={styles.txt16}>{element.value}</Text>
+                    <Text style={styles.txt12italic}>{element.sub_value}</Text>
+                  </View>
+                  <View
+                    style={
+                      index === privacySelected
+                        ? styles.checked
+                        : styles.unchecked
+                    }
+                  />
                 </View>
-                <View
-                  style={
-                    index === privacySelected
-                      ? styles.checked
-                      : styles.unchecked
-                  }
-                />
-              </View>
-            </Ripple>
-          </View>
-        ))}
-        <Ripple
-          containerStyle={{ marginTop: 24 }}
-          onPress={setPrivacy}
-          style={styles.bigBtn}>
-          <Text style={styles.txt16bold}>{t('cachescreen.Confirm')}</Text>
-        </Ripple>
-      </BottomSheetDialog>
+              </Ripple>
+            </View>
+          ))}
+          <Pressable
+            style={{ ...styles.bigBtn, marginTop: 16 }}
+            onPress={setPrivacy}>
+            <Text style={styles.txt16bold}>{t('cachescreen.Confirm')}</Text>
+          </Pressable>
+        </View>
+      </Modal>
     );
   };
 
@@ -304,7 +370,7 @@ const CacheScreen = (props) => {
           </View>
           <Ripple
             containerStyle={{ marginTop: 24 }}
-            style={styles.bigBtnBlack}
+            style={{...styles.bigBtnBlack, width: '100%'}}
             onPress={onClose}>
             <Text style={styles.txt16bold}>{t('cachescreen.back')}</Text>
           </Ripple>
@@ -374,12 +440,29 @@ const CacheScreen = (props) => {
             <Row>
               <Text style={styles.txt12}>{t('cachescreen.blockchainLink')}</Text>
             </Row>
-            <Row style={{marginTop: 12}}>
+            <Row style={{ marginTop: 12 }}>
               <Text
-                style={{...styles.txt12bold, color: theme.COLORS.GREEN_LINK}}
+                style={{ ...styles.txt12bold, color: theme.COLORS.GREEN_LINK }}
                 onPress={() => Linking.openURL(blockchainLink)}
               >{blockchainLink}</Text>
             </Row>
+          </View>
+          {/** Avatar */}
+          <View style={styles.row}>
+            <Text style={styles.txt12}>{t('cachescreen.avatar')}</Text>
+            <View style={styles.border} />
+          </View>
+          <View style={{ ...styles.blueCard, marginTop: 8 }}>
+            <View style={styles.row}>
+              <Text style={styles.txt12thin}>
+                {avatarName === walletAddress ? t('cachescreen.avatarnotset') : avatarName}
+              </Text>
+              <Pressable style={styles.btnBlack} onPress={editAvatar}>
+                <Text style={styles.txt16bold}>
+                  {avatarName === walletAddress ? t('cachescreen.create') : t('cachescreen.edit')}
+                </Text>
+              </Pressable>
+            </View>
           </View>
           {/** Privacy */}
           <View style={styles.block}>
@@ -408,7 +491,7 @@ const CacheScreen = (props) => {
                 </Pressable>
               </View>
             </View>
-            <View style={{ ...styles.greyCard, marginTop: 8 }}>
+            <View style={{ ...styles.greyCard, marginTop: 16 }}>
               <View style={styles.row}>
                 <Text style={styles.txt16bold}>
                   {t('cachescreen.cachesettings')}
@@ -421,6 +504,37 @@ const CacheScreen = (props) => {
           </View>
         </View>
       </ScrollView>
+      <AvatarSheet
+        isVisible={avatarOpened}
+        onClose={() => {
+          setAvatarOpened(false);
+        }}
+        onUpdateUser={async (userName) => {
+          if (userName.length == 0) {
+            Alert.alert(
+              t('onboarding.Error'),
+              t('cachescreen.errAvatarEmpty'),
+              [{ text: t('onboarding.Ok'), type: 'cancel' }],
+            );
+            return false;
+          }
+          const data = await updateOrCreateUser(walletAddress, userName);
+          if (data && data.ok) {
+            if (data.dup_avatar) {
+              Alert.alert(
+                t('onboarding.Error'),
+                t('onboarding.ErrSameUsernameExists'),
+                [{ text: t('onboarding.Ok'), type: 'cancel' }],
+              );
+              return false;
+            }
+            setUserName({ userName: userName });
+            return true;
+          } else {
+            return false;
+          }
+        }}
+      />
       <PrivacySheet
         isVisible={privacyOpened}
         dataSharingOption={shareDataStatus}
@@ -505,14 +619,14 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   bigBtnBlack: {
-    width: '100%',
+    width: '80%',
     backgroundColor: theme.COLORS.BG,
     borderRadius: 8,
     paddingVertical: 8,
     alignItems: 'center',
   },
   bigBtn: {
-    width: '100%',
+    width: '80%',
     backgroundColor: theme.COLORS.BTN_BG_BLUE,
     borderRadius: 8,
     paddingVertical: 11,
@@ -603,6 +717,27 @@ const styles = StyleSheet.create({
       height: 10,
     },
     textShadowRadius: 20,
+  },
+  textInput: {
+    width: '80%',
+    borderRadius: 8,
+    borderWidth: 1.5,
+    padding: 16,
+    borderColor: theme.COLORS.BORDER,
+    fontFamily: fontFamilies.Default,
+    marginTop: 6,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+  },
+  avatarHeader: {
+    padding: 10,
+    color: 'white',
+    fontSize: 20,
+    fontWeight: 'bold'
   },
 });
 

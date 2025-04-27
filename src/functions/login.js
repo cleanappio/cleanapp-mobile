@@ -1,8 +1,6 @@
 import {
-  setAuthToken,
   getWalletData,
   setWalletData,
-  setUserName,
   setWalletType,
   setWalletAddress,
 } from '../services/DataManager';
