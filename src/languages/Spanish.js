@@ -27,5 +27,11 @@ export default {
       failedToClearAsyncStorage:
         'No se pudo borrar el almacenamiento asíncrono.',
     },
+    camerascreen: {
+      addannotation: 'Agregar anotación',
+      annotationplaceholder: 'Ingrese su anotación...',
+      cancel: 'Cancelar',
+      submit: 'Enviar',
+    },
   },
 };

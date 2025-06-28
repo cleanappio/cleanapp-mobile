@@ -24,5 +24,11 @@ export default {
       storageSuccessfullyCleared: 'ストレージが正常にクリアされました！',
       failedToClearAsyncStorage: '非同期ストレージのクリアに失敗しました。',
     },
+    camerascreen: {
+      addannotation: '注釈を追加',
+      annotationplaceholder: '注釈を入力してください...',
+      cancel: 'キャンセル',
+      submit: '送信',
+    },
   },
 };

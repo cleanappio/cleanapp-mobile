@@ -23,5 +23,11 @@ export default {
       storageSuccessfullyCleared: '存储成功清除！',
       failedToClearAsyncStorage: '无法清除异步存储。',
     },
+    camerascreen: {
+      addannotation: '添加注释',
+      annotationplaceholder: '输入您的注释...',
+      cancel: '取消',
+      submit: '提交',
+    },
   },
 };

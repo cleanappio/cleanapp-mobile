@@ -137,8 +137,12 @@ export default {
       ok: 'OK',
       newreward: '+1 KITN',
       photouploaded: 'Photo Uploaded',
-      prompt: 'Put the object you want cleaned up into the target and take a picture',
+      prompt: 'Put the object you want cleaned up into the target and take a picture. Press and hold the shutter button to enter description (optional).',
       invalidlocation: 'User Location is invalid. Will you go to Settings and check for Location Setting?',
+      addannotation: 'Add Description',
+      annotationplaceholder: 'Enter a short problem description',
+      cancel: 'Cancel',
+      submit: 'Submit',
     },
     cachescreen: {
       copiedtoclipboard: 'Copied to clipboard',

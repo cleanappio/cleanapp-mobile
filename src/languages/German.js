@@ -25,5 +25,11 @@ export default {
       failedToClearAsyncStorage:
         'Fehler beim Löschen des asynchronen Speichers.',
     },
+    camerascreen: {
+      addannotation: 'Anmerkung hinzufügen',
+      annotationplaceholder: 'Geben Sie Ihre Anmerkung ein...',
+      cancel: 'Abbrechen',
+      submit: 'Einreichen',
+    },
   },
 };

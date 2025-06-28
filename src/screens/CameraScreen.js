@@ -11,6 +11,11 @@ import {
   StyleSheet,
   Text,
   View,
+  Modal,
+  TextInput,
+  TouchableOpacity,
+  Image,
+  Keyboard,
 } from 'react-native';
 import {
   Gesture,
@@ -113,6 +118,11 @@ const CameraScreen = (props) => {
   const [isCameraActive, setIsCameraActive] = useState(true);
   const [isCameraFocused, setIsCameraFocused] = useState(true);
   const [phototaken, setPhototaken] = useState(false);
+  const [showAnnotationModal, setShowAnnotationModal] = useState(false);
+  const [annotationText, setAnnotationText] = useState('');
+  const [photoData, setPhotoData] = useState(null);
+  const [isInAnnotationMode, setIsInAnnotationMode] = useState(false);
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const flashAnimatedValue = useRef(new Animated.Value(0));
   const tapAnimatedValue = useRef(new Animated.Value(0.2));
   const flashScale = useState(0);
@@ -135,6 +145,20 @@ const CameraScreen = (props) => {
     return () => {
       appStateSubscription.remove();
     }
+  }, []);
+
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {
+      setIsKeyboardVisible(true);
+    });
+    const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
+      setIsKeyboardVisible(false);
+    });
+
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
   }, []);
 
   tapAnimatedValue.current.addListener((state) => {
@@ -216,7 +240,7 @@ const CameraScreen = (props) => {
     skipMetadata: true,
   }));
 
-  const uploadPhoto = async (file) => {
+  const uploadPhoto = async (file, annotation = '') => {
     const userLocation = await getLocation();
     if (userLocation && userLocation.latitude && userLocation.longitude) {
       if (userLocation.longitude === 0 && userLocation.latitude === 0) {
@@ -238,7 +262,8 @@ const CameraScreen = (props) => {
         userLocation.longitude,
         /*tapX=*/0.5,
         /*tapY=*/0.5,
-        imageData);
+        imageData,
+        annotation);
       return res;
     } else {
       Alert.alert(
@@ -251,20 +276,70 @@ const CameraScreen = (props) => {
     }
   };
 
-  const takePhoto = async () => {
+  const takePhoto = async (withAnnotation = false) => {
     try {
       if (!camera || !camera.current) {
-        throw new Error('Camera is null!');
+        // Gracefully handle null camera (e.g., iOS simulator)
+        console.log('Camera not available - skipping photo capture');
+        setPhototaken(true);
+        return;
       }
       const photo = await camera.current.takePhoto(takePhotoOptions);
-      const res = await uploadPhoto({
+      const photoFile = {
         uri:
           Platform.OS === 'ios'
             ? photo.path.replace('file://', '')
             : 'file://' + photo.path,
         type: 'image/jpeg',
         name: 'photo.jpg',
-      }).catch((err) => {
+      };
+      
+      if (withAnnotation) {
+        setPhotoData(photoFile);
+        setShowAnnotationModal(true);
+        setIsInAnnotationMode(true);
+      } else {
+        setPhototaken(true);
+        const res = await uploadPhoto(photoFile).catch((err) => {
+          Alert.alert(
+            t('camerascreen.notice'),
+            t('camerascreen.failedtosaveimage') + err.message,
+            [{ text: t('camerascreen.ok'), onPress: () => { } }],
+            { cancelable: false },
+          );
+        });
+        if (!res.ok) {
+          Alert.alert(
+            t('camerascreen.notice'),
+            t('camerascreen.failedtosaveimage') + res.error,
+            [{ text: t('camerascreen.ok'), onPress: () => { } }],
+            { cancelable: false },
+          );
+          return;
+        }
+      }
+    } catch (e) {
+      // Only show error for actual camera errors, not for simulator
+      if (camera && camera.current) {
+        Alert.alert(
+          t('camerascreen.notice'),
+          t('camerascreen.failedtotakephoto') + e.message,
+          [{ text: t('camerascreen.ok'), onPress: () => { } }],
+          { cancelable: false },
+        );
+      } else {
+        console.log('Camera error in simulator environment:', e.message);
+      }
+    }
+  };
+
+  const submitAnnotation = async () => {
+    if (!photoData) return;
+
+    setShowAnnotationModal(false);
+    setPhototaken(true);    
+    try {
+      const res = await uploadPhoto(photoData, annotationText).catch((err) => {
         Alert.alert(
           t('camerascreen.notice'),
           t('camerascreen.failedtosaveimage') + err.message,
@@ -272,22 +347,76 @@ const CameraScreen = (props) => {
           { cancelable: false },
         );
       });
-      if (!res.ok) {
+      
+      if (!res || !res.ok) {
         Alert.alert(
           t('camerascreen.notice'),
-          t('camerascreen.failedtosaveimage') + res.error,
+          t('camerascreen.failedtosaveimage') + (res?.error || 'Unknown error'),
           [{ text: t('camerascreen.ok'), onPress: () => { } }],
           { cancelable: false },
         );
         return;
       }
+      
+      setAnnotationText('');
+      setPhotoData(null);
+      setIsInAnnotationMode(false);
     } catch (e) {
       Alert.alert(
         t('camerascreen.notice'),
-        t('camerascreen.failedtotakephoto') + err.message,
+        t('camerascreen.failedtosaveimage') + e.message,
         [{ text: t('camerascreen.ok'), onPress: () => { } }],
         { cancelable: false },
       );
+    }
+  };
+
+  const cancelAnnotation = async () => {
+    if (photoData) {
+      try {
+        const res = await uploadPhoto(photoData, '').catch((err) => {
+          Alert.alert(
+            t('camerascreen.notice'),
+            t('camerascreen.failedtosaveimage') + err.message,
+            [{ text: t('camerascreen.ok'), onPress: () => { } }],
+            { cancelable: false },
+          );
+        });
+        
+        if (!res || !res.ok) {
+          Alert.alert(
+            t('camerascreen.notice'),
+            t('camerascreen.failedtosaveimage') + (res?.error || 'Unknown error'),
+            [{ text: t('camerascreen.ok'), onPress: () => { } }],
+            { cancelable: false },
+          );
+          return;
+        }
+        
+        setPhototaken(true);
+      } catch (e) {
+        Alert.alert(
+          t('camerascreen.notice'),
+          t('camerascreen.failedtosaveimage') + e.message,
+          [{ text: t('camerascreen.ok'), onPress: () => { } }],
+          { cancelable: false },
+        );
+      }
+    }
+    
+    setShowAnnotationModal(false);
+    setAnnotationText('');
+    setPhotoData(null);
+    setIsInAnnotationMode(false);
+  };
+
+  const handleOverlayPress = () => {
+    if (isKeyboardVisible) {
+      // If keyboard is visible, just dismiss it
+      Keyboard.dismiss();
+    } else {
+      // If keyboard is not visible, cancel the annotation
+      cancelAnnotation();
     }
   };
 
@@ -321,7 +450,7 @@ const CameraScreen = (props) => {
           <View
             style={styles.container}
           >
-            {hasPermission && !!device && isCameraActive && isCameraFocused && (
+            {hasPermission && !!device && isCameraActive && isCameraFocused && !isInAnnotationMode && (
               <ReanimatedCamera
                 ref={camera}
                 hdr={true}
@@ -332,6 +461,13 @@ const CameraScreen = (props) => {
                 photo={true}
                 torch={'off'}
                 animatedProps={animatedProps}
+              />
+            )}
+            {isInAnnotationMode && photoData && (
+              <Image
+                source={{ uri: photoData.uri }}
+                style={StyleSheet.absoluteFill}
+                resizeMode="cover"
               />
             )}
             <View style={styles.gradientContainer} pointerEvents="box-none">
@@ -371,7 +507,7 @@ const CameraScreen = (props) => {
                 scaleX={flashScale}
                 scaleY={flashScaleStatic}
               />
-              {!phototaken && hasPermission && (
+              {!phototaken && hasPermission && !isInAnnotationMode && (
                 <>
                   <View
                     style={
@@ -412,7 +548,7 @@ const CameraScreen = (props) => {
                 </View>
               )}
             </View>
-            {!phototaken && (
+            {!phototaken && !isInAnnotationMode && (
               <>
                 <View style={
                   {
@@ -425,24 +561,96 @@ const CameraScreen = (props) => {
                 }>
                   <TargetIcon />
                 </View>
-                <Pressable
-                  style={{
-                    ...styles.cameraShootButton,
-                    left: cameraShootButtonPosition.left,
-                    bottom: cameraShootButtonPosition.bottom,
-                  }}
-                  onPress={() => {
-                    takePhoto();
-                    setPhototaken(true);
-                  }}
+                <GestureDetector
+                  gesture={Gesture.Race(
+                    Gesture.Tap()
+                      .onEnd(() => {
+                        runOnJS(takePhoto)(false);
+                      }),
+                    Gesture.LongPress()
+                      .minDuration(500)
+                      .onStart(() => {
+                        runOnJS(takePhoto)(true);
+                      })
+                  )}
                 >
-                  <CameraShootIcon />
-                </Pressable>
+                  <View
+                    style={{
+                      ...styles.cameraShootButton,
+                      left: cameraShootButtonPosition.left,
+                      bottom: cameraShootButtonPosition.bottom,
+                    }}
+                  >
+                    <CameraShootIcon />
+                  </View>
+                </GestureDetector>
               </>
             )}
           </View>
         </GestureDetector>
       </GestureHandlerRootView>
+      
+      {/* Annotation Modal */}
+      <Modal
+        visible={showAnnotationModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={handleOverlayPress}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={handleOverlayPress}
+        >
+          {/* Annotation Input */}
+          {/* <TouchableOpacity
+            style={styles.annotationInputContainer}
+            activeOpacity={1}
+            onPress={() => {
+              if (isKeyboardVisible) {
+                Keyboard.dismiss();
+              }
+            }}
+          > */}
+            <Text style={styles.annotationTitle}>
+              {t('camerascreen.addannotation') || 'Add Annotation'}
+            </Text>
+            <TextInput
+              style={styles.annotationInput}
+              placeholder={t('camerascreen.annotationplaceholder') || 'Enter your annotation...'}
+              placeholderTextColor={theme.COLORS.TEXT_GREY}
+              value={annotationText}
+              onChangeText={setAnnotationText}
+              multiline={true}
+              numberOfLines={4}
+              textAlignVertical="top"
+            />
+          {/* </TouchableOpacity> */}
+          
+          {/* Buttons Container */}
+          <View style={styles.buttonsContainer}>
+            {/* Submit Button */}
+            <TouchableOpacity
+              style={styles.submitButtonContainer}
+              onPress={submitAnnotation}
+            >
+              <Text style={styles.submitButtonText}>
+                {t('camerascreen.submit') || 'Submit'}
+              </Text>
+            </TouchableOpacity>
+            
+            {/* Cancel Button */}
+            <TouchableOpacity
+              style={styles.cancelButtonContainer}
+              onPress={cancelAnnotation}
+            >
+              <Text style={styles.cancelButtonText}>
+                {t('camerascreen.cancel') || 'Cancel'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -517,6 +725,71 @@ const styles = StyleSheet.create({
     backgroundColor: '#00FF0080',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  annotationInputContainer: {
+    backgroundColor: theme.COLORS.PANEL_BG,
+    width: '100%',
+    maxWidth: 400,
+    padding: 20,
+    borderRadius: 15,
+    borderWidth: 1,
+    borderColor: theme.COLORS.BORDER,
+  },
+  annotationTitle: {
+    fontSize: 18,
+    fontFamily: fontFamilies.Default,
+    fontWeight: 'bold',
+    marginBottom: 15,
+    color: theme.COLORS.TEXT_GREY,
+    textAlign: 'center',
+  },
+  annotationInput: {
+    width: '100%',
+    height: 100,
+    borderColor: theme.COLORS.BORDER,
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 15,
+    color: theme.COLORS.TEXT_GREY,
+    fontFamily: fontFamilies.Default,
+  },
+  buttonsContainer: {
+    flexDirection: 'column',
+    width: '100%',
+    maxWidth: 400,
+    marginTop: 20,
+    gap: 15,
+  },
+  submitButtonContainer: {
+    backgroundColor: theme.COLORS.BTN_BG_BLUE,
+    padding: 18,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  submitButtonText: {
+    color: theme.COLORS.TEXT_WHITE,
+    fontWeight: 'bold',
+    fontFamily: fontFamilies.Default,
+    fontSize: 16,
+  },
+  cancelButtonContainer: {
+    backgroundColor: theme.COLORS.BTN_BG_RED,
+    padding: 18,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  cancelButtonText: {
+    color: theme.COLORS.TEXT_WHITE,
+    fontWeight: 'bold',
+    fontFamily: fontFamilies.Default,
+    fontSize: 16,
   },
 });
 

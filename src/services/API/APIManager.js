@@ -58,7 +58,7 @@ export const updatePrivacyAndTOC = async (publicAddress, privacy, agreeTOC) => {
   }
 }
 
-export const report = async (publicAddress, latitude, longitude, relX, relY, image) => {
+export const report = async (publicAddress, latitude, longitude, relX, relY, image, annotation = '') => {
   try {
     const data = {
       version: '2.0',
@@ -69,6 +69,12 @@ export const report = async (publicAddress, latitude, longitude, relX, relY, ima
       y: relY,
       image: image,
     }
+    
+    // Add annotation if provided
+    if (annotation && annotation.trim()) {
+      data.annotation = annotation.trim();
+    }
+    
     const response = await postJSONData(s.v2api.report, data);
     const ret = {
       ok: response.ok
