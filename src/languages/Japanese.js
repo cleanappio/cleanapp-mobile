@@ -29,6 +29,7 @@ export default {
       annotationplaceholder: '注釈を入力してください...',
       cancel: 'キャンセル',
       submit: '送信',
+      upload: 'アップロード',
     },
   },
 };

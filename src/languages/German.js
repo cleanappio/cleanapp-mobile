@@ -30,6 +30,7 @@ export default {
       annotationplaceholder: 'Geben Sie Ihre Anmerkung ein...',
       cancel: 'Abbrechen',
       submit: 'Einreichen',
+      upload: 'Hochladen',
     },
   },
 };

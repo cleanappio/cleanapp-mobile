@@ -28,6 +28,7 @@ export default {
       annotationplaceholder: '输入您的注释...',
       cancel: '取消',
       submit: '提交',
+      upload: '上传',
     },
   },
 };

@@ -32,6 +32,7 @@ export default {
       annotationplaceholder: 'Ingrese su anotación...',
       cancel: 'Cancelar',
       submit: 'Enviar',
+      upload: 'Subir',
     },
   },
 };

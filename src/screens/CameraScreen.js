@@ -16,6 +16,7 @@ import {
   TouchableOpacity,
   Image,
   Keyboard,
+  Linking,
 } from 'react-native';
 import {
   Gesture,
@@ -36,6 +37,8 @@ import {
 } from 'react-native-vision-camera';
 import RNFS from 'react-native-fs';
 import { useIsFocused } from '@react-navigation/native';
+import { launchImageLibrary } from 'react-native-image-picker';
+import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
 
 import { theme } from '../services/Common/theme';
 import { fontFamilies } from '../utils/fontFamilies';
@@ -123,6 +126,7 @@ const CameraScreen = (props) => {
   const [photoData, setPhotoData] = useState(null);
   const [isInAnnotationMode, setIsInAnnotationMode] = useState(false);
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+  const [hasPhotoLibraryPermission, setHasPhotoLibraryPermission] = useState(false);
   const flashAnimatedValue = useRef(new Animated.Value(0));
   const tapAnimatedValue = useRef(new Animated.Value(0.2));
   const flashScale = useState(0);
@@ -232,6 +236,52 @@ const CameraScreen = (props) => {
   useEffect(() => {
     requestPermission();
   }, []);
+
+  const checkPhotoLibraryPermission = async () => {
+    try {
+      let permission;
+      if (Platform.OS === 'ios') {
+        permission = PERMISSIONS.IOS.PHOTO_LIBRARY;
+      } else {
+        permission = PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE;
+      }
+
+      const result = await check(permission);
+      
+      switch (result) {
+        case RESULTS.UNAVAILABLE:
+          console.log('Photo library permission is not available on this device');
+          setHasPhotoLibraryPermission(false);
+          return false;
+        case RESULTS.DENIED:
+          const permissionResult = await request(permission);
+          setHasPhotoLibraryPermission(permissionResult === RESULTS.GRANTED);
+          return permissionResult === RESULTS.GRANTED;
+        case RESULTS.LIMITED:
+          setHasPhotoLibraryPermission(true);
+          return true;
+        case RESULTS.GRANTED:
+          setHasPhotoLibraryPermission(true);
+          return true;
+        case RESULTS.BLOCKED:
+          Alert.alert(
+            t('camerascreen.notice'),
+            t('camerascreen.photolibraryaccesspermissionnotgranted'),
+            [
+              { text: t('camerascreen.no'), style: 'cancel' },
+              { text: t('camerascreen.yes'), onPress: () => Linking.openSettings() }
+            ],
+            { cancelable: false },
+          );
+          setHasPhotoLibraryPermission(false);
+          return false;
+      }
+    } catch (error) {
+      console.log('Error checking photo library permission:', error);
+      setHasPhotoLibraryPermission(false);
+      return false;
+    }
+  };
 
   const takePhotoOptions = useMemo(() => ({
     photoCodec: 'jpeg',
@@ -420,6 +470,58 @@ const CameraScreen = (props) => {
     }
   };
 
+  const selectPhotoFromGallery = async () => {
+    try {
+      // Check photo library permission first
+      if (!hasPhotoLibraryPermission) {
+        const hasPermission = await checkPhotoLibraryPermission();
+        if (!hasPermission) {
+          return;
+        }
+      }
+
+      const result = await launchImageLibrary({
+        mediaType: 'photo',
+        quality: 0.8,
+        includeBase64: false,
+      });
+
+      if (result.didCancel) {
+        return;
+      }
+
+      if (result.errorCode) {
+        Alert.alert(
+          t('camerascreen.notice'),
+          'Failed to select photo: ' + result.errorMessage,
+          [{ text: t('camerascreen.ok'), onPress: () => { } }],
+          { cancelable: false },
+        );
+        return;
+      }
+
+      if (result.assets && result.assets.length > 0) {
+        const selectedPhoto = result.assets[0];
+        const photoFile = {
+          uri: selectedPhoto.uri,
+          type: selectedPhoto.type || 'image/jpeg',
+          name: selectedPhoto.fileName || 'photo.jpg',
+        };
+
+        setPhotoData(photoFile);
+        setShowAnnotationModal(true);
+        setIsInAnnotationMode(true);
+      }
+    } catch (error) {
+      Alert.alert(
+        t('camerascreen.notice'),
+        'Failed to open gallery: ' + error.message,
+        [{ text: t('camerascreen.ok'), onPress: () => { } }],
+        { cancelable: false },
+      );
+    }
+  };
+
   const pinchGestureInit = Gesture.Pinch();
   const pinchGesture = pinchGestureInit
     .onUpdate((event) => {
@@ -584,6 +686,16 @@ const CameraScreen = (props) => {
                     <CameraShootIcon />
                   </View>
                 </GestureDetector>
+                
+                {/* Upload Button */}
+                <TouchableOpacity
+                  style={styles.uploadButton}
+                  onPress={selectPhotoFromGallery}
+                >
+                  <Text style={styles.uploadButtonText}>
+                    {t('camerascreen.upload') || 'Upload'}
+                  </Text>
+                </TouchableOpacity>
               </>
             )}
           </View>
@@ -786,6 +898,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   cancelButtonText: {
+    color: theme.COLORS.TEXT_WHITE,
+    fontWeight: 'bold',
+    fontFamily: fontFamilies.Default,
+    fontSize: 16,
+  },
+  uploadButton: {
+    position: 'absolute',
+    bottom: 30,
+    right: 30,
+    width: 100,
+    height: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 25,
+    backgroundColor: theme.COLORS.BTN_BG_BLUE,
+  },
+  uploadButtonText: {
     color: theme.COLORS.TEXT_WHITE,
     fontWeight: 'bold',
     fontFamily: fontFamilies.Default,
