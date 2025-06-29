@@ -39,6 +39,7 @@ import RNFS from 'react-native-fs';
 import { useIsFocused } from '@react-navigation/native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
+import Exif from 'react-native-exif';
 
 import { theme } from '../services/Common/theme';
 import { fontFamilies } from '../utils/fontFamilies';
@@ -283,6 +284,152 @@ const CameraScreen = (props) => {
     }
   };
 
+  const clearSensitiveEXIFData = async (imageUri) => {
+    try {
+      // Create a temporary file path for the processed image
+      const tempDir = RNFS.TemporaryDirectoryPath;
+      const timestamp = Date.now();
+      const processedImagePath = `${tempDir}/processed_image_${timestamp}.jpg`;
+      
+      // Copy the original image to the temporary location
+      await RNFS.copyFile(imageUri, processedImagePath);
+      
+      // Extract EXIF data to see what we're working with
+      let exifData;
+      try {
+        exifData = await Exif.getExif(processedImagePath);
+        console.log('Original EXIF data:', exifData);
+      } catch (exifError) {
+        console.log('No EXIF data found or error reading EXIF:', exifError);
+        // If no EXIF data, return the original path
+        return imageUri;
+      }
+      
+      // If no EXIF data, return the original path
+      if (!exifData || Object.keys(exifData).length === 0) {
+        console.log('No EXIF data to clear');
+        return imageUri;
+      }
+      
+      // Define tags to clear (sensitive data)
+      const tagsToClear = [
+        // Date and time tags
+        'DateTimeOriginal',
+        'DateTimeDigitized',
+        'SubSecTimeOriginal',
+        'SubSecTimeDigitized',
+        'SubSecTime',
+        'TimeZoneOffset',
+        
+        // Location/GPS tags
+        'GPSLatitude',
+        'GPSLongitude',
+        'GPSAltitude',
+        'GPSTimeStamp',
+        'GPSDateStamp',
+        'GPSProcessingMethod',
+        'GPSAreaInformation',
+        'GPSDOP',
+        'GPSSpeed',
+        'GPSTrack',
+        'GPSImgDirection',
+        'GPSMapDatum',
+        'GPSDestLatitude',
+        'GPSDestLongitude',
+        'GPSDestBearing',
+        'GPSDestDistance',
+        'GPSDifferential',
+        'GPSLatitudeRef',
+        'GPSLongitudeRef',
+        'GPSAltitudeRef',
+        'GPSSpeedRef',
+        'GPSTrackRef',
+        'GPSImgDirectionRef',
+        'GPSDestLatitudeRef',
+        'GPSDestLongitudeRef',
+        'GPSDestBearingRef',
+        'GPSDestDistanceRef',
+        'GPSVersionID',
+        'GPSStatus',
+        'GPSMeasureMode',
+        'GPSDGPSID',
+        'GPSDGPSVersion',
+        'GPSDGPSStationID',
+        'GPSDGPSAge',
+        'GPSDGPSDate',
+        'GPSDGPSTime',
+        'GPSDGPSDistance',
+        'GPSDGPSAccuracy',
+        'GPSDGPSMethod',
+        'GPSDGPSReference',
+        'GPSDGPSReferenceStation',
+        'GPSDGPSReferenceDistance',
+        'GPSDGPSReferenceAccuracy',
+        'GPSDGPSReferenceMethod',
+        'GPSDGPSReferenceReference',
+        
+        // Camera information tags
+        'Make',
+        'Model',
+        'Software',
+        'Artist',
+        'Copyright',
+        'ImageUniqueID',
+        'CameraOwnerName',
+        'BodySerialNumber',
+        'LensSpecification',
+        'LensMake',
+        'LensModel',
+        'LensSerialNumber',
+        
+        // Other potentially sensitive tags
+        'UserComment',
+        'ImageDescription',
+        'DocumentName',
+        'PageName',
+        'XPTitle',
+        'XPComment',
+        'XPAuthor',
+        'XPSubject',
+        'XPKeywords',
+        'XPArtist',
+        'XPCopyright'
+      ];
+      
+      // Clear sensitive EXIF tags
+      let clearedTags = 0;
+      for (const tag of tagsToClear) {
+        try {
+          if (exifData[tag] !== undefined) {
+            await Exif.removeExifTag(processedImagePath, tag);
+            clearedTags++;
+            console.log(`Cleared EXIF tag: ${tag}`);
+          }
+        } catch (error) {
+          // Tag might not exist or couldn't be removed, which is fine
+          console.log(`Tag ${tag} not found or couldn't be removed:`, error.message);
+        }
+      }
+      
+      // Verify what EXIF data remains
+      let remainingExifData;
+      try {
+        remainingExifData = await Exif.getExif(processedImagePath);
+        console.log('Remaining EXIF data after clearing sensitive tags:', remainingExifData);
+      } catch (error) {
+        console.log('Error reading remaining EXIF data:', error);
+      }
+      
+      console.log(`Cleared ${clearedTags} sensitive EXIF tags from image:`, imageUri);
+      return processedImagePath;
+      
+    } catch (error) {
+      console.log('Error clearing sensitive EXIF data from image:', error);
+      // Return original URI if processing fails
+      return imageUri;
+    }
+  };
+
   const takePhotoOptions = useMemo(() => ({
     photoCodec: 'jpeg',
     enableAutoStabilization: true,
@@ -304,7 +451,11 @@ const CameraScreen = (props) => {
       }
 
       var path = file.uri;
-      const imageData = await RNFS.readFile(path, 'base64');
+      
+      // Clear sensitive EXIF data from the image before uploading
+      const processedImagePath = await clearSensitiveEXIFData(path);
+      
+      const imageData = await RNFS.readFile(processedImagePath, 'base64');
       const walletAddress = await getWalletAddress();
       const res = await report(
         walletAddress,
@@ -314,6 +465,16 @@ const CameraScreen = (props) => {
         /*tapY=*/0.5,
         imageData,
         annotation);
+      
+      // Clean up temporary processed image file
+      try {
+        if (processedImagePath !== path) {
+          await RNFS.unlink(processedImagePath);
+        }
+      } catch (cleanupError) {
+        console.log('Error cleaning up temporary file:', cleanupError);
+      }
+      
       return res;
     } else {
       Alert.alert(
