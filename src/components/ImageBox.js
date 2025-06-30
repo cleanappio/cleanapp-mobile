@@ -36,7 +36,7 @@ const ImageBox = (props) => {
         'android.permission.CAMERA',
       );
       const storagePermission = await Permissions.request(
-        'android.permission.READ_EXTERNAL_STORAGE',
+        'android.permission.READ_MEDIA_IMAGES',
       );
       if (cameraPermission === 'granted' && storagePermission === 'granted') {
         chooseImage();

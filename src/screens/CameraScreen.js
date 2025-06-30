@@ -244,7 +244,7 @@ const CameraScreen = (props) => {
       if (Platform.OS === 'ios') {
         permission = PERMISSIONS.IOS.PHOTO_LIBRARY;
       } else {
-        permission = PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE;
+        permission = PERMISSIONS.ANDROID.READ_MEDIA_IMAGES;
       }
 
       const result = await check(permission);
