@@ -238,6 +238,7 @@ const CameraScreen = (props) => {
   }, []);
 
   const checkPhotoLibraryPermission = async () => {
+    console.log('checkPhotoLibraryPermission');
     try {
       let permission;
       if (Platform.OS === 'ios') {
@@ -247,7 +248,7 @@ const CameraScreen = (props) => {
       }
 
       const result = await check(permission);
-      
+      console.log('checkPhotoLibraryPermission result', result);
       switch (result) {
         case RESULTS.UNAVAILABLE:
           console.log('Photo library permission is not available on this device');
@@ -255,6 +256,7 @@ const CameraScreen = (props) => {
           return false;
         case RESULTS.DENIED:
           const permissionResult = await request(permission);
+          console.log('checkPhotoLibraryPermission permissionResult', permissionResult);
           setHasPhotoLibraryPermission(permissionResult === RESULTS.GRANTED);
           return permissionResult === RESULTS.GRANTED;
         case RESULTS.LIMITED:
@@ -327,6 +329,7 @@ const CameraScreen = (props) => {
   };
 
   const takePhoto = async (withAnnotation = false) => {
+    console.log('takePhoto', withAnnotation);
     try {
       if (!camera || !camera.current) {
         // Gracefully handle null camera (e.g., iOS simulator)
@@ -422,38 +425,6 @@ const CameraScreen = (props) => {
   };
 
   const cancelAnnotation = async () => {
-    if (photoData) {
-      try {
-        const res = await uploadPhoto(photoData, '').catch((err) => {
-          Alert.alert(
-            t('camerascreen.notice'),
-            t('camerascreen.failedtosaveimage') + err.message,
-            [{ text: t('camerascreen.ok'), onPress: () => { } }],
-            { cancelable: false },
-          );
-        });
-        
-        if (!res || !res.ok) {
-          Alert.alert(
-            t('camerascreen.notice'),
-            t('camerascreen.failedtosaveimage') + (res?.error || 'Unknown error'),
-            [{ text: t('camerascreen.ok'), onPress: () => { } }],
-            { cancelable: false },
-          );
-          return;
-        }
-        
-        setPhototaken(true);
-      } catch (e) {
-        Alert.alert(
-          t('camerascreen.notice'),
-          t('camerascreen.failedtosaveimage') + e.message,
-          [{ text: t('camerascreen.ok'), onPress: () => { } }],
-          { cancelable: false },
-        );
-      }
-    }
-    
     setShowAnnotationModal(false);
     setAnnotationText('');
     setPhotoData(null);
@@ -471,11 +442,14 @@ const CameraScreen = (props) => {
   };
 
   const selectPhotoFromGallery = async () => {
+    console.log('selectPhotoFromGallery');
     try {
       // Check photo library permission first
       if (!hasPhotoLibraryPermission) {
+        console.log('no library access permission');
         const hasPermission = await checkPhotoLibraryPermission();
         if (!hasPermission) {
+          console.log('no library access permission 2');
           return;
         }
       }

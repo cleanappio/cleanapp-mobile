@@ -131,4 +131,21 @@ dependencies {
     } else {
         implementation jscFlavor
     }
+    
+    // Force AndroidX versions and exclude old support libraries
+    constraints {
+        implementation("androidx.core:core:1.16.0") {
+            because "Force latest AndroidX core version"
+        }
+    }
+}
+
+configurations.all {
+    resolutionStrategy {
+        force 'androidx.core:core:1.16.0'
+        exclude group: 'com.android.support', module: 'support-compat'
+        exclude group: 'com.android.support', module: 'support-v4'
+        exclude group: 'com.android.support', module: 'appcompat-v7'
+        exclude group: 'com.android.support', module: 'support-annotations'
+    }
 }
