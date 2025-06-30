@@ -238,25 +238,25 @@ const CameraScreen = (props) => {
   }, []);
 
   const checkPhotoLibraryPermission = async () => {
-    console.log('checkPhotoLibraryPermission');
     try {
       let permission;
       if (Platform.OS === 'ios') {
         permission = PERMISSIONS.IOS.PHOTO_LIBRARY;
       } else {
-        permission = PERMISSIONS.ANDROID.READ_MEDIA_IMAGES;
+        if (Platform.Version >= 33) {
+          permission = PERMISSIONS.ANDROID.READ_MEDIA_IMAGES;
+        } else {
+          permission = PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE;
+        }
       }
 
       const result = await check(permission);
-      console.log('checkPhotoLibraryPermission result', result);
       switch (result) {
         case RESULTS.UNAVAILABLE:
-          console.log('Photo library permission is not available on this device');
           setHasPhotoLibraryPermission(false);
           return false;
         case RESULTS.DENIED:
           const permissionResult = await request(permission);
-          console.log('checkPhotoLibraryPermission permissionResult', permissionResult);
           setHasPhotoLibraryPermission(permissionResult === RESULTS.GRANTED);
           return permissionResult === RESULTS.GRANTED;
         case RESULTS.LIMITED:
