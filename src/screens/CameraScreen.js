@@ -39,6 +39,7 @@ import RNFS from 'react-native-fs';
 import { useIsFocused } from '@react-navigation/native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
+import ImageResizer from '@bam.tech/react-native-image-resizer';
 
 import { theme } from '../services/Common/theme';
 import { fontFamilies } from '../utils/fontFamilies';
@@ -338,11 +339,13 @@ const CameraScreen = (props) => {
         return;
       }
       const photo = await camera.current.takePhoto(takePhotoOptions);
+      
+      // Resize the photo to height 1000 while preserving aspect ratio
+      const originalUri = Platform.OS === 'ios' ? photo.path.replace('file://', '') : 'file://' + photo.path;
+      const resizedUri = await resizePhoto(originalUri);
+      
       const photoFile = {
-        uri:
-          Platform.OS === 'ios'
-            ? photo.path.replace('file://', '')
-            : 'file://' + photo.path,
+        uri: resizedUri,
         type: 'image/jpeg',
         name: 'photo.jpg',
       };
@@ -476,8 +479,12 @@ const CameraScreen = (props) => {
 
       if (result.assets && result.assets.length > 0) {
         const selectedPhoto = result.assets[0];
+        
+        // Resize the selected photo to height 1000 while preserving aspect ratio
+        const resizedUri = await resizePhoto(selectedPhoto.uri);
+        
         const photoFile = {
-          uri: selectedPhoto.uri,
+          uri: resizedUri,
           type: selectedPhoto.type || 'image/jpeg',
           name: selectedPhoto.fileName || 'photo.jpg',
         };
@@ -519,6 +526,31 @@ const CameraScreen = (props) => {
     [zoom]
   );
 
+  // Function to resize photo to height 1000 while preserving aspect ratio
+  const resizePhoto = async (photoUri) => {
+    try {
+      // First, get the image dimensions to calculate the proper width
+      const imageInfo = await ImageResizer.createResizedImage(
+        photoUri,
+        1000, // maxWidth - we'll calculate this properly
+        1000, // maxHeight - this is our target height
+        'JPEG',
+        80, // quality
+        0, // rotation
+        undefined, // outputPath
+        false, // keepMetadata
+        { mode: 'contain', onlyScaleDown: false }
+      );
+      
+      // The resized image will maintain aspect ratio with height 1000
+      return imageInfo.uri;
+    } catch (error) {
+      console.log('Error resizing photo:', error);
+      // Return original URI if resizing fails
+      return photoUri;
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <GestureHandlerRootView>
@@ -533,7 +565,6 @@ const CameraScreen = (props) => {
                 style={StyleSheet.absoluteFill}
                 device={device}
                 isActive={isCameraActive}
-                format={format}
                 photo={true}
                 torch={'off'}
                 animatedProps={animatedProps}

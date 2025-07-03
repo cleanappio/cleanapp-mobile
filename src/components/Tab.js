@@ -4,7 +4,7 @@ import { Image, Pressable, StyleSheet, View } from 'react-native';
 import LeaderboardIcon from '../assets/ico_leaderboard.svg';
 import MapIcon from '../assets/ico_map.svg';
 import ShareIcon from '../assets/ico_share.svg'
-import BasketIcon from '../assets/ico_basket.svg';
+import MemberIcon from '../assets/ico_member.svg';
 const CleanAppIcon = require('../assets/CleanApp_Logo.png');
 
 const styles = StyleSheet.create({
@@ -35,7 +35,7 @@ function TabComponent({
           <Image source={CleanAppIcon} style={styles.centralIcon} />
         )}
         {label === 'Cache' && (
-          <BasketIcon />
+          <MemberIcon />
         )}
         {label === 'Leaderboard' && (
           <LeaderboardIcon />

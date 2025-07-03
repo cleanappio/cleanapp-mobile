@@ -1,12 +1,12 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react-native/no-inline-styles */
 import {
-  SafeAreaView,
   StatusBar,
   NativeModules,
   Platform,
 } from 'react-native';
 import React, {useEffect} from 'react';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import CreateRootNavigator from './src/index';
 import {StateProvider} from './src/services/State/State.js';
 import {initialState} from './src/services/State/InitialState.js';
@@ -30,13 +30,7 @@ import i18next from 'i18next';
 import {I18nextProvider} from 'react-i18next';
 import {MenuProvider} from 'react-native-popup-menu';
 import {ethers} from 'ethers';
-import MapboxGL from '@rnmapbox/maps';
-import Config from 'react-native-config';
 import SplashScreen from 'react-native-splash-screen';
-
-MapboxGL.setAccessToken(Config.MAPBOX_ACCESS_TOKEN ?? null);
-
-// const persistor = persistStore(store);
 
 const RootNavigator = () => {
   useEffect(() => {
@@ -138,16 +132,13 @@ const RootNavigator = () => {
   };
 
   return (
-    <>
-      <SafeAreaView style={{flex: 0, backgroundColor: theme.APP_COLOR_1}} />
-      <SafeAreaView style={{flex: 1, backgroundColor: theme.APP_COLOR_1}}>
-        <StatusBar
-          barStyle="light-content"
-          backgroundColor={theme.APP_COLOR_1}
-        />
-        <CreateRootNavigator />
-      </SafeAreaView>
-    </>
+    <SafeAreaProvider style={{flex: 1, backgroundColor: theme.APP_COLOR_1}}>
+      <StatusBar
+        barStyle="light-content"
+        backgroundColor={theme.APP_COLOR_1}
+      />
+      <CreateRootNavigator />
+    </SafeAreaProvider>
   );
 };
 

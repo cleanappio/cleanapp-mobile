@@ -10,18 +10,7 @@ buildscript {
         LoaderKit_minSdkVersion = 26
         LoaderKit_targetSdkVersion = 34
 
-        RNMapboxMapsImpl = "mapbox" 
     }
-    // subprojects { subproject ->
-    //     afterEvaluate{
-    //         if((subproject.plugins.hasPlugin('android') || subproject.plugins.hasPlugin('android-library'))) {
-    //             android {
-    //                 compileSdkVersion rootProject.ext.compileSdkVersion
-    //                 buildToolsVersion rootProject.ext.buildToolsVersion
-    //             }
-    //         }
-    //     }
-    // }
     repositories {
         google()
         mavenCentral()
@@ -36,16 +25,6 @@ buildscript {
 allprojects {
     repositories {
         google()
-        // exclusiveContent {
-        //    filter {
-        //        includeGroup "com.facebook.react"
-        //    }
-        //    forRepository {
-        //        maven {
-        //            url "$rootDir/../node_modules/react-native/android"
-        //        }
-        //    }
-        // }
 
         mavenCentral()
         mavenLocal()
@@ -60,25 +39,6 @@ allprojects {
 
         maven { url 'https://www.jitpack.io' }
         maven { url 'https://maven.google.com' }
-
-        maven {
-            url 'https://api.mapbox.com/downloads/v2/releases/maven'
-            authentication {
-                basic(BasicAuthentication)
-            }
-            credentials {
-                // Do not change the username below.
-                // This should always be `mapbox` (not your username).
-                username = 'mapbox'
-                password = ''
-
-                if (new File("${project.gradle.gradleUserHomeDir.parent}/.signing/cleanapp.properties").exists()) {
-                    Properties props = new Properties()
-                    props.load(new FileInputStream(file("${project.gradle.gradleUserHomeDir.parent}/.signing/cleanapp.properties")))
-                    password = props['mapbox.downloadsToken']
-                }
-            }
-        }
     }
     
     // Force AndroidX and exclude old support libraries for all subprojects

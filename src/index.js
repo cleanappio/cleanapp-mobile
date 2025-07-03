@@ -3,12 +3,12 @@ import 'react-native-gesture-handler';
 import React, { useEffect, useState } from 'react';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import TabComponent from './components/Tab';
 import { onboard } from './functions/onboarding';
 import { theme } from './services/Common/theme';
 import { Leaderboard } from './screens/Leaderboard';
 import CameraScreen from './screens/CameraScreen';
-import MapScreen from './screens/MapScreen';
 import CacheScreen from './screens/CacheScreen';
 import ReferralScreen from './screens/ReferralScreen';
 import { getFirstRun, getPrivacySetting, getUserName, getWalletAddress, isPrivacyAndTermsAccepted } from './services/DataManager';
@@ -17,6 +17,8 @@ import { updateOrCreateUser, updatePrivacyAndTOC } from './services/API/APIManag
 const Tab = createBottomTabNavigator();
 
 const BottomTabs = ({ navigation }) => {
+  const insets = useSafeAreaInsets();
+  
   return (
     <Tab.Navigator
       initialRouteName="Camera"
@@ -25,9 +27,14 @@ const BottomTabs = ({ navigation }) => {
         tabBarStyle: {
           alignItems: "center",
           justifyContent: "space-evenly",
-          height: 60,
+          height: 60 + insets.bottom,
           headerShown: false,
           paddingHorizontal: 30,
+          paddingBottom: insets.bottom,
+          backgroundColor: theme.APP_COLOR_1,
+          borderTopWidth: 0,
+          elevation: 0,
+          shadowOpacity: 0,
         },
         headerShown: false,
       }}
@@ -73,14 +80,6 @@ const BottomTabs = ({ navigation }) => {
           tabBarButton: (props) => (
             <TabComponent label="Referral" {...props} />
           ),
-        }}
-      />
-      <Tab.Screen
-        name="MapScreen"
-        component={MapScreen}
-        options={{
-          tabBarLabel: "Map",
-          tabBarButton: (props) => <TabComponent label="Map" {...props} />,
         }}
       />
     </Tab.Navigator>
