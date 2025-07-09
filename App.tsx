@@ -1,5 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react-native/no-inline-styles */
+import 'react-native-screens';
+import { enableScreens } from 'react-native-screens';
 import {
   StatusBar,
   NativeModules,
@@ -31,6 +33,8 @@ import {I18nextProvider} from 'react-i18next';
 import {MenuProvider} from 'react-native-popup-menu';
 import {ethers} from 'ethers';
 import SplashScreen from 'react-native-splash-screen';
+
+enableScreens();
 
 const RootNavigator = () => {
   useEffect(() => {

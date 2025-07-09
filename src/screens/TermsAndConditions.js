@@ -1,5 +1,6 @@
 import React, { useTransition } from 'react';
-import { Modal, Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { theme } from '../services/Common/theme';
 import { ScrollView, GestureHandlerRootView } from 'react-native-gesture-handler';
 import { fontFamilies } from '../utils/fontFamilies';
@@ -15,7 +16,7 @@ export const TermsAndConditions = ({ isVisible, setIsVisible }) => {
       transparent={true}
       visible={isVisible}
     >
-      <SafeAreaView style={styles.frameView}>
+      <SafeAreaView style={styles.frameView} edges={['top', 'left', 'right', 'bottom']}>
         <GestureHandlerRootView>
           <ScrollView style={styles.contentView}>
             <HTMLView style={styles.contentText} value={t('privacy.content')} />

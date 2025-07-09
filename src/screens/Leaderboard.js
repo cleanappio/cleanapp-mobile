@@ -11,6 +11,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { FlatList, GestureHandlerRootView } from 'react-native-gesture-handler';
 import { theme } from '../services/Common/theme';
 import { fontFamilies } from '../utils/fontFamilies';
@@ -118,7 +119,7 @@ export const Leaderboard = (props) => {
   };
 
   return (
-    <View style={{ flex: 1 }}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <View style={styles.container}>
         <View style={{ marginTop: 25 }}>
           <View style={{ ...styles.card, paddingHorizontal: 0 }}>
@@ -214,11 +215,15 @@ export const Leaderboard = (props) => {
 
         {selectedIndex === 0 && <LeaderboardPlayers />}
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: theme.COLORS.BG,
+  },
   container: {
     flex: 1,
     backgroundColor: theme.COLORS.BG,

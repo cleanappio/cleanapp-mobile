@@ -144,6 +144,9 @@ export default {
       cancel: 'Cancel',
       submit: 'Submit',
       upload: 'Upload',
+      nocameraavailable: 'No camera available on this device',
+      cameranotready: 'Camera is not ready',
+      retry: 'Retry',
     },
     cachescreen: {
       copiedtoclipboard: 'Copied to clipboard',

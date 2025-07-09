@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
-import { Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { generateReferralUrl } from '../functions/referral';
 import { theme } from '../services/Common/theme';
 import { fontFamilies } from '../utils/fontFamilies';
@@ -34,7 +35,7 @@ const ReferralScreen = (props) => {
   );
 
   return (
-    <SafeAreaView style={styles.centeredView}>
+    <SafeAreaView style={styles.centeredView} edges={['top', 'left', 'right']}>
       <View style={styles.centeredView}>
         <View style={{...styles.row, marginTop: 30, marginHorizontal: 30}}>
           <Text style={styles.txt24}>{t('referral.title')}</Text>

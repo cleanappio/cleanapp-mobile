@@ -1,5 +1,7 @@
 /* eslint-disable react-native/no-inline-styles */
 import 'react-native-gesture-handler';
+import 'react-native-screens';
+import { enableScreens } from 'react-native-screens';
 import React, { useEffect, useState } from 'react';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -11,8 +13,11 @@ import { Leaderboard } from './screens/Leaderboard';
 import CameraScreen from './screens/CameraScreen';
 import CacheScreen from './screens/CacheScreen';
 import ReferralScreen from './screens/ReferralScreen';
+import MapScreen from './screens/MapScreen';
 import { getFirstRun, getPrivacySetting, getUserName, getWalletAddress, isPrivacyAndTermsAccepted } from './services/DataManager';
 import { updateOrCreateUser, updatePrivacyAndTOC } from './services/API/APIManager';
+
+enableScreens();
 
 const Tab = createBottomTabNavigator();
 
@@ -79,6 +84,16 @@ const BottomTabs = ({ navigation }) => {
           tabBarLabel: "Referral",
           tabBarButton: (props) => (
             <TabComponent label="Referral" {...props} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Map"
+        component={MapScreen}
+        options={{
+          tabBarLabel: "Map",
+          tabBarButton: (props) => (
+            <TabComponent label="Map" {...props} />
           ),
         }}
       />

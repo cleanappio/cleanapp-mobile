@@ -7,7 +7,6 @@ import {
   Dimensions,
   Platform,
   Pressable,
-  SafeAreaView,
   StyleSheet,
   Text,
   View,
@@ -18,6 +17,7 @@ import {
   Keyboard,
   Linking,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   Gesture,
   GestureDetector,
@@ -175,31 +175,61 @@ const CameraScreen = (props) => {
   });
 
   const device = useCameraDevice('back');
-  const minCameraZoom = device ? device.minZoom : 1.0;
-  const maxCameraZoom = device ? device.maxZoom : (Platform.OS === 'ios' ? 123 : 6);
+  const frontDevice = useCameraDevice('front');
+  
+  // Fallback logic for Android 9 devices where back camera might be undefined
+  const backDevice = React.useMemo(() => {
+    console.log('Camera device detection:', {
+      backDevice: device,
+      frontDevice: frontDevice,
+      platform: Platform.OS,
+      version: Platform.Version
+    });
+    
+    if (device) {
+      console.log('Using back camera device');
+      return device;
+    }
+    
+    // If back device is not available, try to get any available device
+    if (Platform.OS === 'android') {
+      // For Android, we can try to get the first available device
+      // This is a workaround for Android 9 devices where useCameraDevice('back') might fail
+      if (frontDevice) {
+        console.log('Back camera not available, using front camera as fallback');
+        return frontDevice;
+      }
+      
+      console.log('No camera devices available');
+      return null;
+    }
+    
+    return null;
+  }, [device, frontDevice]);
+
+  // Enhanced camera availability check
+  const isCameraAvailable = React.useMemo(() => {
+    const available = hasPermission && !!backDevice && isCameraActive && isCameraFocused && !isInAnnotationMode;
+    console.log('available', available);
+    console.log('Camera availability check:', {
+      hasPermission,
+      hasDevice: !!backDevice,
+      isCameraActive,
+      isCameraFocused,
+      isInAnnotationMode,
+      available
+    });
+    return available;
+  }, [hasPermission, backDevice, isCameraActive, isCameraFocused, isInAnnotationMode]);
+
+  const minCameraZoom = backDevice ? backDevice.minZoom : 1.0;
+  const maxCameraZoom = backDevice ? backDevice.maxZoom : (Platform.OS === 'ios' ? 123 : 6);
 
   const minZoom = 1.0;
   const maxZoom = (Platform.OS === 'ios' ? 50.0 : 5.0);
-  const zoom = useSharedValue(device ? device.neutralZoom : minZoom);
+  const zoom = useSharedValue(backDevice ? backDevice.neutralZoom : minZoom);
   const zoomOffset = useSharedValue(minZoom);
   const currZoomOffset = useSharedValue(minZoom);
-
-  const format = React.useMemo(() => {
-    const desiredWidth = 720;
-    const desiredHeight = 1280;
-    if (device) {
-      for (let index = 0; index < device.formats.length; index++) {
-        const format = device.formats[index];
-        if (
-          format.videoWidth === desiredWidth &&
-          format.videoHeight === desiredHeight
-        ) {
-          return format;
-        }
-      }
-    }
-    return undefined;
-  }, []);
 
   const cameraShootButtonPosition = React.useMemo(() => {
     const left = Dimensions.get('screen').width / 2 - styles.cameraShootButton.width / 2;
@@ -552,18 +582,18 @@ const CameraScreen = (props) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <GestureHandlerRootView>
         <GestureDetector gesture={allGestures}>
           <View
             style={styles.container}
           >
-            {hasPermission && !!device && isCameraActive && isCameraFocused && !isInAnnotationMode && (
+            {isCameraAvailable && (
               <ReanimatedCamera
                 ref={camera}
                 hdr={true}
                 style={StyleSheet.absoluteFill}
-                device={device}
+                device={backDevice}
                 isActive={isCameraActive}
                 photo={true}
                 torch={'off'}

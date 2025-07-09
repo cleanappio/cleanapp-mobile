@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { Linking, Modal, Pressable, ScrollView, StyleSheet, View, Text, TextInput, ToastAndroid, Alert, Platform } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { fontFamilies } from '../utils/fontFamilies';
 import { theme } from '../services/Common/theme';
 import Ripple from '../components/Ripple';
@@ -391,7 +392,7 @@ const CacheScreen = (props) => {
   };
 
   return (
-    <>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.container}>
           {/** balance */}
@@ -548,11 +549,15 @@ const CacheScreen = (props) => {
           setCacheSettingOpened(false);
         }}
       />
-    </>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: theme.COLORS.BG,
+  },
   container: {
     flex: 1,
     paddingHorizontal: 16,

@@ -17,6 +17,7 @@ import {
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import Ripple from '../components/Ripple';
 import { GetOrCreateLocalWallet } from '../functions/login';
@@ -379,12 +380,13 @@ export const Onboarding = ({completeOnboarding = () => {}}) => {
   };
 
   return (
-    <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'position' : null}>
-        <ImageBackground
-          source={background}
-          resizeMode={'cover'}
-          style={styles.background}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+      <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'position' : null}>
+          <ImageBackground
+            source={background}
+            resizeMode={'cover'}
+            style={styles.background}>
           <View style={styles.container}>
             <View style={styles.buttonBlock}>
               <IndicatorView step={step} />
@@ -411,10 +413,15 @@ export const Onboarding = ({completeOnboarding = () => {}}) => {
         </ImageBackground>
       </KeyboardAvoidingView>
     </TouchableWithoutFeedback>
+    </SafeAreaView>
   );
 };
 
 export const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: theme.COLORS.BG,
+  },
   container: {
     flex: 1,
     width: '100%',
