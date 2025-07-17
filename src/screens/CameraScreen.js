@@ -347,6 +347,10 @@ const CameraScreen = (props) => {
         /*tapY=*/0.5,
         imageData,
         annotation);
+      
+      // Clean up the image file after upload
+      await cleanupImageFile(path);
+      
       return res;
     } else {
       Alert.alert(
@@ -361,6 +365,9 @@ const CameraScreen = (props) => {
 
   const takePhoto = async (withAnnotation = false) => {
     console.log('takePhoto', withAnnotation);
+    let originalPhotoPath = null;
+    let resizedPhotoPath = null;
+    
     try {
       if (!camera || !camera.current) {
         // Gracefully handle null camera (e.g., iOS simulator)
@@ -372,7 +379,9 @@ const CameraScreen = (props) => {
       
       // Resize the photo to height 1000 while preserving aspect ratio
       const originalUri = Platform.OS === 'ios' ? photo.path.replace('file://', '') : 'file://' + photo.path;
+      originalPhotoPath = originalUri;
       const resizedUri = await resizePhoto(originalUri);
+      resizedPhotoPath = resizedUri;
       
       const photoFile = {
         uri: resizedUri,
@@ -416,6 +425,11 @@ const CameraScreen = (props) => {
       } else {
         console.log('Camera error in simulator environment:', e.message);
       }
+    } finally {
+      // Clean up original photo file if it exists and is different from resized
+      if (originalPhotoPath && originalPhotoPath !== resizedPhotoPath) {
+        await cleanupImageFile(originalPhotoPath);
+      }
     }
   };
 
@@ -458,6 +472,11 @@ const CameraScreen = (props) => {
   };
 
   const cancelAnnotation = async () => {
+    // Clean up the photo file if it exists
+    if (photoData && photoData.uri) {
+      await cleanupImageFile(photoData.uri);
+    }
+    
     setShowAnnotationModal(false);
     setAnnotationText('');
     setPhotoData(null);
@@ -476,6 +495,9 @@ const CameraScreen = (props) => {
 
   const selectPhotoFromGallery = async () => {
     console.log('selectPhotoFromGallery');
+    let originalPhotoPath = null;
+    let resizedPhotoPath = null;
+    
     try {
       // Check photo library permission first
       if (!hasPhotoLibraryPermission) {
@@ -509,9 +531,11 @@ const CameraScreen = (props) => {
 
       if (result.assets && result.assets.length > 0) {
         const selectedPhoto = result.assets[0];
+        originalPhotoPath = selectedPhoto.uri;
         
         // Resize the selected photo to height 1000 while preserving aspect ratio
         const resizedUri = await resizePhoto(selectedPhoto.uri);
+        resizedPhotoPath = resizedUri;
         
         const photoFile = {
           uri: resizedUri,
@@ -530,6 +554,11 @@ const CameraScreen = (props) => {
         [{ text: t('camerascreen.ok'), onPress: () => { } }],
         { cancelable: false },
       );
+    } finally {
+      // Clean up original photo file if it exists and is different from resized
+      if (originalPhotoPath && originalPhotoPath !== resizedPhotoPath) {
+        await cleanupImageFile(originalPhotoPath);
+      }
     }
   };
 
@@ -578,6 +607,16 @@ const CameraScreen = (props) => {
       console.log('Error resizing photo:', error);
       // Return original URI if resizing fails
       return photoUri;
+    }
+  };
+
+  // Function to clean up image files
+  const cleanupImageFile = async (filePath) => {
+    try {
+      await RNFS.unlink(filePath);
+      console.log('Image file cleaned up successfully:', filePath);
+    } catch (cleanupError) {
+      console.log('Failed to clean up image file:', cleanupError);
     }
   };
 
