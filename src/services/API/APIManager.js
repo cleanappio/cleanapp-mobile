@@ -152,7 +152,7 @@ export const readReport = async (publicAddress, reportSeq) => {
     }
     return ret;
   } catch (err) {
-    console.log(err);
+    return null;
   }
 }
 

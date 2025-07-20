@@ -179,15 +179,8 @@ const CameraScreen = (props) => {
   
   // Fallback logic for Android 9 devices where back camera might be undefined
   const backDevice = React.useMemo(() => {
-    console.log('Camera device detection:', {
-      backDevice: device,
-      frontDevice: frontDevice,
-      platform: Platform.OS,
-      version: Platform.Version
-    });
     
     if (device) {
-      console.log('Using back camera device');
       return device;
     }
     
@@ -196,11 +189,9 @@ const CameraScreen = (props) => {
       // For Android, we can try to get the first available device
       // This is a workaround for Android 9 devices where useCameraDevice('back') might fail
       if (frontDevice) {
-        console.log('Back camera not available, using front camera as fallback');
         return frontDevice;
       }
       
-      console.log('No camera devices available');
       return null;
     }
     
@@ -210,15 +201,6 @@ const CameraScreen = (props) => {
   // Enhanced camera availability check
   const isCameraAvailable = React.useMemo(() => {
     const available = hasPermission && !!backDevice && isCameraActive && isCameraFocused && !isInAnnotationMode;
-    console.log('available', available);
-    console.log('Camera availability check:', {
-      hasPermission,
-      hasDevice: !!backDevice,
-      isCameraActive,
-      isCameraFocused,
-      isInAnnotationMode,
-      available
-    });
     return available;
   }, [hasPermission, backDevice, isCameraActive, isCameraFocused, isInAnnotationMode]);
 
@@ -310,7 +292,6 @@ const CameraScreen = (props) => {
           return false;
       }
     } catch (error) {
-      console.log('Error checking photo library permission:', error);
       setHasPhotoLibraryPermission(false);
       return false;
     }
@@ -364,14 +345,12 @@ const CameraScreen = (props) => {
   };
 
   const takePhoto = async (withAnnotation = false) => {
-    console.log('takePhoto', withAnnotation);
     let originalPhotoPath = null;
     let resizedPhotoPath = null;
     
     try {
       if (!camera || !camera.current) {
         // Gracefully handle null camera (e.g., iOS simulator)
-        console.log('Camera not available - skipping photo capture');
         setPhototaken(true);
         return;
       }
@@ -422,8 +401,6 @@ const CameraScreen = (props) => {
           [{ text: t('camerascreen.ok'), onPress: () => { } }],
           { cancelable: false },
         );
-      } else {
-        console.log('Camera error in simulator environment:', e.message);
       }
     } finally {
       // Clean up original photo file if it exists and is different from resized
@@ -494,17 +471,14 @@ const CameraScreen = (props) => {
   };
 
   const selectPhotoFromGallery = async () => {
-    console.log('selectPhotoFromGallery');
     let originalPhotoPath = null;
     let resizedPhotoPath = null;
     
     try {
       // Check photo library permission first
       if (!hasPhotoLibraryPermission) {
-        console.log('no library access permission');
         const hasPermission = await checkPhotoLibraryPermission();
         if (!hasPermission) {
-          console.log('no library access permission 2');
           return;
         }
       }
@@ -604,7 +578,6 @@ const CameraScreen = (props) => {
       // The resized image will maintain aspect ratio with height 1000
       return imageInfo.uri;
     } catch (error) {
-      console.log('Error resizing photo:', error);
       // Return original URI if resizing fails
       return photoUri;
     }
@@ -614,7 +587,6 @@ const CameraScreen = (props) => {
   const cleanupImageFile = async (filePath) => {
     try {
       await RNFS.unlink(filePath);
-      console.log('Image file cleaned up successfully:', filePath);
     } catch (cleanupError) {
       console.log('Failed to clean up image file:', cleanupError);
     }
