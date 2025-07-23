@@ -28,5 +28,5 @@ export const generateReferralUrl = async() => {
   if (!response.ok) {
     return null;
   }
-  return `${getUrls().webUrl}/ref?refid=${response.refid}`
+  return `${getUrls().webUrl}/download?refid=${response.refid}`
 }
