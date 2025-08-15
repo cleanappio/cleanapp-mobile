@@ -2052,11 +2052,11 @@ PODS:
   - SocketRocket (0.7.1)
   - SRSRadialGradient (1.2.1):
     - React
-  - VisionCamera (4.7.0):
-    - VisionCamera/Core (= 4.7.0)
-    - VisionCamera/React (= 4.7.0)
-  - VisionCamera/Core (4.7.0)
-  - VisionCamera/React (4.7.0):
+  - VisionCamera (4.7.1):
+    - VisionCamera/Core (= 4.7.1)
+    - VisionCamera/React (= 4.7.1)
+  - VisionCamera/Core (4.7.1)
+  - VisionCamera/React (4.7.1):
     - React-Core
   - Yoga (0.0.0)
 
@@ -2435,7 +2435,7 @@ SPEC CHECKSUMS:
   RNVectorIcons: 14a0c42f16a26bcc3e79a19bc1c5718284b1d469
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   SRSRadialGradient: db3a6ea7d867854c9f4c3b0c5b3167332a65f8d8
-  VisionCamera: b3c0cf261b9ad1ac7d60ec292d252cf3368b801e
+  VisionCamera: 0ecfede218b2d989be3d504270b71f3d2384d95d
   Yoga: 66a9a23a82dd4081b393babe509967097759b3d6
 
 PODFILE CHECKSUM: b020c9e86b6975a6908f208669a2c40e42c089ae
