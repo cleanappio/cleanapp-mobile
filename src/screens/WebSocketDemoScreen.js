@@ -60,32 +60,27 @@ const WebSocketDemoScreen = () => {
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}>
         {/* WebSocket Status */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Connection Status</Text>
-          <WebSocketStatus
-            url={serverUrl}
-            onConnect={handleConnect}
-            onDisconnect={handleDisconnect}
-            isConnected={isConnected}
-            connectionStatus={connectionStatus}
-            isReconnecting={isReconnecting}
-            error={error}
-            stats={stats}
-            connect={connect}
-            disconnect={disconnect}
-          />
-        </View>
+        <WebSocketStatus
+          url={serverUrl}
+          onConnect={handleConnect}
+          onDisconnect={handleDisconnect}
+          isConnected={isConnected}
+          connectionStatus={connectionStatus}
+          isReconnecting={isReconnecting}
+          error={error}
+          stats={stats}
+          connect={connect}
+          disconnect={disconnect}
+        />
 
         {/* WebSocket Messages */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Real-time Messages</Text>
-          <WebSocketMessages
-            url={serverUrl}
-            isConnected={isConnected}
-            subscribe={subscribe}
-            unsubscribe={unsubscribe}
-          />
-        </View>
+
+        <WebSocketMessages
+          url={serverUrl}
+          isConnected={isConnected}
+          subscribe={subscribe}
+          unsubscribe={unsubscribe}
+        />
       </ScrollView>
     </SafeAreaView>
   );
