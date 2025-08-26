@@ -33,6 +33,7 @@ import {I18nextProvider} from 'react-i18next';
 import {MenuProvider} from 'react-native-popup-menu';
 import {ethers} from 'ethers';
 import SplashScreen from 'react-native-splash-screen';
+import notifee from '@notifee/react-native';
 
 enableScreens();
 
@@ -151,7 +152,8 @@ const App = () => {
 
   useEffect(() => {
     SplashScreen.hide();
-  })
+    notifee.requestPermission();
+  });
   return (
     <Provider store={store}>
       <StateProvider initialState={initialState} reducer={reducer}>
