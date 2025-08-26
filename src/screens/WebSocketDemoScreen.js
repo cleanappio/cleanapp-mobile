@@ -16,18 +16,6 @@ const WebSocketDemoScreen = () => {
   const [serverUrl, setServerUrl] = useState(
     'wss://live.cleanapp.io/api/v3/reports/listen',
   );
-  const [messageTypes, setMessageTypes] = useState([
-    'chat',
-    'notification',
-    'update',
-  ]);
-  const [customMessageType, setCustomMessageType] = useState('');
-
-  // Render counter removed - was causing noise in logs
-
-  // Stabilize messageTypes array to prevent unnecessary re-renders
-  const stableMessageTypes = useMemo(() => messageTypes, [messageTypes]);
-
   // Centralized WebSocket connection
   const {
     connectionStatus,
@@ -56,43 +44,13 @@ const WebSocketDemoScreen = () => {
   const handleConnect = () => {
     console.log('🖥️ [WebSocketDemoScreen] handleConnect() called');
     console.log('🖥️ [WebSocketDemoScreen] Server URL:', serverUrl);
+    connect();
   };
 
   const handleDisconnect = () => {
     console.log('🖥️ [WebSocketDemoScreen] handleDisconnect() called');
     console.log('🖥️ [WebSocketDemoScreen] Server URL:', serverUrl);
-  };
-
-  const addMessageType = () => {
-    if (
-      customMessageType.trim() &&
-      !messageTypes.includes(customMessageType.trim())
-    ) {
-      setMessageTypes([...messageTypes, customMessageType.trim()]);
-      setCustomMessageType('');
-    }
-  };
-
-  const removeMessageType = typeToRemove => {
-    Alert.alert(
-      'Remove Message Type',
-      `Are you sure you want to remove "${typeToRemove}"?`,
-      [
-        {text: 'Cancel', style: 'cancel'},
-        {
-          text: 'Remove',
-          style: 'destructive',
-          onPress: () => {
-            setMessageTypes(messageTypes.filter(type => type !== typeToRemove));
-          },
-        },
-      ],
-    );
-  };
-
-  const resetToDefaults = () => {
-    setMessageTypes(['chat', 'notification', 'update']);
-    setServerUrl(Constants.expoConfig?.extra?.devWebsocketUrl);
+    disconnect();
   };
 
   return (
@@ -122,7 +80,6 @@ const WebSocketDemoScreen = () => {
           <Text style={styles.sectionTitle}>Real-time Messages</Text>
           <WebSocketMessages
             url={serverUrl}
-            messageTypes={stableMessageTypes}
             isConnected={isConnected}
             subscribe={subscribe}
             unsubscribe={unsubscribe}

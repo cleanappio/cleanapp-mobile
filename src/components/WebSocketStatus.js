@@ -88,13 +88,6 @@ const WebSocketStatus = ({
 
       {error && <Text style={styles.errorText}>Error: {error}</Text>}
 
-      <View style={styles.statsContainer}>
-        <Text style={styles.statsText}>
-          Queue: {stats.messageQueueSize || 0} | Subscriptions:{" "}
-          {stats.subscriptionCount || 0}
-        </Text>
-      </View>
-
       <View style={styles.buttonContainer}>
         {!isConnected ? (
           <TouchableOpacity
@@ -122,7 +115,7 @@ const WebSocketStatus = ({
 const styles = StyleSheet.create({
   container: {
     padding: 16,
-    backgroundColor: theme.COLORS.BG || "#FFFFFF",
+    backgroundColor: theme.COLORS.BG,
     borderRadius: 8,
     marginVertical: 8,
     shadowColor: "#000",
@@ -145,7 +138,7 @@ const styles = StyleSheet.create({
   statusText: {
     fontSize: 16,
     fontWeight: "600",
-    color: theme.COLORS.TEXT || "#333333",
+    color: theme.COLORS.TEXT || "#ffffff",
   },
   errorText: {
     color: theme.COLORS.ERROR || "#F44336",

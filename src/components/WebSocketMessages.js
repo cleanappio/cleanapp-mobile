@@ -10,7 +10,7 @@ import { theme } from "../services/Common/theme";
 
 const WebSocketMessages = ({
   url,
-  messageTypes = [],
+  // messageTypes = [],
   isConnected,
   subscribe,
   unsubscribe,
@@ -24,7 +24,7 @@ const WebSocketMessages = ({
     console.log("📱 [WebSocketMessages] useEffect triggered:", {
       isConnected,
       url,
-      messageTypes,
+      // messageTypes,
       hasSubscribe: !!subscribe,
       hasUnsubscribe: !!unsubscribe,
       subscribeType: typeof subscribe,
@@ -33,9 +33,9 @@ const WebSocketMessages = ({
       // Add detailed dependency tracking
       isConnectedValue: isConnected,
       urlValue: url,
-      messageTypesValue: messageTypes,
-      messageTypesLength: messageTypes.length,
-      messageTypesString: JSON.stringify(messageTypes),
+      // messageTypesValue: messageTypes,
+      // messageTypesLength: messageTypes.length,
+      // messageTypesString: JSON.stringify(messageTypes),
     });
 
     if (isConnected && subscribe && unsubscribe) {
@@ -101,7 +101,7 @@ const WebSocketMessages = ({
         "📱 [WebSocketMessages] WebSocket not connected or missing functions, skipping subscription"
       );
     }
-  }, [isConnected, url, messageTypes]); // Restored dependencies now that re-render issue is fixed
+  }, [isConnected, url]); // Restored dependencies now that re-render issue is fixed
 
   // Filter messages based on selected type
   useEffect(() => {
