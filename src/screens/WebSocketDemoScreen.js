@@ -13,8 +13,9 @@ import {useWebSocket} from '../hooks/useWebSocket';
 import {theme} from '../services/Common/theme';
 
 const WebSocketDemoScreen = () => {
+  // TODO: Handle prod vs dev env
   const [serverUrl, setServerUrl] = useState(
-    'wss://live.cleanapp.io/api/v3/reports/listen',
+    'wss://devlive.cleanapp.io/api/v3/reports/listen',
   );
   // Centralized WebSocket connection
   const {
