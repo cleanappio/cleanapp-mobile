@@ -10,6 +10,7 @@ import {theme} from '../services/Common/theme';
 import notifee from '@notifee/react-native';
 import {getLocation} from '../functions/geolocation';
 import webSocketService from '../services/WebSocketService';
+import {RADIUS_IN_KILOMETERS} from '../utils/constants';
 
 const WebSocketMessages = ({
   url,
@@ -405,7 +406,7 @@ const WebSocketMessages = ({
         // Calculate the distance between the user's location and the report's location
         const distance = calculateDistance(location, reportLocation);
         console.log('Distance:', distance);
-        if (distance < 100) {
+        if (distance < RADIUS_IN_KILOMETERS) {
           isInRange = true;
         }
       } else {

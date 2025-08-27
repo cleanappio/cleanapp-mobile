@@ -1,0 +1,1 @@
+export const RADIUS_IN_KILOMETERS = 1;
