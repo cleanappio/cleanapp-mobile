@@ -37,6 +37,7 @@ import {
   setUserName,
 } from '../services/DataManager';
 import {useTranslation} from 'react-i18next';
+import PermissionRequest from '../components/PermissionRequest';
 import {
   getBlockchainLink,
   getRewardStats,
@@ -533,6 +534,7 @@ const CacheScreen = props => {
               </View>
             </View>
           </View>
+          <PermissionRequest />
           <WebSocketDemoScreen />
         </View>
       </ScrollView>

@@ -63,18 +63,7 @@ const PermissionRequest = () => {
     </TouchableOpacity>
   );
 
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>App Permissions</Text>
-      {renderPermissionButton('location', permissions.location)}
-      {renderPermissionButton('camera', permissions.camera)}
-      {renderPermissionButton('notifications', permissions.notifications)}
-
-      {permissions.allGranted && (
-        <Text style={styles.successText}>All permissions granted! 🎉</Text>
-      )}
-    </View>
-  );
+  return <></>;
 };
 
 const styles = StyleSheet.create({

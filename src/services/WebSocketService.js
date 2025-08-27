@@ -16,7 +16,7 @@ class EventEmitter {
     if (!this.events[event]) return this;
 
     if (listener) {
-      this.events[event] = this.events[event].filter((l) => l !== listener);
+      this.events[event] = this.events[event].filter(l => l !== listener);
     } else {
       delete this.events[event];
     }
@@ -26,7 +26,7 @@ class EventEmitter {
   emit(event, ...args) {
     if (!this.events[event]) return false;
 
-    this.events[event].forEach((listener) => {
+    this.events[event].forEach(listener => {
       try {
         listener(...args);
       } catch (error) {
@@ -70,12 +70,12 @@ class WebSocketService extends EventEmitter {
    * @param {Object} options - Connection options
    */
   connect(url, options = {}) {
-    console.log("🔌 [WebSocketService] connect() called with URL:", url);
-    console.log("🔌 [WebSocketService] connect() options:", options);
+    console.log('🔌 [WebSocketService] connect() called with URL:', url);
+    console.log('🔌 [WebSocketService] connect() options:', options);
 
     if (this.isConnected || this.isReconnecting) {
       console.log(
-        "🔌 [WebSocketService] Already connected or reconnecting, skipping connection"
+        '🔌 [WebSocketService] Already connected or reconnecting, skipping connection',
       );
       return Promise.resolve();
     }
@@ -91,7 +91,7 @@ class WebSocketService extends EventEmitter {
       heartbeatTimeout = 5000,
     } = options;
 
-    console.log("🔌 [WebSocketService] Connection parameters:", {
+    console.log('🔌 [WebSocketService] Connection parameters:', {
       url: this.url,
       protocols,
       headers,
@@ -103,15 +103,15 @@ class WebSocketService extends EventEmitter {
 
     return new Promise((resolve, reject) => {
       try {
-        console.log("🔌 [WebSocketService] Creating new WebSocket instance...");
+        console.log('🔌 [WebSocketService] Creating new WebSocket instance...');
         this.ws = new WebSocket(url, protocols);
 
         // Set up event handlers
         this.ws.onopen = () => {
           console.log(
-            "🔌 [WebSocketService] WebSocket connection opened successfully!"
+            '🔌 [WebSocketService] WebSocket connection opened successfully!',
           );
-          console.log("🔌 [WebSocketService] Connection details:", {
+          console.log('🔌 [WebSocketService] Connection details:', {
             url: this.ws.url,
             protocol: this.ws.protocol,
             readyState: this.ws.readyState,
@@ -132,16 +132,16 @@ class WebSocketService extends EventEmitter {
           this.processMessageQueue();
 
           // Emit connection event
-          this.emit("connected", { url, timestamp: Date.now() });
+          this.emit('connected', {url, timestamp: Date.now()});
 
           console.log(
-            "🔌 [WebSocketService] Connection established and ready for messages"
+            '🔌 [WebSocketService] Connection established and ready for messages',
           );
           resolve();
         };
 
-        this.ws.onmessage = (event) => {
-          console.log("📨 [WebSocketService] Raw message received:", {
+        this.ws.onmessage = event => {
+          console.log('📨 [WebSocketService] Raw message received:', {
             data: event.data,
             type: event.type,
             timestamp: new Date().toISOString(),
@@ -149,37 +149,37 @@ class WebSocketService extends EventEmitter {
 
           try {
             console.log(
-              "📨 [WebSocketService] Attempting to parse message as JSON..."
+              '📨 [WebSocketService] Attempting to parse message as JSON...',
             );
             const data = JSON.parse(event.data);
             console.log(
-              "📨 [WebSocketService] Successfully parsed JSON message:",
+              '📨 [WebSocketService] Successfully parsed JSON message:',
               {
                 parsedData: data,
                 dataType: typeof data,
-                hasType: "type" in data,
-                hasPayload: "payload" in data,
-                hasData: "data" in data,
+                hasType: 'type' in data,
+                hasPayload: 'payload' in data,
+                hasData: 'data' in data,
                 keys: Object.keys(data),
-              }
+              },
             );
 
             // Handle double-encoded JSON from Go backend
-            if (data.data && typeof data.data === "string") {
+            if (data.data && typeof data.data === 'string') {
               console.log(
-                "📨 [WebSocketService] Detected double-encoded JSON, parsing inner data..."
+                '📨 [WebSocketService] Detected double-encoded JSON, parsing inner data...',
               );
               try {
                 const innerData = JSON.parse(data.data);
                 console.log(
-                  "📨 [WebSocketService] Successfully parsed inner JSON:",
-                  innerData
+                  '📨 [WebSocketService] Successfully parsed inner JSON:',
+                  innerData,
                 );
                 this.handleMessage(innerData);
               } catch (innerError) {
                 console.error(
-                  "❌ [WebSocketService] Failed to parse inner JSON:",
-                  innerError
+                  '❌ [WebSocketService] Failed to parse inner JSON:',
+                  innerError,
                 );
                 // Fall back to original data
                 this.handleMessage(data);
@@ -189,23 +189,23 @@ class WebSocketService extends EventEmitter {
             }
           } catch (error) {
             console.error(
-              "❌ [WebSocketService] Error parsing WebSocket message:",
-              error
+              '❌ [WebSocketService] Error parsing WebSocket message:',
+              error,
             );
             console.error(
-              "❌ [WebSocketService] Raw message that failed to parse:",
-              event.data
+              '❌ [WebSocketService] Raw message that failed to parse:',
+              event.data,
             );
-            this.emit("error", {
-              error: "Invalid message format",
+            this.emit('error', {
+              error: 'Invalid message format',
               data: event.data,
               parseError: error.message,
             });
           }
         };
 
-        this.ws.onclose = (event) => {
-          console.log("🔌 [WebSocketService] WebSocket connection closed:", {
+        this.ws.onclose = event => {
+          console.log('🔌 [WebSocketService] WebSocket connection closed:', {
             code: event.code,
             reason: event.reason,
             wasClean: event.wasClean,
@@ -216,7 +216,7 @@ class WebSocketService extends EventEmitter {
           this.stopHeartbeat();
 
           // Emit disconnection event
-          this.emit("disconnected", {
+          this.emit('disconnected', {
             code: event.code,
             reason: event.reason,
             timestamp: Date.now(),
@@ -224,30 +224,30 @@ class WebSocketService extends EventEmitter {
 
           // Attempt reconnection if enabled
           if (reconnect && !this.isReconnecting) {
-            console.log("🔌 [WebSocketService] Attempting to reconnect...");
+            console.log('🔌 [WebSocketService] Attempting to reconnect...');
             this.scheduleReconnect();
           }
         };
 
-        this.ws.onerror = (error) => {
+        this.ws.onerror = error => {
           console.error(
-            "❌ [WebSocketService] WebSocket error occurred:",
-            error
+            '❌ [WebSocketService] WebSocket error occurred:',
+            error,
           );
-          console.error("❌ [WebSocketService] Error details:", {
+          console.error('❌ [WebSocketService] Error details:', {
             message: error.message,
             type: error.type,
             target: error.target,
             timestamp: new Date().toISOString(),
           });
 
-          this.emit("error", { error: error.message || "WebSocket error" });
+          this.emit('error', {error: error.message || 'WebSocket error'});
           reject(error);
         };
       } catch (error) {
         console.error(
-          "❌ [WebSocketService] Error creating WebSocket connection:",
-          error
+          '❌ [WebSocketService] Error creating WebSocket connection:',
+          error,
         );
         reject(error);
       }
@@ -260,13 +260,13 @@ class WebSocketService extends EventEmitter {
   disconnect() {
     if (this.ws) {
       this.stopHeartbeat();
-      this.ws.close(1000, "Client disconnecting");
+      this.ws.close(1000, 'Client disconnecting');
       this.ws = null;
       this.isConnected = false;
       this.isReconnecting = false;
       this.messageQueue = [];
-      this.subscriptions.clear();
-      console.log("WebSocket disconnected by client");
+      // Don't clear subscriptions on disconnect - preserve them for reconnection
+      console.log('WebSocket disconnected by client');
     }
   }
 
@@ -279,22 +279,22 @@ class WebSocketService extends EventEmitter {
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
       if (queueIfDisconnected) {
         this.messageQueue.push(message);
-        console.log("Message queued, WebSocket not connected");
+        console.log('Message queued, WebSocket not connected');
         return false;
       }
-      throw new Error("WebSocket not connected");
+      throw new Error('WebSocket not connected');
     }
 
     try {
       const messageStr =
-        typeof message === "string" ? message : JSON.stringify(message);
+        typeof message === 'string' ? message : JSON.stringify(message);
       this.ws.send(messageStr);
-      this.emit("messageSent", { message, timestamp: Date.now() });
+      this.emit('messageSent', {message, timestamp: Date.now()});
       return true;
     } catch (error) {
-      console.error("Error sending WebSocket message:", error);
-      this.emit("error", {
-        error: "Failed to send message",
+      console.error('Error sending WebSocket message:', error);
+      this.emit('error', {
+        error: 'Failed to send message',
         originalError: error,
       });
       return false;
@@ -308,17 +308,57 @@ class WebSocketService extends EventEmitter {
    * @param {string} id - Optional subscription ID
    */
   subscribe(type, callback, id = null) {
+    console.log('🔔 [WebSocketService] subscribe() called with:', {
+      type,
+      callbackType: typeof callback,
+      callbackName: callback.name || 'anonymous',
+      id,
+      currentSubscriptionsForType: this.subscriptions.has(type)
+        ? this.subscriptions.get(type).size
+        : 0,
+    });
+
     const subscriptionId = id || `${type}_${Date.now()}_${Math.random()}`;
 
     if (!this.subscriptions.has(type)) {
       this.subscriptions.set(type, new Map());
+      console.log(
+        '🔔 [WebSocketService] Created new subscription type map for:',
+        type,
+      );
     }
 
-    this.subscriptions.get(type).set(subscriptionId, callback);
+    // Check if this exact callback is already subscribed
+    const typeSubscriptions = this.subscriptions.get(type);
+    for (const [existingId, existingCallback] of typeSubscriptions) {
+      if (existingCallback === callback) {
+        console.log(
+          '🔔 [WebSocketService] Callback already subscribed, returning existing ID:',
+          existingId,
+        );
+        return existingId;
+      }
+    }
+
+    typeSubscriptions.set(subscriptionId, callback);
+
+    console.log('🔔 [WebSocketService] New subscription created:', {
+      type,
+      id: subscriptionId,
+      totalSubscriptionsForType: typeSubscriptions.size,
+      totalSubscriptions: Array.from(this.subscriptions.values()).reduce(
+        (total, typeSubs) => total + typeSubs.size,
+        0,
+      ),
+    });
 
     // Emit subscription event
-    this.emit("subscribed", { type, id: subscriptionId });
+    this.emit('subscribed', {type, id: subscriptionId});
 
+    console.log(
+      '🔔 [WebSocketService] Subscription completed, returning ID:',
+      subscriptionId,
+    );
     return subscriptionId;
   }
 
@@ -328,17 +368,31 @@ class WebSocketService extends EventEmitter {
    * @param {string} id - Subscription ID (if null, unsubscribes all for type)
    */
   unsubscribe(type, id = null) {
-    console.log("🔔 [WebSocketService] unsubscribe() called:", {
+    console.log('🔔 [WebSocketService] unsubscribe() called:', {
       type,
       id,
       hasType: this.subscriptions.has(type),
       currentSubscriptions: Array.from(this.subscriptions.keys()),
+      stack: new Error().stack, // This will show the call stack
     });
+
+    // SPECIAL CASE: Never unsubscribe from 'reports' type
+    // This prevents React or parent components from accidentally removing
+    // the reports subscription that we want to keep active forever
+    if (type === 'reports') {
+      console.log(
+        '🔔 [WebSocketService] BLOCKED: Cannot unsubscribe from reports type',
+      );
+      console.log(
+        '🔔 [WebSocketService] Reports subscriptions are permanent and cannot be removed',
+      );
+      return true; // Pretend unsubscribe was successful
+    }
 
     if (!this.subscriptions.has(type)) {
       console.log(
-        "🔔 [WebSocketService] No subscriptions found for type:",
-        type
+        '🔔 [WebSocketService] No subscriptions found for type:',
+        type,
       );
       return false;
     }
@@ -348,13 +402,13 @@ class WebSocketService extends EventEmitter {
       const count = this.subscriptions.get(type).size;
       this.subscriptions.delete(type);
       console.log(
-        "🔔 [WebSocketService] Unsubscribed all subscriptions for type:",
+        '🔔 [WebSocketService] Unsubscribed all subscriptions for type:',
         {
           type,
           removedCount: count,
-        }
+        },
       );
-      this.emit("unsubscribed", { type, id: null });
+      this.emit('unsubscribed', {type, id: null});
       return true;
     } else {
       // Unsubscribe specific subscription
@@ -362,24 +416,24 @@ class WebSocketService extends EventEmitter {
       if (typeSubscriptions && typeSubscriptions.has(id)) {
         typeSubscriptions.delete(id);
         console.log(
-          "🔔 [WebSocketService] Unsubscribed specific subscription:",
+          '🔔 [WebSocketService] Unsubscribed specific subscription:',
           {
             type,
             id,
             remainingForType: typeSubscriptions.size,
-          }
+          },
         );
 
         // Remove type if no more subscriptions
         if (typeSubscriptions.size === 0) {
           this.subscriptions.delete(type);
           console.log(
-            "🔔 [WebSocketService] Removed empty subscription type:",
-            type
+            '🔔 [WebSocketService] Removed empty subscription type:',
+            type,
           );
         }
 
-        this.emit("unsubscribed", { type, id });
+        this.emit('unsubscribed', {type, id});
         return true;
       }
     }
@@ -392,20 +446,20 @@ class WebSocketService extends EventEmitter {
    */
   getConnectionStatus() {
     if (!this.ws) {
-      return "disconnected";
+      return 'disconnected';
     }
 
     switch (this.ws.readyState) {
       case WebSocket.CONNECTING:
-        return "connecting";
+        return 'connecting';
       case WebSocket.OPEN:
-        return "connected";
+        return 'connected';
       case WebSocket.CLOSING:
-        return "closing";
+        return 'closing';
       case WebSocket.CLOSED:
-        return "closed";
+        return 'closed';
       default:
-        return "unknown";
+        return 'unknown';
     }
   }
 
@@ -420,37 +474,110 @@ class WebSocketService extends EventEmitter {
       messageQueueSize: this.messageQueue.length,
       subscriptionCount: Array.from(this.subscriptions.values()).reduce(
         (total, typeSubs) => total + typeSubs.size,
-        0
+        0,
       ),
       url: this.url,
       connectionStatus: this.getConnectionStatus(),
     };
   }
 
+  /**
+   * Check if a subscription exists for a given type and callback
+   * @param {string} type - Message type
+   * @param {Function} callback - Callback function
+   * @returns {string|null} - Subscription ID if exists, null otherwise
+   */
+  hasSubscription(type, callback) {
+    if (!this.subscriptions.has(type)) {
+      return null;
+    }
+
+    const typeSubscriptions = this.subscriptions.get(type);
+    for (const [id, existingCallback] of typeSubscriptions) {
+      if (existingCallback === callback) {
+        return id;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Get all active subscriptions
+   */
+  getSubscriptions() {
+    const result = {};
+    for (const [type, typeSubs] of this.subscriptions) {
+      result[type] = Array.from(typeSubs.keys());
+    }
+    return result;
+  }
+
+  /**
+   * Debug method to log current subscription state
+   */
+  debugSubscriptions() {
+    console.log('🔍 [WebSocketService] Current subscription state:');
+    console.log(
+      '🔍 [WebSocketService] Total subscription types:',
+      this.subscriptions.size,
+    );
+
+    for (const [type, typeSubs] of this.subscriptions) {
+      console.log(`🔍 [WebSocketService] Type '${type}':`, {
+        count: typeSubs.size,
+        ids: Array.from(typeSubs.keys()),
+        callbacks: Array.from(typeSubs.values()).map(
+          cb => cb.name || 'anonymous',
+        ),
+      });
+    }
+  }
+
+  /**
+   * Check if a specific subscription type exists
+   * @param {string} type - Message type to check
+   * @returns {boolean} - True if subscriptions exist for this type
+   */
+  hasSubscriptionType(type) {
+    return (
+      this.subscriptions.has(type) && this.subscriptions.get(type).size > 0
+    );
+  }
+
+  /**
+   * Get subscription count for a specific type
+   * @param {string} type - Message type
+   * @returns {number} - Number of subscriptions for this type
+   */
+  getSubscriptionCount(type) {
+    if (!this.subscriptions.has(type)) return 0;
+    return this.subscriptions.get(type).size;
+  }
+
   // Private methods
 
   handleMessage(data) {
-    console.log("📨 [WebSocketService] handleMessage() called with data:", {
+    console.log('📨 [WebSocketService] handleMessage() called with data:', {
       data,
       dataType: typeof data,
       isNull: data === null,
       isUndefined: data === undefined,
-      keys: data ? Object.keys(data) : "N/A",
+      keys: data ? Object.keys(data) : 'N/A',
     });
 
     // Additional validation for the data structure
-    if (!data || typeof data !== "object") {
+    if (!data || typeof data !== 'object') {
       console.error(
-        "❌ [WebSocketService] Invalid data received in handleMessage:",
-        data
+        '❌ [WebSocketService] Invalid data received in handleMessage:',
+        data,
       );
       return;
     }
 
     // Extract message properties with detailed logging
-    const { type, payload, id, timestamp, data: messageData } = data;
+    const {type, payload, id, timestamp, data: messageData} = data;
 
-    console.log("📨 [WebSocketService] Extracted message properties:", {
+    console.log('📨 [WebSocketService] Extracted message properties:', {
       type,
       payload,
       id,
@@ -471,7 +598,7 @@ class WebSocketService extends EventEmitter {
       timestamp,
       raw: data,
     });
-    this.emit("message", {
+    this.emit('message', {
       type,
       payload: messageData,
       id,
@@ -481,27 +608,27 @@ class WebSocketService extends EventEmitter {
 
     // Handle subscriptions with detailed logging
     if (type && this.subscriptions.has(type)) {
-      console.log("📨 [WebSocketService] Found subscriptions for type:", type);
+      console.log('📨 [WebSocketService] Found subscriptions for type:', type);
       const typeSubscriptions = this.subscriptions.get(type);
-      console.log("📨 [WebSocketService] Type subscriptions:", {
+      console.log('📨 [WebSocketService] Type subscriptions:', {
         subscriptionCount: typeSubscriptions.size,
         subscriptionIds: Array.from(typeSubscriptions.keys()),
       });
 
       console.log(
-        "📨 [WebSocketService] About to call subscription callbacks with data:",
+        '📨 [WebSocketService] About to call subscription callbacks with data:',
         {
           type,
           messageData,
           payload,
           actualPayload: messageData || payload,
-        }
+        },
       );
 
       typeSubscriptions.forEach((callback, subscriptionId) => {
         // Use messageData (Go's 'data' field) as the actual payload for callbacks
         const actualPayload = messageData || payload;
-        console.log("📨 [WebSocketService] Calling subscription callback:", {
+        console.log('📨 [WebSocketService] Calling subscription callback:', {
           subscriptionId,
           type,
           originalPayload: payload,
@@ -512,23 +639,23 @@ class WebSocketService extends EventEmitter {
         try {
           // Use messageData (Go's 'data' field) as the actual payload for callbacks
           const actualPayload = messageData || payload;
-          callback(actualPayload, { type, id, timestamp });
+          callback(actualPayload, {type, id, timestamp});
           console.log(
-            "📨 [WebSocketService] Subscription callback executed successfully"
+            '📨 [WebSocketService] Subscription callback executed successfully',
           );
         } catch (error) {
           console.error(
-            "❌ [WebSocketService] Error in subscription callback:",
+            '❌ [WebSocketService] Error in subscription callback:',
             {
               error: error.message,
               stack: error.stack,
               subscriptionId,
               type,
               payload: messageData || payload,
-            }
+            },
           );
-          this.emit("error", {
-            error: "Subscription callback error",
+          this.emit('error', {
+            error: 'Subscription callback error',
             type,
             originalError: error,
           });
@@ -536,39 +663,39 @@ class WebSocketService extends EventEmitter {
       });
     } else {
       console.log(
-        "📨 [WebSocketService] No subscriptions found for type:",
-        type
+        '📨 [WebSocketService] No subscriptions found for type:',
+        type,
       );
       console.log(
-        "📨 [WebSocketService] Available subscription types:",
-        Array.from(this.subscriptions.keys())
+        '📨 [WebSocketService] Available subscription types:',
+        Array.from(this.subscriptions.keys()),
       );
     }
 
     // Handle specific message types from Go backend
-    console.log("📨 [WebSocketService] Processing message type:", type);
+    console.log('📨 [WebSocketService] Processing message type:', type);
     switch (type) {
-      case "pong":
-        console.log("📨 [WebSocketService] Handling pong message");
+      case 'pong':
+        console.log('📨 [WebSocketService] Handling pong message');
         // Go backend sends pong responses to our pings
         this.handlePong();
         break;
-      case "reports":
+      case 'reports':
         console.log(
-          "📨 [WebSocketService] Handling reports message from Go backend"
+          '📨 [WebSocketService] Handling reports message from Go backend',
         );
         console.log(
-          "📨 [WebSocketService] Go backend data field:",
-          messageData
+          '📨 [WebSocketService] Go backend data field:',
+          messageData,
         );
-        console.log("📨 [WebSocketService] Legacy payload field:", payload);
+        console.log('📨 [WebSocketService] Legacy payload field:', payload);
 
         // Go backend uses 'data' field, so use messageData as the primary source
         const reportData = messageData || payload;
         console.log(
-          "📨 [WebSocketService] Final report data to emit:",
+          '📨 [WebSocketService] Final report data to emit:',
           reportData,
-          { reportDataString: reportData.toString() }
+          {reportDataString: reportData.toString()},
         );
 
         console.log(
@@ -578,32 +705,32 @@ class WebSocketService extends EventEmitter {
             reportsString: reportData.reports.toString(),
             reportsAnalysis: reportData.reports[0].analysis,
             reportsAnalysisString: reportData.reports[0].analysis.toString(),
-          }
+          },
         );
 
         // Go backend broadcasts report data
-        this.emit("reports", reportData);
+        this.emit('reports', reportData);
         break;
-      case "error":
-        console.log("📨 [WebSocketService] Handling error message from server");
-        this.emit("serverError", payload);
+      case 'error':
+        console.log('📨 [WebSocketService] Handling error message from server');
+        this.emit('serverError', payload);
         break;
       default:
         console.log(
-          "📨 [WebSocketService] Handling default message type:",
-          type
+          '📨 [WebSocketService] Handling default message type:',
+          type,
         );
         // Emit typed event with Go backend compatible data
         const defaultData = messageData || payload;
         this.emit(type, defaultData);
     }
 
-    console.log("📨 [WebSocketService] handleMessage() completed");
+    console.log('📨 [WebSocketService] handleMessage() completed');
   }
 
   scheduleReconnect() {
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-      this.emit("reconnectFailed", {
+      this.emit('reconnectFailed', {
         attempts: this.reconnectAttempts,
         maxAttempts: this.maxReconnectAttempts,
       });
@@ -615,12 +742,29 @@ class WebSocketService extends EventEmitter {
 
     const delay = Math.min(
       this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1),
-      this.maxReconnectDelay
+      this.maxReconnectDelay,
     );
 
     setTimeout(() => {
       if (this.isReconnecting) {
-        this.connect(this.url, { reconnect: true });
+        console.log('🔌 [WebSocketService] Attempting reconnection...');
+        this.connect(this.url, {reconnect: true})
+          .then(() => {
+            console.log(
+              '🔌 [WebSocketService] Reconnection successful, restoring subscriptions...',
+            );
+            // Emit event to notify components that subscriptions are restored
+            this.emit('reconnected', {
+              timestamp: Date.now(),
+              subscriptionCount: Array.from(this.subscriptions.values()).reduce(
+                (total, typeSubs) => total + typeSubs.size,
+                0,
+              ),
+            });
+          })
+          .catch(error => {
+            console.error('🔌 [WebSocketService] Reconnection failed:', error);
+          });
       }
     }, delay);
   }
@@ -628,11 +772,11 @@ class WebSocketService extends EventEmitter {
   startHeartbeat(interval, timeout) {
     this.heartbeatInterval = setInterval(() => {
       if (this.isConnected) {
-        this.send({ type: "ping", timestamp: Date.now() });
+        this.send({type: 'ping', timestamp: Date.now()});
 
         // Set timeout for pong response
         this.heartbeatTimeout = setTimeout(() => {
-          this.ws.close(1000, "Heartbeat timeout");
+          this.ws.close(1000, 'Heartbeat timeout');
         }, timeout);
       }
     }, interval);
