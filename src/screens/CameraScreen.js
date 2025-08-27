@@ -133,8 +133,33 @@ const CameraScreen = (props) => {
   const flashScale = useState(0);
   const flashScaleStatic = useState(1);
   const tapScale = useState(0);
-  const { t } = useTranslation();
-  const { hasPermission, requestPermission } = useCameraPermission();
+  const {t} = useTranslation();
+  const {hasPermission, requestPermission} = useCameraPermission();
+
+  // Enhanced camera permission handler
+  const handleCameraPermission = async () => {
+    try {
+      if (!hasPermission) {
+        const result = await requestPermission();
+        if (!result) {
+          Alert.alert(
+            'Camera Permission Required',
+            'This app needs camera access to take photos. Please grant camera permission in Settings.',
+            [
+              {text: 'Cancel', style: 'cancel'},
+              {text: 'Settings', onPress: () => Linking.openSettings()},
+            ],
+          );
+        }
+      }
+    } catch (error) {
+      console.error('Error handling camera permission:', error);
+      Alert.alert(
+        'Camera Permission Error',
+        'There was an error requesting camera permission. Please try again or check your device settings.',
+      );
+    }
+  };
 
   const isFocused = useIsFocused();
 
@@ -247,7 +272,8 @@ const CameraScreen = (props) => {
   }, [phototaken, flashAnimatedValue]);
 
   useEffect(() => {
-    requestPermission();
+    // Request camera permission when component mounts
+    handleCameraPermission();
   }, []);
 
   const checkPhotoLibraryPermission = async () => {
@@ -611,6 +637,26 @@ const CameraScreen = (props) => {
                 animatedProps={animatedProps}
               />
             )}
+
+            {/* Camera Permission Status */}
+            {!hasPermission && (
+              <View style={styles.permissionContainer}>
+                <Text style={styles.permissionTitle}>
+                  Camera Permission Required
+                </Text>
+                <Text style={styles.permissionText}>
+                  This app needs camera access to take photos. Please grant
+                  camera permission.
+                </Text>
+                <TouchableOpacity
+                  style={styles.permissionButton}
+                  onPress={handleCameraPermission}>
+                  <Text style={styles.permissionButtonText}>
+                    Grant Permission
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
             {isInAnnotationMode && photoData && (
               <Image
                 source={{ uri: photoData.uri }}
@@ -696,7 +742,7 @@ const CameraScreen = (props) => {
                 </View>
               )}
             </View>
-            {!phototaken && !isInAnnotationMode && (
+            {!phototaken && !isInAnnotationMode && hasPermission && (
               <>
                 <View style={
                   {
@@ -965,6 +1011,46 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontFamily: fontFamilies.Default,
     fontSize: 16,
+  },
+  // Permission styles
+  permissionContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 40,
+  },
+  permissionTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: theme.COLORS.TEXT_WHITE,
+    textAlign: 'center',
+    marginBottom: 20,
+    fontFamily: fontFamilies.Default,
+  },
+  permissionText: {
+    fontSize: 16,
+    color: theme.COLORS.TEXT_WHITE,
+    textAlign: 'center',
+    marginBottom: 30,
+    lineHeight: 24,
+    fontFamily: fontFamilies.Default,
+  },
+  permissionButton: {
+    backgroundColor: theme.COLORS.BTN_BG_BLUE,
+    paddingHorizontal: 30,
+    paddingVertical: 15,
+    borderRadius: 25,
+  },
+  permissionButtonText: {
+    color: theme.COLORS.TEXT_WHITE,
+    fontSize: 16,
+    fontWeight: 'bold',
+    fontFamily: fontFamilies.Default,
   },
 });
 
