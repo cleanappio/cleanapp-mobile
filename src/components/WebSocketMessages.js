@@ -27,71 +27,23 @@ const WebSocketMessages = ({
   const isSubscribedRef = useRef(false);
 
   // Subscribe to report messages from Go backend
-  //
-  // SOLUTION: Never unsubscribe - keep subscription active permanently
-  // This prevents the immediate unsubscribe issue that was causing
-  // the subscription to be removed right after creation
-  //
   // IMPORTANT: Even though we removed the cleanup function, React or the parent
   // component might still call unsubscribe. We handle this by blocking
   // unsubscribe calls for 'reports' type in WebSocketService.
   useEffect(() => {
-    console.log('📱 [WebSocketMessages] useEffect triggered:', {
-      isConnected,
-      url,
-      hasSubscribe: !!subscribe,
-      subscribeType: typeof subscribe,
-      timestamp: new Date().toISOString(),
-      isAlreadySubscribed: isSubscribedRef.current,
-      currentSubscriptionId: subscriptionRef.current,
-    });
-
     // Only proceed if we have all required functions and are connected
     if (!isConnected || !subscribe) {
-      console.log(
-        '📱 [WebSocketMessages] WebSocket not connected or missing subscribe function, skipping subscription',
-        {
-          isConnected,
-          hasSubscribe: !!subscribe,
-          subscribeValue: subscribe,
-          subscribeType: typeof subscribe,
-          subscribeIsFunction: typeof subscribe === 'function',
-        },
-      );
       return;
     }
 
     // Prevent multiple subscriptions
     if (isSubscribedRef.current && subscriptionRef.current) {
-      console.log(
-        '📱 [WebSocketMessages] Already subscribed, skipping duplicate subscription',
-        {subscriptionId: subscriptionRef.current},
-      );
       return;
     }
 
-    console.log(
-      "📱 [WebSocketMessages] WebSocket connected, subscribing to 'reports' type",
-    );
-
     try {
-      console.log('📱 [WebSocketMessages] About to call subscribe function...');
-
       // Subscribe to the "reports" message type that Go backend sends
       const subscriptionId = subscribe('reports', (payload, metadata) => {
-        console.log(
-          '📱 [WebSocketMessages] Reports subscription callback triggered:',
-          {
-            payload,
-            metadata,
-            payloadType: typeof payload,
-            payloadKeys: payload ? Object.keys(payload) : 'N/A',
-            payloadIsNull: payload === null,
-            payloadIsUndefined: payload === undefined,
-            timestamp: new Date().toISOString(),
-          },
-        );
-
         const newMessage = {
           id: Date.now(),
           type: 'reports',
@@ -100,84 +52,24 @@ const WebSocketMessages = ({
           metadata,
         };
 
-        console.log('📱 [WebSocketMessages] Created new message object:', {
-          newMessage,
-          dataField: newMessage.data,
-          dataType: typeof newMessage.data,
-        });
-
         // check if the report is within the user's radius and display notification
         checkUserLocation(payload).then(isInRange => {
           if (isInRange) {
             onDisplayNotification(payload);
-          } else {
-            console.log(
-              "📱 [WebSocketMessages] Report is not within the user's radius",
-            );
           }
         });
 
         setMessages(prev => {
           const updatedMessages = [newMessage, ...prev.slice(0, 99)]; // Keep last 100
-          console.log('📱 [WebSocketMessages] Updated messages state:', {
-            previousCount: prev.length,
-            newCount: updatedMessages.length,
-            firstMessage: updatedMessages[0],
-          });
           return updatedMessages;
         });
-      });
-
-      console.log('📱 [WebSocketMessages] Subscribe function returned:', {
-        subscriptionId,
-        subscriptionIdType: typeof subscriptionId,
-        subscriptionIdIsNull: subscriptionId === null,
-        subscriptionIdIsUndefined: subscriptionId === undefined,
       });
 
       // Store subscription info in refs
       subscriptionRef.current = subscriptionId;
       isSubscribedRef.current = true;
-
-      console.log('📱 [WebSocketMessages] Subscription created and stored:', {
-        subscriptionId,
-        subscriptionRef: subscriptionRef.current,
-        isSubscribed: isSubscribedRef.current,
-      });
-
-      // Debug: Check if subscription was actually stored in WebSocketService
-      if (typeof subscribe === 'function' && subscribe.name === 'subscribe') {
-        console.log(
-          '📱 [WebSocketMessages] Subscribe function appears to be from WebSocketService',
-        );
-      } else {
-        console.log(
-          '📱 [WebSocketMessages] Subscribe function is NOT from WebSocketService:',
-          {
-            functionName: subscribe.name,
-            functionType: typeof subscribe,
-          },
-        );
-      }
-
-      // Debug: Check WebSocketService subscription state
-      console.log(
-        '📱 [WebSocketMessages] WebSocketService subscription state:',
-      );
-      console.log(
-        '📱 [WebSocketMessages] Has reports subscription type:',
-        webSocketService.hasSubscriptionType('reports'),
-      );
-      console.log(
-        '📱 [WebSocketMessages] Reports subscription count:',
-        webSocketService.getSubscriptionCount('reports'),
-      );
-      webSocketService.debugSubscriptions();
     } catch (error) {
-      console.error(
-        '📱 [WebSocketMessages] Error creating subscription:',
-        error,
-      );
+      console.error('Error creating subscription:', error);
       return;
     }
 
@@ -187,32 +79,6 @@ const WebSocketMessages = ({
 
   // NO CLEANUP ON UNMOUNT - subscription stays active forever
   // This prevents any unsubscribe calls that could cause issues
-
-  // Debug effect to track subscription state changes
-  useEffect(() => {
-    console.log(
-      '📱 [WebSocketMessages] Debug effect - checking subscription state:',
-      {
-        isConnected,
-        url,
-        hasSubscribe: !!subscribe,
-        subscribeType: typeof subscribe,
-        subscriptionRef: subscriptionRef.current,
-        isSubscribed: isSubscribedRef.current,
-      },
-    );
-  }, [isConnected, url, subscribe]);
-
-  // Debug effect to track subscription state changes
-  useEffect(() => {
-    console.log('📱 [WebSocketMessages] Subscription state changed:', {
-      isConnected,
-      url,
-      hasSubscription: !!subscriptionRef.current,
-      subscriptionId: subscriptionRef.current,
-      isSubscribed: isSubscribedRef.current,
-    });
-  }, [isConnected, url, subscriptionRef.current, isSubscribedRef.current]);
 
   // Filter messages based on selected type
   useEffect(() => {
@@ -234,36 +100,11 @@ const WebSocketMessages = ({
   };
 
   const renderReportMessage = message => {
-    console.log(
-      '📱 [WebSocketMessages] renderReportMessage() called with message:',
-      {
-        message,
-        messageType: typeof message,
-        messageKeys: message ? Object.keys(message) : 'N/A',
-      },
-    );
-
     const {data} = message;
 
-    console.log('📱 [WebSocketMessages] Extracted data from message:', {
-      data,
-      dataType: typeof data,
-      dataIsNull: data === null,
-      dataIsUndefined: data === undefined,
-      dataKeys: data ? Object.keys(data) : 'N/A',
-    });
-
     if (!data || !data.reports) {
-      console.log('📱 [WebSocketMessages] No report data found in message');
       return <Text style={styles.messageText}>No report data</Text>;
     }
-
-    console.log('📱 [WebSocketMessages] Report data found:', {
-      reportsCount: data.reports.length,
-      reportsType: typeof data.reports,
-      firstReport: data.reports[0],
-      dataKeys: Object.keys(data),
-    });
 
     return (
       <View style={styles.reportContainer}>
@@ -274,14 +115,6 @@ const WebSocketMessages = ({
           Sequence: {data.fromSeq} - {data.toSeq}
         </Text>
         {data.reports.slice(0, 3).map((reportWithAnalysis, index) => {
-          console.log('📱 [WebSocketMessages] Rendering report:', {
-            index,
-            reportWithAnalysis,
-            reportKeys: reportWithAnalysis
-              ? Object.keys(reportWithAnalysis)
-              : 'N/A',
-          });
-
           return (
             <View key={index} style={styles.singleReport}>
               <Text style={styles.reportId}>
@@ -345,54 +178,12 @@ const WebSocketMessages = ({
   };
 
   const checkUserLocation = async payload => {
-    //   {
-    //     "reports": [
-    //         {
-    //             "report": {
-    //                 "seq": 131,
-    //                 "timestamp": "2025-08-27T05:51:31Z",
-    //                 "id": "0xdff9426058ccA89C0297fb45E0620bc052899A5c",
-    //                 "latitude": 3.320606,
-    //                 "longitude": 23.530489
-    //             },
-    //             "analysis": [
-    //                 {
-    //                     "seq": 131,
-    //                     "source": "ChatGPT",
-    //                     "analysis_text": "```json\n{\n  \"title\": \"Litter Detected on Tram Tracks in Urban Area\",\n  \"description\": \"A piece of litter, specifically a small food wrapper, is observed on tram tracks in an urban area, increasing risk to tram operations and contributing to environmental impact.\",\n  \"classification\": \"Physical\",\n  \"user_info\": {\n      \"name\": null,\n      \"email\": null,\n      \"company\": null,\n      \"role\": null,\n      \"company_size\": null\n  },\n  \"location\": \"Intersection near visible tram stop and To Let sign, likely urban setting\",\n  \"brand_name\": null,\n  \"responsible_party\": \"Municipality Public Works\",\n  \"inferred_contact_emails\": [\"cityworks@municipality.gov\", \"cleaning@municipality.gov\", \"trammaintenance@municipality.gov\"],\n  \"suggested_remediation\": [\n      \"Deploy cleanup crew to the reported location to remove litter from tram tracks.\",\n      \"Enhance surveillance and monitoring for littering in public transport areas.\",\n      \"Implement public awareness campaigns about the impact of littering on public transport safety.\",\n      \"Introduce regular patrols on tram lines to ensure cleanliness and safety.\"\n  ],\n  \"litter_probability\": 0.95,\n  \"hazard_probability\": 0.6,\n  \"digital_bug_probabilty\": 0.0,\n  \"severity_level\": 0.4,\n  \"is_valid\": true\n}\n```",
-    //                     "title": "Litter Detected on Tram Tracks in Urban Area",
-    //                     "description": "A piece of litter, specifically a small food wrapper, is observed on tram tracks in an urban area, increasing risk to tram operations and contributing to environmental impact.",
-    //                     "brand_name": "",
-    //                     "brand_display_name": "",
-    //                     "litter_probability": 0.95,
-    //                     "hazard_probability": 0.6,
-    //                     "digital_bug_probability": 0,
-    //                     "severity_level": 0.4,
-    //                     "summary": "Litter Detected on Tram Tracks in Urban Area: A piece of litter, specifically a small food wrapper, is observed on tram tracks in an urban area, increasing risk to tram operations and contributing to environmental impact.",
-    //                     "language": "en",
-    //                     "classification": "physical",
-    //                     "created_at": "2025-08-27T05:51:42Z",
-    //                     "updated_at": "0001-01-01T00:00:00Z"
-    //                 }
-    //             ]
-    //         }
-    //     ],
-    //     "count": 1,
-    //     "from_seq": 131,
-    //     "to_seq": 131
-    // }
-
     let isInRange = false;
 
     try {
       const location = await getLocation();
       if (location) {
-        console.log('Location obtained:', location);
-        console.log('Latitude:', location.latitude);
-        console.log('Longitude:', location.longitude);
-
         if (!payload.reports || payload.reports.length === 0) {
-          console.log('No reports found in websocket message');
           return false;
         }
 
@@ -405,20 +196,17 @@ const WebSocketMessages = ({
 
         // Calculate the distance between the user's location and the report's location
         const distance = calculateDistance(location, reportLocation);
-        console.log('Distance:', distance);
+
         if (distance < RADIUS_IN_KILOMETERS) {
           isInRange = true;
         }
       } else {
-        console.log('Location permission denied or failed');
         isInRange = false;
       }
     } catch (error) {
-      console.log('In catch');
       console.error('Error getting location:', error);
       isInRange = false;
     } finally {
-      console.log('In finally');
       return isInRange;
     }
   };
@@ -435,7 +223,6 @@ const WebSocketMessages = ({
 
     try {
       if (!payload.reports || payload.reports.length === 0) {
-        console.log('No reports found in websocket message');
         return false;
       }
 
@@ -446,7 +233,6 @@ const WebSocketMessages = ({
         !payload.reports[0].analysis ||
         payload.reports[0].analysis.length === 0
       ) {
-        console.log('No analysis found in report');
         analysisText = '';
       } else {
         analysisText = payload.reports[0].analysis[0].summary;
@@ -465,7 +251,7 @@ const WebSocketMessages = ({
         },
       });
     } catch (e) {
-      console.log('📱 [WebSocketMessages] Error displaying notification:', e);
+      console.error('Error displaying notification:', e);
     }
   }
 
