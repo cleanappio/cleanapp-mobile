@@ -574,7 +574,7 @@ const CacheScreen = props => {
             </View>
           </View>
 
-          <View style={{...styles.greyCard, marginBottom: 16}}>
+          <View style={{...styles.greyCard, marginBottom: 16, marginTop: -20}}>
             <View style={styles.row}>
               <Text style={styles.txt16bold}>{t('referral.title')}</Text>
               <Pressable onPress={openReferralScreen}>
