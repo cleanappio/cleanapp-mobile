@@ -1,9 +1,21 @@
-import React, { useState } from 'react';
-import { useFocusEffect } from '@react-navigation/native';
-import { Linking, Modal, Pressable, ScrollView, StyleSheet, View, Text, TextInput, ToastAndroid, Alert, Platform } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { fontFamilies } from '../utils/fontFamilies';
-import { theme } from '../services/Common/theme';
+import React, {useState} from 'react';
+import {useFocusEffect} from '@react-navigation/native';
+import {
+  Linking,
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+  Text,
+  TextInput,
+  ToastAndroid,
+  Alert,
+  Platform,
+} from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
+import {fontFamilies} from '../utils/fontFamilies';
+import {theme} from '../services/Common/theme';
 import Ripple from '../components/Ripple';
 
 import WalletSettingsIcon from '../assets/ico_cache_settings.svg';
@@ -12,8 +24,8 @@ import BottomSheetDialog from '../components/BotomSheetDialog';
 import CopySmallIcon from '../assets/ico_copy_small.svg';
 import EyeSmallIcon from '../assets/ico_eye_small.svg';
 import EyeOffIcon from '../assets/ico_eye_off.svg';
-import { BlurView } from '@react-native-community/blur';
-import { Row } from '../components/Row';
+import {BlurView} from '@react-native-community/blur';
+import {Row} from '../components/Row';
 import Clipboard from '@react-native-clipboard/clipboard';
 import {
   getPrivacySetting,
@@ -24,17 +36,19 @@ import {
   setPrivacySetting,
   setUserName,
 } from '../services/DataManager';
-import { useTranslation } from 'react-i18next';
+import {useTranslation} from 'react-i18next';
+import PermissionRequest from '../components/PermissionRequest';
 import {
   getBlockchainLink,
   getRewardStats,
   updateOrCreateUser,
   updatePrivacyAndTOC,
 } from '../services/API/APIManager';
-import { useStateValue } from '../services/State/State';
-import { actions } from '../services/State/Reducer';
+import {useStateValue} from '../services/State/State';
+import {actions} from '../services/State/Reducer';
+import WebSocketDemoScreen from './WebSocketDemoScreen';
 
-const CacheScreen = (props) => {
+const CacheScreen = props => {
   const [avatarOpened, setAvatarOpened] = useState(false);
   const [privacyOpened, setPrivacyOpened] = useState(false);
   const [cacheSettingOpened, setCacheSettingOpened] = useState(false);
@@ -43,10 +57,10 @@ const CacheScreen = (props) => {
 
   const [avatarName, setAvatarName] = useState('');
   const [shareDataStatus, setShareDataStatus] = useState(0);
-  const [{ cacheVault }, dispatch] = useStateValue();
+  const [{cacheVault}, dispatch] = useStateValue();
   const [blockchainLink, setBlockchainLink] = useState('');
 
-  const { t } = useTranslation();
+  const {t} = useTranslation();
 
   const privacy_values = [
     {
@@ -80,31 +94,39 @@ const CacheScreen = (props) => {
     React.useCallback(() => {
       const internalFunc = async () => {
         await initWallet();
-        getUserName().then((resp) => {
+        getUserName().then(resp => {
           if (resp) {
             setAvatarName(resp.userName);
           }
         });
-        getPrivacySetting().then((resp) => {
+        getPrivacySetting().then(resp => {
           if (resp) {
             setShareDataStatus(resp);
           }
         });
         const wa = await getWalletAddress();
         setWalletAddress(await getWalletAddress(wa));
-        getRewardStats(wa).then((resp) => {
+        getRewardStats(wa).then(resp => {
           if (resp && resp.ok) {
             let cacheResult = {
               reports: resp.stats.kitns_daily + resp.stats.kitns_disbursed || 0,
-              referrals: resp.stats.kitns_ref_daily + resp.stats.kitns_ref_disbursed || 0,
+              referrals:
+                resp.stats.kitns_ref_daily + resp.stats.kitns_ref_disbursed ||
+                0,
               dailyReports: resp.stats.kitns_daily || 0,
               dailyReferrals: resp.stats.kitns_ref_daily || 0,
               disbursedReports: resp.stats.kitns_disbursed || 0,
               disbursedReferrals: resp.stats.kitns_ref_disbursed || 0,
-              disbursedTotal: resp.stats.kitns_disbursed + resp.stats.kitns_ref_disbursed || 0,
-              dailyTotal: resp.stats.kitns_daily + resp.stats.kitns_ref_daily || 0,
-              total: resp.stats.kitns_daily + resp.stats.kitns_ref_daily +
-                resp.stats.kitns_disbursed + resp.stats.kitns_ref_disbursed || 0,
+              disbursedTotal:
+                resp.stats.kitns_disbursed + resp.stats.kitns_ref_disbursed ||
+                0,
+              dailyTotal:
+                resp.stats.kitns_daily + resp.stats.kitns_ref_daily || 0,
+              total:
+                resp.stats.kitns_daily +
+                  resp.stats.kitns_ref_daily +
+                  resp.stats.kitns_disbursed +
+                  resp.stats.kitns_ref_disbursed || 0,
             };
             dispatch({
               type: actions.SET_CACHE_VAULT,
@@ -113,32 +135,30 @@ const CacheScreen = (props) => {
             setCacheVault(cacheResult);
           }
         });
-        getBlockchainLink(wa).then((resp) => {
+        getBlockchainLink(wa).then(resp => {
           if (resp && resp.ok) {
             setBlockchainLink(resp.blockchainLink);
           }
         });
-      }
+      };
       internalFunc();
     }, []),
   );
 
   const AvatarSheet = ({
     isVisible = false,
-    onClose = () => { },
-    onUpdateUser = async () => { },
+    onClose = () => {},
+    onUpdateUser = async () => {},
   }) => {
-    const [localAvatarName, setLocalAvatarName] = useState(avatarName === walletAddress ? '' : avatarName);
+    const [localAvatarName, setLocalAvatarName] = useState(
+      avatarName === walletAddress ? '' : avatarName,
+    );
     return (
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={isVisible}
-      >
+      <Modal animationType="slide" transparent={true} visible={isVisible}>
         <View style={styles.modalContainer}>
           <Text style={styles.avatarHeader}>{t('cachescreen.editavatar')}</Text>
           <TextInput
-            style={{ ...styles.textInput, marginTop: 20, marginBottom: 16 }}
+            style={{...styles.textInput, marginTop: 20, marginBottom: 16}}
             color={theme.COLORS.TEXT_GREY}
             autoCorrect={false}
             spellCheck={false}
@@ -149,7 +169,7 @@ const CacheScreen = (props) => {
             onChangeText={setLocalAvatarName}
           />
           <Pressable
-            style={{ ...styles.bigBtn, marginBottom: 16 }}
+            style={{...styles.bigBtn, marginBottom: 16}}
             onPress={async () => {
               const updateUserResult = await onUpdateUser(localAvatarName);
               if (updateUserResult) {
@@ -160,7 +180,7 @@ const CacheScreen = (props) => {
             <Text style={styles.txt16bold}>{t('cachescreen.submit')}</Text>
           </Pressable>
           <Pressable
-            style={{ ...styles.bigBtnBlack, marginBottom: 16 }}
+            style={{...styles.bigBtnBlack, marginBottom: 16}}
             onPress={() => {
               onClose();
             }}>
@@ -169,23 +189,23 @@ const CacheScreen = (props) => {
         </View>
       </Modal>
     );
-  }
+  };
 
   const PrivacySheet = ({
     isVisible = false,
     dataSharingOption = 0,
-    onClose = () => { },
+    onClose = () => {},
   }) => {
     const [privacySelected, setPrivacySelected] = useState(dataSharingOption);
 
-    const selectPrivacy = (privacy_index) => {
+    const selectPrivacy = privacy_index => {
       setPrivacySelected(privacy_index);
     };
 
     const setPrivacy = async () => {
       await updatePrivacyAndTOC(
         walletAddress,
-        privacySelected === 0 ? 'share_data_live' : 'not_share_data_live'
+        privacySelected === 0 ? 'share_data_live' : 'not_share_data_live',
       );
       setPrivacySetting(privacySelected);
       setShareDataStatus(privacySelected);
@@ -193,13 +213,11 @@ const CacheScreen = (props) => {
     };
 
     return (
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={isVisible}
-      >
+      <Modal animationType="slide" transparent={true} visible={isVisible}>
         <View style={styles.modalContainer}>
-          <Text style={styles.avatarHeader}>{t('cachescreen.privacysettings')}</Text>
+          <Text style={styles.avatarHeader}>
+            {t('cachescreen.privacysettings')}
+          </Text>
           {privacy_values.map((element, index) => (
             <View
               key={index}
@@ -211,7 +229,7 @@ const CacheScreen = (props) => {
                 width: '80%',
               }}>
               <Ripple onPress={() => selectPrivacy(index)}>
-                <View style={{ ...styles.row, width: '100%' }}>
+                <View style={{...styles.row, width: '100%'}}>
                   <View>
                     <Text style={styles.txt16}>{element.value}</Text>
                     <Text style={styles.txt12italic}>{element.sub_value}</Text>
@@ -228,7 +246,7 @@ const CacheScreen = (props) => {
             </View>
           ))}
           <Pressable
-            style={{ ...styles.bigBtn, marginTop: 16 }}
+            style={{...styles.bigBtn, marginTop: 16}}
             onPress={setPrivacy}>
             <Text style={styles.txt16bold}>{t('cachescreen.Confirm')}</Text>
           </Pressable>
@@ -237,7 +255,7 @@ const CacheScreen = (props) => {
     );
   };
 
-  const CacheSettingSheet = ({ isVisible = false, onClose = () => { } }) => {
+  const CacheSettingSheet = ({isVisible = false, onClose = () => {}}) => {
     const [isShowPrivateKey, setIsShowPrivateKey] = useState(true);
     const [isShowMnemonics, setIsShowMnemonics] = useState(true);
 
@@ -249,7 +267,7 @@ const CacheScreen = (props) => {
       setIsShowPrivateKey(!isShowPrivateKey);
     };
 
-    const onCopyWalletAddress = (address) => {
+    const onCopyWalletAddress = address => {
       Clipboard.setString(address);
       if (Platform.OS === 'ios') {
         Alert.alert('Copied to clipboard');
@@ -273,7 +291,7 @@ const CacheScreen = (props) => {
                 <Text style={styles.txt12bold}>
                   {t('cachescreen.youraddress')}
                 </Text>
-                <Text style={styles.txt12} >{walletAddress}</Text>
+                <Text style={styles.txt12}>{walletAddress}</Text>
               </View>
               <Ripple onPress={() => onCopyWalletAddress(walletAddress)}>
                 <CopySmallIcon />
@@ -287,12 +305,12 @@ const CacheScreen = (props) => {
               paddingHorizontal: 8,
             }}>
             <View style={styles.row}>
-              <View style={{ width: '70%' }}>
+              <View style={{width: '70%'}}>
                 <Text style={styles.txt12bold}>
                   {t('cachescreen.privatekey')}
                 </Text>
                 <View>
-                  <Text style={{ ...styles.txt12, ...styles.txtBlur }}>
+                  <Text style={{...styles.txt12, ...styles.txtBlur}}>
                     {walletInfo.privateKey}
                   </Text>
                   {isShowPrivateKey && (
@@ -311,7 +329,7 @@ const CacheScreen = (props) => {
                 </View>
               </View>
               <View style={styles.row}>
-                <Text style={{ ...styles.txt9, color: theme.COLORS.BTN_BG_BLUE }}>
+                <Text style={{...styles.txt9, color: theme.COLORS.BTN_BG_BLUE}}>
                   {isShowPrivateKey
                     ? t('cachescreen.taptoreveal')
                     : t('cachescreen.taptohide')}
@@ -323,14 +341,14 @@ const CacheScreen = (props) => {
             </View>
           </View>
           <View
-            style={{ ...styles.blue30Card, marginTop: 24, paddingHorizontal: 8 }}>
+            style={{...styles.blue30Card, marginTop: 24, paddingHorizontal: 8}}>
             <Text style={styles.txt12}>
               {t('cachescreen.keepyourkitnsafe')}
             </Text>
           </View>
-          <View style={{ ...styles.blueBorderCard, marginTop: 24 }}>
+          <View style={{...styles.blueBorderCard, marginTop: 24}}>
             <View style={styles.row}>
-              <View style={{ width: '70%' }}>
+              <View style={{width: '70%'}}>
                 <Text style={styles.txt12bold}>
                   {t('cachescreen.mnemonicphrase')}
                 </Text>
@@ -358,7 +376,7 @@ const CacheScreen = (props) => {
                 </View>
               </View>
               <View style={styles.row}>
-                <Text style={{ ...styles.txt9, color: theme.COLORS.BTN_BG_BLUE }}>
+                <Text style={{...styles.txt9, color: theme.COLORS.BTN_BG_BLUE}}>
                   {isShowMnemonics
                     ? t('cachescreen.taptoreveal')
                     : t('cachescreen.taptohide')}
@@ -370,7 +388,7 @@ const CacheScreen = (props) => {
             </View>
           </View>
           <Ripple
-            containerStyle={{ marginTop: 24 }}
+            containerStyle={{marginTop: 24}}
             style={{...styles.bigBtnBlack, width: '100%'}}
             onPress={onClose}>
             <Text style={styles.txt16bold}>{t('cachescreen.back')}</Text>
@@ -385,7 +403,6 @@ const CacheScreen = (props) => {
         onClose={onClose}
         title={t('cachescreen.cachesettings')}
         headerIcon={<WalletSettingsIcon />}>
-
         <CacheSettingView />
       </BottomSheetDialog>
     );
@@ -399,38 +416,47 @@ const CacheScreen = (props) => {
           <View style={styles.balanceContainer}>
             <Row>
               <Text style={styles.txt16}>{t('cachescreen.total')}</Text>
-              <Text style={{ ...styles.txt16, lineHeight: 16 }}>
-                {cacheVault.total || 0} <Text style={styles.txt16}>{'KITN'}</Text>
+              <Text style={{...styles.txt16, lineHeight: 16}}>
+                {cacheVault.total || 0}{' '}
+                <Text style={styles.txt16}>{'KITN'}</Text>
               </Text>
             </Row>
             <Row>
               <Text style={styles.txt9}>{t('cachescreen.fromReports')}</Text>
               <Text style={styles.txt9}>
-                {cacheVault.reports || 0} <Text style={styles.txt9}>{'KITN'}</Text>
+                {cacheVault.reports || 0}{' '}
+                <Text style={styles.txt9}>{'KITN'}</Text>
               </Text>
             </Row>
             <Row>
               <Text style={styles.txt9}>{t('cachescreen.fromReferrals')}</Text>
               <Text style={styles.txt9}>
-                {cacheVault.referrals || 0} <Text style={styles.txt9}>{'KITN'}</Text>
+                {cacheVault.referrals || 0}{' '}
+                <Text style={styles.txt9}>{'KITN'}</Text>
               </Text>
             </Row>
             <Row>
               <Text style={styles.txt9}>{t('cachescreen.todaysReports')}</Text>
               <Text style={styles.txt9}>
-                {cacheVault.dailyReports} <Text style={styles.txt9}>{'KITN'}</Text>
+                {cacheVault.dailyReports}{' '}
+                <Text style={styles.txt9}>{'KITN'}</Text>
               </Text>
             </Row>
             <Row>
-              <Text style={styles.txt9}>{t('cachescreen.todaysReferrals')}</Text>
               <Text style={styles.txt9}>
-                {cacheVault.dailyReferrals} <Text style={styles.txt9}>{'KITN'}</Text>
+                {t('cachescreen.todaysReferrals')}
+              </Text>
+              <Text style={styles.txt9}>
+                {cacheVault.dailyReferrals}{' '}
+                <Text style={styles.txt9}>{'KITN'}</Text>
               </Text>
             </Row>
           </View>
           <View style={styles.balanceContainer}>
             <Row>
-              <Text style={styles.txt12}>{t('cachescreen.todaysLitterbox')}</Text>
+              <Text style={styles.txt12}>
+                {t('cachescreen.todaysLitterbox')}
+              </Text>
             </Row>
             <Text style={styles.txt24}>
               {`${cacheVault.dailyTotal || 0} `}
@@ -439,13 +465,16 @@ const CacheScreen = (props) => {
           </View>
           <View style={styles.balanceContainer}>
             <Row>
-              <Text style={styles.txt12}>{t('cachescreen.blockchainLink')}</Text>
+              <Text style={styles.txt12}>
+                {t('cachescreen.blockchainLink')}
+              </Text>
             </Row>
-            <Row style={{ marginTop: 12 }}>
+            <Row style={{marginTop: 12}}>
               <Text
-                style={{ ...styles.txt12bold, color: theme.COLORS.GREEN_LINK }}
-                onPress={() => Linking.openURL(blockchainLink)}
-              >{blockchainLink}</Text>
+                style={{...styles.txt12bold, color: theme.COLORS.GREEN_LINK}}
+                onPress={() => Linking.openURL(blockchainLink)}>
+                {blockchainLink}
+              </Text>
             </Row>
           </View>
           {/** Avatar */}
@@ -453,14 +482,18 @@ const CacheScreen = (props) => {
             <Text style={styles.txt12}>{t('cachescreen.avatar')}</Text>
             <View style={styles.border} />
           </View>
-          <View style={{ ...styles.blueCard, marginTop: 8 }}>
+          <View style={{...styles.blueCard, marginTop: 8}}>
             <View style={styles.row}>
               <Text style={styles.txt12thin}>
-                {avatarName === walletAddress ? t('cachescreen.avatarnotset') : avatarName}
+                {avatarName === walletAddress
+                  ? t('cachescreen.avatarnotset')
+                  : avatarName}
               </Text>
               <Pressable style={styles.btnBlack} onPress={editAvatar}>
                 <Text style={styles.txt16bold}>
-                  {avatarName === walletAddress ? t('cachescreen.create') : t('cachescreen.edit')}
+                  {avatarName === walletAddress
+                    ? t('cachescreen.create')
+                    : t('cachescreen.edit')}
                 </Text>
               </Pressable>
             </View>
@@ -471,20 +504,18 @@ const CacheScreen = (props) => {
               <Text style={styles.txt12}>{t('cachescreen.privacy')}</Text>
               <View style={styles.border} />
             </View>
-            <View style={{ ...styles.blueCard, marginTop: 8 }}>
+            <View style={{...styles.blueCard, marginTop: 8}}>
               <View style={styles.row}>
                 <View>
                   <Text style={styles.txt12thin}>
                     {shareDataStatus == 0
                       ? t('cachescreen.Mapreportswithavatar')
-                      : t('cachescreen.Sharereportsanonymously')
-                    }
+                      : t('cachescreen.Sharereportsanonymously')}
                   </Text>
                   <Text style={styles.txt12thinitalic}>
                     {shareDataStatus == 0
                       ? t('cachescreen.Traceable')
-                      : t('cachescreen.Nodatacollectedwhileflagging')
-                    }
+                      : t('cachescreen.Nodatacollectedwhileflagging')}
                   </Text>
                 </View>
                 <Pressable style={styles.btnBlack} onPress={editPrivacy}>
@@ -492,7 +523,7 @@ const CacheScreen = (props) => {
                 </Pressable>
               </View>
             </View>
-            <View style={{ ...styles.greyCard, marginTop: 16 }}>
+            <View style={{...styles.greyCard, marginTop: 16}}>
               <View style={styles.row}>
                 <Text style={styles.txt16bold}>
                   {t('cachescreen.cachesettings')}
@@ -503,6 +534,8 @@ const CacheScreen = (props) => {
               </View>
             </View>
           </View>
+          <PermissionRequest />
+          <WebSocketDemoScreen />
         </View>
       </ScrollView>
       <AvatarSheet
@@ -510,12 +543,12 @@ const CacheScreen = (props) => {
         onClose={() => {
           setAvatarOpened(false);
         }}
-        onUpdateUser={async (userName) => {
+        onUpdateUser={async userName => {
           if (userName.length == 0) {
             Alert.alert(
               t('onboarding.Error'),
               t('cachescreen.errAvatarEmpty'),
-              [{ text: t('onboarding.Ok'), type: 'cancel' }],
+              [{text: t('onboarding.Ok'), type: 'cancel'}],
             );
             return false;
           }
@@ -525,11 +558,11 @@ const CacheScreen = (props) => {
               Alert.alert(
                 t('onboarding.Error'),
                 t('onboarding.ErrSameUsernameExists'),
-                [{ text: t('onboarding.Ok'), type: 'cancel' }],
+                [{text: t('onboarding.Ok'), type: 'cancel'}],
               );
               return false;
             }
-            setUserName({ userName: userName });
+            setUserName({userName: userName});
             return true;
           } else {
             return false;
@@ -742,7 +775,7 @@ const styles = StyleSheet.create({
     padding: 10,
     color: 'white',
     fontSize: 20,
-    fontWeight: 'bold'
+    fontWeight: 'bold',
   },
 });
 

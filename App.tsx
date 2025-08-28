@@ -151,7 +151,7 @@ const App = () => {
 
   useEffect(() => {
     SplashScreen.hide();
-  })
+  });
   return (
     <Provider store={store}>
       <StateProvider initialState={initialState} reducer={reducer}>
