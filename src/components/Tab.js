@@ -5,6 +5,7 @@ import LeaderboardIcon from '../assets/ico_leaderboard.svg';
 import MapIcon from '../assets/ico_map.svg';
 import ShareIcon from '../assets/ico_share.svg';
 import MemberIcon from '../assets/ico_member.svg';
+import ReportIcon from './ReportIcon';
 const CleanAppIcon = require('../assets/CleanApp_Logo.png');
 
 const styles = StyleSheet.create({
@@ -31,7 +32,7 @@ function TabComponent({label, onPress}) {
         )}
         {label === 'Cache' && <MemberIcon />}
         {label === 'Leaderboard' && <LeaderboardIcon />}
-        {label === 'Reports' && <ShareIcon />}
+        {label === 'Reports' && <ReportIcon />}
         {label === 'Map' && <MapIcon />}
       </View>
     </Pressable>
