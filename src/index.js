@@ -12,16 +12,31 @@ import { theme } from './services/Common/theme';
 import { Leaderboard } from './screens/Leaderboard';
 import CameraScreen from './screens/CameraScreen';
 import CacheScreen from './screens/CacheScreen';
-import ReferralScreen from './screens/ReferralScreen';
+import ReferralScreen1 from './screens/ReferralScreen1';
+import ReferralScreen2 from './screens/ReferralScreen2';
 import MapScreen from './screens/MapScreen';
 import { getFirstRun, getPrivacySetting, getUserName, getWalletAddress, isPrivacyAndTermsAccepted } from './services/DataManager';
 import { updateOrCreateUser, updatePrivacyAndTOC } from './services/API/APIManager';
+import { createStackNavigator } from '@react-navigation/stack';
 
 enableScreens();
 
 const Tab = createBottomTabNavigator();
+const Stack = createStackNavigator();
 
-const BottomTabs = ({ navigation }) => {
+const ReferralStack = () => {
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: false,
+      }}>
+      <Stack.Screen name="ReferralScreen1" component={ReferralScreen1} />
+      <Stack.Screen name="ReferralScreen2" component={ReferralScreen2} />
+    </Stack.Navigator>
+  );
+};
+
+const BottomTabs = ({navigation}) => {
   const insets = useSafeAreaInsets();
   
   return (
@@ -79,7 +94,7 @@ const BottomTabs = ({ navigation }) => {
       />
       <Tab.Screen
         name="Referral"
-        component={ReferralScreen}
+        component={ReferralStack}
         options={{
           tabBarLabel: "Referral",
           tabBarButton: (props) => (
