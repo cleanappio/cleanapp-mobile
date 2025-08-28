@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { Linking, Modal, Pressable, ScrollView, StyleSheet, View, Text, TextInput, ToastAndroid, Alert, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { fontFamilies } from '../utils/fontFamilies';
@@ -15,6 +15,8 @@ import EyeOffIcon from '../assets/ico_eye_off.svg';
 import { BlurView } from '@react-native-community/blur';
 import { Row } from '../components/Row';
 import Clipboard from '@react-native-clipboard/clipboard';
+import QRCode from 'react-native-qrcode-svg';
+import Share from 'react-native-share';
 import {
   getPrivacySetting,
   getUserName,
@@ -31,10 +33,13 @@ import {
   updateOrCreateUser,
   updatePrivacyAndTOC,
 } from '../services/API/APIManager';
-import { useStateValue } from '../services/State/State';
-import { actions } from '../services/State/Reducer';
+import {generateReferralUrl} from '../functions/referral';
+import {useStateValue} from '../services/State/State';
+import {actions} from '../services/State/Reducer';
+import ShareIcon from '../assets/ico_share.svg';
 
-const CacheScreen = (props) => {
+const CacheScreen = props => {
+  const navigation = useNavigation();
   const [avatarOpened, setAvatarOpened] = useState(false);
   const [privacyOpened, setPrivacyOpened] = useState(false);
   const [cacheSettingOpened, setCacheSettingOpened] = useState(false);
@@ -237,7 +242,66 @@ const CacheScreen = (props) => {
     );
   };
 
-  const CacheSettingSheet = ({ isVisible = false, onClose = () => { } }) => {
+  const ReferralScreenModal = ({isVisible = false, onClose = () => {}}) => {
+    const {t} = useTranslation();
+    const [refUrl, setRefUrl] = useState('No refurl');
+
+    const onShare = () => {
+      let shareImage = {
+        message: refUrl,
+        subject: t('cachescreen.Sharingmyreferralcode'),
+        title: t('cachescreen.Sharingmyreferralcode'),
+      };
+      Share.open(shareImage)
+        .then(res => {})
+        .catch(err => {});
+    };
+
+    React.useEffect(() => {
+      if (isVisible) {
+        generateReferralUrl().then(url => {
+          if (url) {
+            setRefUrl(url);
+          }
+        });
+      }
+    }, [isVisible]);
+
+    return (
+      <Modal animationType="slide" transparent={true} visible={isVisible}>
+        <View style={styles.modalContainer}>
+          <View style={styles.referralModalContent}>
+            <Text style={styles.avatarHeader}>{t('referral.title')}</Text>
+            <Text style={styles.referralContent}>{t('referral.content')}</Text>
+
+            <View style={styles.qrContainer}>
+              <QRCode
+                size={200}
+                value={refUrl}
+                color={theme.COLORS.BLACK}
+                backgroundColor={theme.COLORS.WHITE}
+                quietZone={5}
+              />
+            </View>
+
+            <Text style={styles.referralUrl}>{refUrl}</Text>
+
+            <View style={{...styles.row, gap: 16}}>
+              <Pressable style={styles.smallBtn} onPress={onShare}>
+                <Text style={styles.txt16bold}>{t('referral.share')}</Text>
+              </Pressable>
+
+              <Pressable style={{...styles.smallBtn, backgroundColor: theme.COLORS.BLACK_04}} onPress={onClose}>
+                <Text style={styles.txt16bold}>{t('cachescreen.back')}</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    );
+  };
+
+  const CacheSettingSheet = ({isVisible = false, onClose = () => {}}) => {
     const [isShowPrivateKey, setIsShowPrivateKey] = useState(true);
     const [isShowMnemonics, setIsShowMnemonics] = useState(true);
 
@@ -391,6 +455,12 @@ const CacheScreen = (props) => {
     );
   };
 
+  const [referralOpened, setReferralOpened] = useState(false);
+
+  const openReferralScreen = () => {
+    setReferralOpened(true);
+  };
+
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -503,6 +573,15 @@ const CacheScreen = (props) => {
               </View>
             </View>
           </View>
+
+          <View style={{...styles.greyCard, marginBottom: 16}}>
+            <View style={styles.row}>
+              <Text style={styles.txt16bold}>{t('referral.title')}</Text>
+              <Pressable onPress={openReferralScreen}>
+                <ShareIcon />
+              </Pressable>
+            </View>
+          </View>
         </View>
       </ScrollView>
       <AvatarSheet
@@ -547,6 +626,12 @@ const CacheScreen = (props) => {
         isVisible={cacheSettingOpened}
         onClose={() => {
           setCacheSettingOpened(false);
+        }}
+      />
+      <ReferralScreenModal
+        isVisible={referralOpened}
+        onClose={() => {
+          setReferralOpened(false);
         }}
       />
     </SafeAreaView>
@@ -628,6 +713,13 @@ const styles = StyleSheet.create({
     backgroundColor: theme.COLORS.BG,
     borderRadius: 8,
     paddingVertical: 8,
+    alignItems: 'center',
+  },
+  smallBtn: {
+    width: '40%',
+    backgroundColor: theme.COLORS.BTN_BG_BLUE,
+    borderRadius: 8,
+    paddingVertical: 11,
     alignItems: 'center',
   },
   bigBtn: {
@@ -742,7 +834,36 @@ const styles = StyleSheet.create({
     padding: 10,
     color: 'white',
     fontSize: 20,
-    fontWeight: 'bold'
+    fontWeight: 'bold',
+  },
+  referralModalContent: {
+    backgroundColor: theme.COLORS.BG,
+    borderRadius: 16,
+    padding: 24,
+    alignItems: 'center',
+    maxWidth: '90%',
+    maxHeight: '80%',
+  },
+  referralContent: {
+    color: 'white',
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 20,
+    fontFamily: fontFamilies.Default,
+  },
+  qrContainer: {
+    marginVertical: 20,
+    padding: 16,
+    backgroundColor: 'white',
+    borderRadius: 8,
+  },
+  referralUrl: {
+    color: 'white',
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 20,
+    fontFamily: fontFamilies.Default,
+    paddingHorizontal: 16,
   },
 });
 
