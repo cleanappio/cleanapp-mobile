@@ -1,9 +1,9 @@
 /* eslint-disable react-native/no-inline-styles */
 import React from 'react';
-import { Image, Pressable, StyleSheet, View } from 'react-native';
+import {Image, Pressable, StyleSheet, View} from 'react-native';
 import LeaderboardIcon from '../assets/ico_leaderboard.svg';
 import MapIcon from '../assets/ico_map.svg';
-import ShareIcon from '../assets/ico_share.svg'
+import ShareIcon from '../assets/ico_share.svg';
 import MemberIcon from '../assets/ico_member.svg';
 const CleanAppIcon = require('../assets/CleanApp_Logo.png');
 
@@ -22,30 +22,17 @@ const styles = StyleSheet.create({
   },
 });
 
-function TabComponent({
-  label,
-  onPress,
-}) {
+function TabComponent({label, onPress}) {
   return (
     <Pressable onPress={onPress}>
-      <View
-        style={styles.icon}
-      >
+      <View style={styles.icon}>
         {label === 'Camera' && (
           <Image source={CleanAppIcon} style={styles.centralIcon} />
         )}
-        {label === 'Cache' && (
-          <MemberIcon />
-        )}
-        {label === 'Leaderboard' && (
-          <LeaderboardIcon />
-        )}
-        {label === 'Referral' && (
-          <ShareIcon />
-        )}
-        {label === 'Map' && (
-          <MapIcon />
-        )}
+        {label === 'Cache' && <MemberIcon />}
+        {label === 'Leaderboard' && <LeaderboardIcon />}
+        {label === 'Reports' && <ShareIcon />}
+        {label === 'Map' && <MapIcon />}
       </View>
     </Pressable>
   );

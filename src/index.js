@@ -12,8 +12,8 @@ import { theme } from './services/Common/theme';
 import { Leaderboard } from './screens/Leaderboard';
 import CameraScreen from './screens/CameraScreen';
 import CacheScreen from './screens/CacheScreen';
-import ReferralScreen1 from './screens/ReferralScreen1';
-import ReferralScreen2 from './screens/ReferralScreen2';
+import ReportsScreen from './screens/ReportsScreen';
+import ReportDetails from './screens/ReportDetails';
 import MapScreen from './screens/MapScreen';
 import { getFirstRun, getPrivacySetting, getUserName, getWalletAddress, isPrivacyAndTermsAccepted } from './services/DataManager';
 import { updateOrCreateUser, updatePrivacyAndTOC } from './services/API/APIManager';
@@ -24,14 +24,14 @@ enableScreens();
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
-const ReferralStack = () => {
+const ReportsStack = () => {
   return (
     <Stack.Navigator
       screenOptions={{
         headerShown: false,
       }}>
-      <Stack.Screen name="ReferralScreen1" component={ReferralScreen1} />
-      <Stack.Screen name="ReferralScreen2" component={ReferralScreen2} />
+      <Stack.Screen name="ReportsScreen" component={ReportsScreen} />
+      <Stack.Screen name="ReportDetails" component={ReportDetails} />
     </Stack.Navigator>
   );
 };
@@ -93,13 +93,11 @@ const BottomTabs = ({navigation}) => {
         }}
       />
       <Tab.Screen
-        name="Referral"
-        component={ReferralStack}
+        name="Reports"
+        component={ReportsStack}
         options={{
-          tabBarLabel: "Referral",
-          tabBarButton: (props) => (
-            <TabComponent label="Referral" {...props} />
-          ),
+          tabBarLabel: 'Reports',
+          tabBarButton: props => <TabComponent label="Reports" {...props} />,
         }}
       />
       <Tab.Screen

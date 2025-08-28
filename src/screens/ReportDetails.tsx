@@ -6,38 +6,52 @@ import {theme} from '../services/Common/theme';
 import {fontFamilies} from '../utils/fontFamilies';
 import {useTranslation} from 'react-i18next';
 
-const ReferralScreen1 = () => {
+const ReportDetails = () => {
   const navigation = useNavigation();
   const {t} = useTranslation();
 
-  const navigateToScreen2 = () => {
-    navigation.navigate('ReferralScreen2');
+  const goBack = () => {
+    navigation.goBack();
   };
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <View style={styles.content}>
-        <Text style={styles.title}>Referral Screen 1</Text>
+        <Text style={styles.title}>Referral Screen 2</Text>
         <Text style={styles.subtitle}>
-          This is the first screen in the Referral tab
+          This is the second screen in the Referral tab
         </Text>
 
         <View style={styles.buttonContainer}>
-          <Pressable style={styles.button} onPress={navigateToScreen2}>
-            <Text style={styles.buttonText}>Go to Screen 2</Text>
+          <Pressable style={styles.button} onPress={goBack}>
+            <Text style={styles.buttonText}>Go Back to Screen 1</Text>
           </Pressable>
         </View>
 
         <View style={styles.infoContainer}>
           <Text style={styles.infoText}>
-            • This screen demonstrates navigation within a tab
+            • You've successfully navigated to Screen 2
           </Text>
           <Text style={styles.infoText}>
-            • You can navigate to Screen 2 and come back
+            • Use the back button to return to Screen 1
           </Text>
           <Text style={styles.infoText}>
-            • The bottom tab bar remains visible
+            • The bottom tab bar is still visible
           </Text>
+          <Text style={styles.infoText}>
+            • This demonstrates stack navigation within a tab
+          </Text>
+        </View>
+
+        <View style={styles.statsContainer}>
+          <Text style={styles.statsTitle}>Navigation Stats</Text>
+          <Text style={styles.statsText}>
+            • Current Screen: ReferralScreen2
+          </Text>
+          <Text style={styles.statsText}>
+            • Previous Screen: ReferralScreen1
+          </Text>
+          <Text style={styles.statsText}>• Tab: Referral</Text>
         </View>
       </View>
     </SafeAreaView>
@@ -93,6 +107,7 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 12,
     maxWidth: 300,
+    marginBottom: 20,
   },
   infoText: {
     fontFamily: fontFamilies.Default,
@@ -101,6 +116,29 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     lineHeight: 20,
   },
+  statsContainer: {
+    backgroundColor: theme.COLORS.BTN_BG_BLUE_30P,
+    padding: 20,
+    borderRadius: 12,
+    maxWidth: 300,
+    borderWidth: 1,
+    borderColor: theme.COLORS.BTN_BG_BLUE,
+  },
+  statsTitle: {
+    fontFamily: fontFamilies.Default,
+    fontSize: 16,
+    fontWeight: '600',
+    color: theme.COLORS.TEXT_GREY,
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  statsText: {
+    fontFamily: fontFamilies.Default,
+    fontSize: 14,
+    color: theme.COLORS.TEXT_GREY,
+    marginBottom: 6,
+    lineHeight: 20,
+  },
 });
 
-export default ReferralScreen1;
+export default ReportDetails;
