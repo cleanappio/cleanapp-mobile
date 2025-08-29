@@ -33,6 +33,9 @@ export const settings = {
     createOrUpdateArea: 'create_or_update_area',
     getArea: 'get_areas',
   },
+  v3api: {
+    getReportsByLatLon: 'get_reports_by_lat_lon',
+  },
   apiSettings: {
     sendingAttempts: 3,
   }

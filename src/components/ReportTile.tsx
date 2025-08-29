@@ -1,6 +1,6 @@
 import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
-import { fontFamilies } from '../utils/fontFamilies';
-import { theme } from '../services/Common/theme';
+import {fontFamilies} from '../utils/fontFamilies';
+import {theme} from '../services/Common/theme';
 
 interface ReportTileProps {
   title: string;
@@ -9,15 +9,29 @@ interface ReportTileProps {
   onPress: () => void;
 }
 
-export const ReportTile = ({title, description, time, onPress}: ReportTileProps) => {
+export const ReportTile = ({
+  title,
+  description,
+  time,
+  onPress,
+}: ReportTileProps) => {
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>
       <View style={styles.row}>
-        <View style={styles.col}>
-        <Text style={styles.txt14}>{title}</Text>
-        <Text style={styles.txt12}>{description}</Text>
+        <View style={{...styles.col, flex: 3}}>
+          <Text style={styles.txt12} numberOfLines={1}>
+            {title}
+          </Text>
+          <Text style={styles.txt12} numberOfLines={2}>
+            {description}
+          </Text>
         </View>
-        <Text style={styles.txt12}>{time}</Text>
+
+        <View style={{...styles.col, flex: 2}}>
+          <Text style={styles.txt12} numberOfLines={1}>
+            {time}
+          </Text>
+        </View>
       </View>
     </TouchableOpacity>
   );
@@ -26,17 +40,21 @@ export const ReportTile = ({title, description, time, onPress}: ReportTileProps)
 const styles = StyleSheet.create({
   container: {
     borderRadius: 10,
-    padding: 16,
+    paddingHorizontal: 0,
+    paddingVertical: 12,
+    width: '100%',
   },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    overflow: 'hidden',
   },
   col: {
     flexDirection: 'column',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     gap: 4,
+    flex: 1,
   },
   txt12: {
     fontFamily: fontFamilies.Default,
@@ -51,6 +69,7 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     fontWeight: '400',
     color: theme.COLORS.TEXT_GREY,
+    overflow: 'hidden',
   },
   txt16: {
     fontFamily: fontFamilies.Default,

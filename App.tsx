@@ -1,20 +1,17 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react-native/no-inline-styles */
 import 'react-native-screens';
-import { enableScreens } from 'react-native-screens';
-import {
-  StatusBar,
-  NativeModules,
-  Platform,
-} from 'react-native';
+import {enableScreens} from 'react-native-screens';
+import {StatusBar, NativeModules, Platform} from 'react-native';
 import React, {useEffect} from 'react';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import {SafeAreaProvider} from 'react-native-safe-area-context';
 import CreateRootNavigator from './src/index';
 import {StateProvider} from './src/services/State/State.js';
 import {initialState} from './src/services/State/InitialState.js';
 import {reducer, actions} from './src/services/State/Reducer.js';
 import {useStateValue} from './src/services/State/State.js';
 import {theme} from './src/services/Common/theme.js';
+import PollingService from './src/services/PollingService';
 import {
   getLanguage,
   getUserInfo,
@@ -50,6 +47,17 @@ const RootNavigator = () => {
 
   const [{progressSettings, alertSettings, fabShow}, dispatch] =
     useStateValue();
+
+  // Initialize polling service with dispatch
+  useEffect(() => {
+    PollingService.setDispatch(dispatch);
+    PollingService.startPolling();
+
+    // Cleanup when component unmounts
+    return () => {
+      PollingService.stopPolling();
+    };
+  }, [dispatch]);
   const {show = false} = progressSettings || {};
   const {settings} = alertSettings || {};
 
@@ -137,10 +145,7 @@ const RootNavigator = () => {
 
   return (
     <SafeAreaProvider style={{flex: 1, backgroundColor: theme.APP_COLOR_1}}>
-      <StatusBar
-        barStyle="light-content"
-        backgroundColor={theme.APP_COLOR_1}
-      />
+      <StatusBar barStyle="light-content" backgroundColor={theme.APP_COLOR_1} />
       <CreateRootNavigator />
     </SafeAreaProvider>
   );
@@ -151,7 +156,7 @@ const App = () => {
 
   useEffect(() => {
     SplashScreen.hide();
-  })
+  });
   return (
     <Provider store={store}>
       <StateProvider initialState={initialState} reducer={reducer}>
