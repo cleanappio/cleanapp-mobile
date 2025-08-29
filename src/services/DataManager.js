@@ -25,9 +25,11 @@ const KEYS = {
   REFERRAL_KEY: 'REFERRAL_KEY',
   REFERRAL: 'REFERRAL',
   TEAM: 'TEAM',
+  NOTIFIED_REPORTS: 'NOTIFIED_REPORTS',
+  OPENED_REPORTS: 'OPENED_REPORTS',
 };
 
-export const setUserInfo = async (userDetails) => {
+export const setUserInfo = async userDetails => {
   try {
     await AsyncStorage.setItem(KEYS.USER_INFO, JSON.stringify(userDetails));
   } catch (err) {
@@ -46,7 +48,7 @@ export const getUserInfo = async () => {
     return null;
   }
 };
-export const setUserName = async (userDetails) => {
+export const setUserName = async userDetails => {
   try {
     await AsyncStorage.setItem(KEYS.USER_NAME, JSON.stringify(userDetails));
   } catch (err) {
@@ -65,7 +67,7 @@ export const getUserName = async () => {
   }
 };
 
-export const setPrivacySetting = async (privacyValue) => {
+export const setPrivacySetting = async privacyValue => {
   try {
     await AsyncStorage.setItem(KEYS.PRIVACY_SETTING, String(privacyValue));
     return true;
@@ -83,7 +85,7 @@ export const getPrivacySetting = async () => {
   } catch (err) {
     return null;
   }
-}
+};
 
 export const setPrivacyAndTermsAccepted = async () => {
   try {
@@ -149,7 +151,7 @@ export const getLastActivity = async () => {
   }
 };
 
-export const setAuthToken = async (authToken) => {
+export const setAuthToken = async authToken => {
   try {
     await AsyncStorage.setItem(KEYS.AUTH_TOKEN, JSON.stringify(authToken));
   } catch (err) {
@@ -179,7 +181,7 @@ export const walletKeys = {
   phecorBal: '',
 };
 
-export const setWalletData = async (walletData) => {
+export const setWalletData = async walletData => {
   try {
     await AsyncStorage.setItem(KEYS.WALLET_KEY, JSON.stringify(walletData));
   } catch (err) {
@@ -199,7 +201,7 @@ export const getWalletData = async () => {
   }
 };
 
-export const setWalletAddress = async (walletData) => {
+export const setWalletAddress = async walletData => {
   try {
     await AsyncStorage.setItem(
       KEYS.WALLETADDRESS_KEY,
@@ -241,7 +243,7 @@ export const getWalletType = async () => {
   }
 };
 
-export const setWalletType = async (type) => {
+export const setWalletType = async type => {
   try {
     await AsyncStorage.setItem(KEYS.WALLET_TYPE, JSON.stringify(type));
   } catch (err) {
@@ -249,7 +251,7 @@ export const setWalletType = async (type) => {
   }
 };
 
-export const setLanguage = async (language) => {
+export const setLanguage = async language => {
   try {
     await AsyncStorage.setItem(KEYS.LANGUAGE, JSON.stringify(language));
     await i18next.changeLanguage(language);
@@ -323,7 +325,7 @@ export const getRewardState = async () => {
   return false;
 };
 
-export const setRewardState = async (hasReward) => {
+export const setRewardState = async hasReward => {
   try {
     await AsyncStorage.setItem(KEYS.HAS_REWARDS, JSON.stringify(hasReward));
   } catch (err) {}
@@ -339,7 +341,7 @@ export const getUserLocation = async () => {
   return null;
 };
 
-export const setUserLocation = async (location) => {
+export const setUserLocation = async location => {
   try {
     await AsyncStorage.setItem(KEYS.USER_LOCATION, JSON.stringify(location));
   } catch (err) {}
@@ -363,7 +365,7 @@ export const getCacheVault = async () => {
   };
 };
 
-export const setCacheVault = async (cacheInfo) => {
+export const setCacheVault = async cacheInfo => {
   try {
     await AsyncStorage.setItem(KEYS.CACHE_VAULT, JSON.stringify(cacheInfo));
   } catch (err) {}
@@ -382,7 +384,7 @@ export const getMapLocation = async () => {
   };
 };
 
-export const setMapLocation = async (mapLocation) => {
+export const setMapLocation = async mapLocation => {
   try {
     await AsyncStorage.setItem(KEYS.MAP_LOCATION, JSON.stringify(mapLocation));
   } catch (err) {}
@@ -398,7 +400,7 @@ export const getReports = async () => {
   return [];
 };
 
-export const setReports = async (reports) => {
+export const setReports = async reports => {
   try {
     await AsyncStorage.setItem(KEYS.REPORTS, JSON.stringify(reports));
   } catch (err) {}
@@ -414,7 +416,7 @@ export const getPlayers = async () => {
   return [];
 };
 
-export const setPlayers = async (players) => {
+export const setPlayers = async players => {
   try {
     await AsyncStorage.setItem(KEYS.PLAYERS, JSON.stringify(players));
   } catch (err) {}
@@ -430,7 +432,7 @@ export const getGuilds = async () => {
   return [];
 };
 
-export const setGuilds = async (guilds) => {
+export const setGuilds = async guilds => {
   try {
     await AsyncStorage.setItem(KEYS.GUILDS, JSON.stringify(guilds));
   } catch (err) {}
@@ -442,13 +444,13 @@ export const getReferralKey = async () => {
   } catch (err) {
     return '';
   }
-}
+};
 
-export const setReferralKey = async (referralKey) => {
+export const setReferralKey = async referralKey => {
   try {
     await AsyncStorage.setItem(KEYS.REFERRAL_KEY, referralKey);
   } catch (err) {}
-}
+};
 
 export const getReferral = async () => {
   try {
@@ -456,13 +458,13 @@ export const getReferral = async () => {
   } catch (err) {
     return '';
   }
-}
+};
 
-export const setReferral = async (referral) => {
+export const setReferral = async referral => {
   try {
     await AsyncStorage.setItem(KEYS.REFERRAL, referral);
   } catch (err) {}
-}
+};
 
 export const getTeam = async () => {
   try {
@@ -470,10 +472,58 @@ export const getTeam = async () => {
   } catch (err) {
     return 0;
   }
-}
+};
 
-export const setTeam = async (team) => {
+export const setTeam = async team => {
   try {
     await AsyncStorage.setItem(KEYS.TEAM, team.toString());
   } catch (err) {}
-}
+};
+
+export const getNotifiedReports = async () => {
+  try {
+    const response = await AsyncStorage.getItem(KEYS.NOTIFIED_REPORTS);
+    return response;
+  } catch (err) {
+    return null;
+  }
+};
+
+export const setNotifiedReports = async NotifiedReports => {
+  try {
+    await AsyncStorage.setItem(
+      KEYS.NOTIFIED_REPORTS,
+      JSON.stringify(NotifiedReports),
+    );
+  } catch (err) {}
+};
+
+export const removeNotifiedReports = async () => {
+  try {
+    await AsyncStorage.removeItem(KEYS.NOTIFIED_REPORTS);
+  } catch (err) {}
+};
+
+export const getOpenedReports = async () => {
+  try {
+    const response = await AsyncStorage.getItem(KEYS.OPENED_REPORTS);
+    return response;
+  } catch (err) {
+    return null;
+  }
+};
+
+export const setOpenedReports = async openedReports => {
+  try {
+    await AsyncStorage.setItem(
+      KEYS.OPENED_REPORTS,
+      JSON.stringify(openedReports),
+    );
+  } catch (err) {}
+};
+
+export const removeOpenedReports = async () => {
+  try {
+    await AsyncStorage.removeItem(KEYS.OPENED_REPORTS);
+  } catch (err) {}
+};

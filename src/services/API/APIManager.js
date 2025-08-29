@@ -1,9 +1,15 @@
-import { getJSONData, postJSONData } from './CoreAPICalls';
-import { settings as s } from './Settings';
+import {getJSONData, postJSONData} from './CoreAPICalls';
+import {settings as s} from './Settings';
+import {getMapLocation} from '../DataManager';
 
 // === API v.2
 
-export const updateOrCreateUser = async (publicAddress, avatar, refKey, referral) => {
+export const updateOrCreateUser = async (
+  publicAddress,
+  avatar,
+  refKey,
+  referral,
+) => {
   try {
     const data = {
       version: '2.0',
@@ -11,11 +17,11 @@ export const updateOrCreateUser = async (publicAddress, avatar, refKey, referral
       avatar: avatar,
       ref_key: refKey,
       referral: referral,
-    }
+    };
     const response = await postJSONData(s.v2api.updateOrCreateUser, data);
     const ret = {
-      ok: response.ok
-    }
+      ok: response.ok,
+    };
     if (response.ok) {
       resp_json = await response.json();
       ret.team = resp_json.team;
@@ -31,7 +37,7 @@ export const updateOrCreateUser = async (publicAddress, avatar, refKey, referral
   } catch (err) {
     return null;
   }
-}
+};
 
 export const updatePrivacyAndTOC = async (publicAddress, privacy, agreeTOC) => {
   try {
@@ -40,11 +46,11 @@ export const updatePrivacyAndTOC = async (publicAddress, privacy, agreeTOC) => {
       id: publicAddress,
       privacy: privacy,
       agree_toc: agreeTOC || '',
-    }
+    };
     const response = await postJSONData(s.v2api.updatePrivacyAndToc, data);
     const ret = {
-      ok: response.ok
-    }
+      ok: response.ok,
+    };
     if (!response.ok) {
       if (response.error) {
         ret.error = response.error;
@@ -56,9 +62,17 @@ export const updatePrivacyAndTOC = async (publicAddress, privacy, agreeTOC) => {
   } catch (err) {
     return null;
   }
-}
+};
 
-export const report = async (publicAddress, latitude, longitude, relX, relY, image, annotation = '') => {
+export const report = async (
+  publicAddress,
+  latitude,
+  longitude,
+  relX,
+  relY,
+  image,
+  annotation = '',
+) => {
   try {
     const data = {
       version: '2.0',
@@ -68,17 +82,17 @@ export const report = async (publicAddress, latitude, longitude, relX, relY, ima
       x: relX,
       y: relY,
       image: image,
-    }
-    
+    };
+
     // Add annotation if provided
     if (annotation && annotation.trim()) {
       data.annotation = annotation.trim();
     }
-    
+
     const response = await postJSONData(s.v2api.report, data);
     const ret = {
-      ok: response.ok
-    }
+      ok: response.ok,
+    };
     if (response.ok) {
     } else {
       if (response.error) {
@@ -91,9 +105,17 @@ export const report = async (publicAddress, latitude, longitude, relX, relY, ima
   } catch (err) {
     return null;
   }
-}
+};
 
-export const getReportsOnMap = async (publicAddress, latMin, lonMin, latMax, lonMax, latCenter, lonCenter) => {
+export const getReportsOnMap = async (
+  publicAddress,
+  latMin,
+  lonMin,
+  latMax,
+  lonMax,
+  latCenter,
+  lonCenter,
+) => {
   try {
     const data = {
       version: '2.0',
@@ -108,14 +130,15 @@ export const getReportsOnMap = async (publicAddress, latMin, lonMin, latMax, lon
         lat: latCenter,
         lon: lonCenter,
       },
-    }
+    };
     const response = await postJSONData(s.v2api.getMap, data);
     const ret = {
-      ok: response.ok
-    }
+      ok: response.ok,
+    };
     if (response.ok) {
-      ret.reports = await response.json()
-        .then((reports) => { return reports; });
+      ret.reports = await response.json().then(reports => {
+        return reports;
+      });
     } else {
       if (response.error) {
         ret.error = response.error;
@@ -127,7 +150,7 @@ export const getReportsOnMap = async (publicAddress, latMin, lonMin, latMax, lon
   } catch (err) {
     return null;
   }
-}
+};
 
 export const readReport = async (publicAddress, reportSeq) => {
   try {
@@ -135,14 +158,15 @@ export const readReport = async (publicAddress, reportSeq) => {
       version: '2.0',
       id: publicAddress,
       seq: reportSeq,
-    }
+    };
     const response = await postJSONData(s.v2api.readReport, data);
     const ret = {
-      ok: response.ok
-    }
+      ok: response.ok,
+    };
     if (response.ok) {
-      ret.report = await response.json()
-        .then((reports) => { return reports; });
+      ret.report = await response.json().then(reports => {
+        return reports;
+      });
     } else {
       if (response.error) {
         ret.error = response.error;
@@ -154,21 +178,20 @@ export const readReport = async (publicAddress, reportSeq) => {
   } catch (err) {
     return null;
   }
-}
+};
 
-export const fetchReferral = async (key) => {
+export const fetchReferral = async key => {
   try {
     const data = {
       version: '2.0',
       refkey: key,
-    }
+    };
     const response = await postJSONData(s.v2api.readReferral, data);
     const ret = {
-      ok: response.ok
-    }
+      ok: response.ok,
+    };
     if (response.ok) {
-      ret.refid = await response.json()
-        .then((response) => response.refvalue);
+      ret.refid = await response.json().then(response => response.refvalue);
     } else {
       if (response.error) {
         ret.error = response.error;
@@ -180,21 +203,20 @@ export const fetchReferral = async (key) => {
   } catch (err) {
     return null;
   }
-}
+};
 
-export const generateReferral = async (publicAddress) => {
+export const generateReferral = async publicAddress => {
   try {
     const data = {
       version: '2.0',
       id: publicAddress,
-    }
+    };
     const response = await postJSONData(s.v2api.generateReferral, data);
     const ret = {
-      ok: response.ok
-    }
+      ok: response.ok,
+    };
     if (response.ok) {
-      ret.refid = await response.json()
-        .then((response) => response.refvalue);
+      ret.refid = await response.json().then(response => response.refvalue);
     } else {
       if (response.error) {
         ret.error = response.error;
@@ -202,22 +224,22 @@ export const generateReferral = async (publicAddress) => {
         ret.error = response.statusText;
       }
     }
-    return ret
+    return ret;
   } catch (err) {
     return null;
   }
-}
+};
 
-export const getTeams = async (publicAddress) => {
+export const getTeams = async publicAddress => {
   try {
     const data = {
       version: '2.0',
       id: publicAddress,
-    }
+    };
     const response = await postJSONData(s.v2api.getTeams, data);
     const ret = {
-      ok: response.ok
-    }
+      ok: response.ok,
+    };
     if (response.ok) {
       respJson = await response.json();
       ret.green = respJson.green;
@@ -229,51 +251,24 @@ export const getTeams = async (publicAddress) => {
         ret.error = response.statusText;
       }
     }
-    return ret
+    return ret;
   } catch (err) {
     return null;
   }
-}
+};
 
-export const getTopScores = async (publicAddress) => {
+export const getTopScores = async publicAddress => {
   try {
     const data = {
       version: '2.0',
       id: publicAddress,
-    }
+    };
     const response = await postJSONData(s.v2api.getTopScores, data);
     const ret = {
-      ok: response.ok
-    }
+      ok: response.ok,
+    };
     if (response.ok) {
-      ret.records = await response.json()
-        .then((response) => response.records);
-    } else {
-      if (response.error) {
-        ret.error = response.error;
-      } else if (response.status) {
-        ret.error = response.statusText;
-      }
-    }
-    return ret
-  } catch (err) {
-    return null;
-  }
-}
-
-export const getRewardStats = async (publicAddress) => {
-  try {
-    const data = {
-      version: '2.0',
-      id: publicAddress,
-    }
-    const response = await postJSONData(s.v2api.getStats, data);
-    const ret = {
-      ok:response.ok
-    }
-    if (response.ok) {
-      ret.stats = await response.json()
-        .then((response) => response);
+      ret.records = await response.json().then(response => response.records);
     } else {
       if (response.error) {
         ret.error = response.error;
@@ -285,18 +280,43 @@ export const getRewardStats = async (publicAddress) => {
   } catch (err) {
     return null;
   }
-}
+};
 
-export const getBlockchainLink = async (publicAddress) => {
+export const getRewardStats = async publicAddress => {
   try {
     const data = {
       version: '2.0',
       id: publicAddress,
+    };
+    const response = await postJSONData(s.v2api.getStats, data);
+    const ret = {
+      ok: response.ok,
+    };
+    if (response.ok) {
+      ret.stats = await response.json().then(response => response);
+    } else {
+      if (response.error) {
+        ret.error = response.error;
+      } else if (response.status) {
+        ret.error = response.statusText;
+      }
     }
+    return ret;
+  } catch (err) {
+    return null;
+  }
+};
+
+export const getBlockchainLink = async publicAddress => {
+  try {
+    const data = {
+      version: '2.0',
+      id: publicAddress,
+    };
     const response = await postJSONData(s.v2api.getBlockchainLink, data);
     const ret = {
-      ok:response.ok
-    }
+      ok: response.ok,
+    };
     if (response.ok) {
       respJson = await response.json();
       ret.blockchainLink = respJson.blockchain_link;
@@ -311,18 +331,18 @@ export const getBlockchainLink = async (publicAddress) => {
   } catch (err) {
     return null;
   }
-}
+};
 
-export const createOrUpdateArea = async (area) => {
+export const createOrUpdateArea = async area => {
   try {
     const data = {
       version: '2.0',
       area: area,
-    }
+    };
     const response = await postJSONData(s.v2api.createOrUpdateArea, data);
     const ret = {
-      ok: response.ok
-    }
+      ok: response.ok,
+    };
     if (!response.ok) {
       if (response.error) {
         ret.error = response.error;
@@ -333,7 +353,7 @@ export const createOrUpdateArea = async (area) => {
   } catch (err) {
     return null;
   }
-}
+};
 
 export const getAreas = async (latMin, lonMin, latMax, lonMax) => {
   try {
@@ -342,14 +362,13 @@ export const getAreas = async (latMin, lonMin, latMax, lonMax) => {
       sw_lon: `${lonMin}`,
       ne_lat: `${latMax}`,
       ne_lon: `${lonMax}`,
-    }
+    };
     const response = await getJSONData(s.v2api.getArea, params);
     const ret = {
-      ok: response.ok
-    }
+      ok: response.ok,
+    };
     if (response.ok) {
-      ret.areas = await response.json()
-        .then((response) => response);
+      ret.areas = await response.json().then(response => response);
     } else {
       if (response.error) {
         ret.error = response.error;
@@ -362,4 +381,42 @@ export const getAreas = async (latMin, lonMin, latMax, lonMax) => {
     console.error(err);
     return null;
   }
-}
+};
+
+export const getReportsByLatLon = async (lat, lon) => {
+  try {
+    const params = {
+      latitude: `${lat}`,
+      longitude: `${lon}`,
+      radius_km: '0.5',
+      n: '10',
+      lang: 'en',
+    };
+
+    // const url = `${s.v3api.getReportsByLatLon}?${new URLSearchParams(params).toString()}`;
+    const url = `https://live.cleanapp.io/api/v3/reports/by-latlng?latitude=${lat}&longitude=${lon}&radius_km=0.5&n=10&lang='en'`;
+    console.log('URL', url);
+    const response = await fetch(url);
+    console.log('Response', response);
+    const ret = {
+      ok: response.ok,
+      reports: undefined,
+      error: undefined,
+    };
+    if (response.ok) {
+      ret.reports = await response.json().then(response => response);
+    } else {
+      if (response.error) {
+        ret.error = response.error;
+      } else if (response.status) {
+        ret.error = response.statusText;
+      }
+    }
+
+    console.log('Ret', ret);
+    return ret;
+  } catch (err) {
+    console.error(err);
+    return null;
+  }
+};
