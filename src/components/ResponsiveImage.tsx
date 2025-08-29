@@ -98,7 +98,9 @@ const ResponsiveImage: React.FC<ResponsiveImageProps> = ({
               borderRadius,
             },
           ]}>
-          <Text style={styles.loadingText}>Loading...</Text>
+          {resizeMode === 'contain' && (
+            <Text style={styles.loadingText}>Loading...</Text>
+          )}
         </View>
       )}
 

@@ -30,48 +30,18 @@ const ReportsScreen = () => {
     useReportsContext();
 
   const navigateToReport = (report: any) => {
-    // Mark report as read when navigating to it
-    // markReportAsRead(report.id);
-
-    // Mark report as opened for notification badge
     markReportAsOpened(report.id);
-
-    // Note: No need to refresh local state since openedReports comes from the hook
     navigation.navigate('ReportDetails', {report});
   };
 
-  // Note: markReportAsOpened is now provided by the ReportsContext
+  // Function to check if a report is opened
+  const isReportOpened = (reportId: string | number): boolean => {
+    return openedReports.includes(reportId);
+  };
 
   const handleManualRefresh = () => {
-    // Note: These functions are now provided by the useNotifiedReports hook
-    // removeOpenedReports();
-    // getOpenedReports().then(openedReports => {
-    //   console.log('🔍 [ReportsScreen] openedReports:', openedReports);
-    // });
     PollingService.manualPoll();
   };
-
-  // Test function to clear corrupted data and start fresh
-  const clearCorruptedData = async () => {
-    try {
-      // Note: removeOpenedReports is now provided by the useNotifiedReports hook
-      // await removeOpenedReports();
-
-      // Force a refresh to see the clean state
-      PollingService.manualPoll();
-    } catch (error) {
-      console.error('❌ [ReportsScreen] Clearing data:', error);
-    }
-  };
-
-  // Note: openedReports is now provided by the useNotifiedReports hook via context
-
-  // Note: openedReports is now provided by the useNotifiedReports hook via context
-  // No need to load from AsyncStorage manually
-
-  // useEffect(() => {
-  //   clearCorruptedData();
-  // }, []);
 
   const formatTime = (timeString: string) => {
     try {
@@ -152,14 +122,6 @@ const ReportsScreen = () => {
     return sortedGrouped;
   };
 
-  // Debug log to see current state
-  // console.log('🔍 [ReportsScreen] Rendering with storedReadReports:', {
-  //   type: typeof storedReadReports,
-  //   isArray: Array.isArray(storedReadReports),
-  //   value: storedReadReports,
-  //   length: storedReadReports?.length,
-  // });
-
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
@@ -167,58 +129,6 @@ const ReportsScreen = () => {
         <Pressable style={styles.refreshButton} onPress={handleManualRefresh}>
           <Text style={styles.refreshButtonText}>Refresh</Text>
         </Pressable>
-      </View>
-
-      {/* Stored Read Reports Display */}
-      <View style={styles.storedReportsSection}>
-        <View style={styles.storedReportsCard}>
-          <View style={styles.storedReportsHeader}>
-            <Text style={styles.storedReportsTitle}>Stored Opened Reports</Text>
-            <Pressable
-              style={styles.refreshButton}
-              onPress={() => {
-                // Note: No need to reload since openedReports comes from the hook
-              }}
-              disabled={false}>
-              <Text style={styles.refreshButtonText}>🔄 Refresh</Text>
-            </Pressable>
-          </View>
-
-          {false ? ( // Note: No loading state needed since openedReports comes from hook
-            <Text style={styles.storedReportsSubtext}>
-              Loading stored reports...
-            </Text>
-          ) : openedReports && openedReports.length > 0 ? (
-            <View>
-              <Text style={styles.storedReportsSubtext}>
-                {openedReports.length} opened report(s) from hook:
-              </Text>
-              <View style={styles.reportIdsContainer}>
-                {Array.isArray(openedReports) &&
-                  openedReports.map((reportId: any, index: number) => (
-                    <View key={index} style={styles.reportIdItem}>
-                      <Text style={styles.reportIdText}>{reportId}</Text>
-                    </View>
-                  ))}
-              </View>
-            </View>
-          ) : (
-            <Text style={styles.storedReportsSubtext}>
-              No opened reports from hook yet
-            </Text>
-          )}
-
-          <View style={styles.storedReportsButtons}>
-            <Pressable style={styles.clearButton} onPress={clearCorruptedData}>
-              <Text style={styles.clearButtonText}>🗑️ Clear All</Text>
-            </Pressable>
-            <Pressable
-              style={styles.manualRefreshButton}
-              onPress={handleManualRefresh}>
-              <Text style={styles.manualRefreshButtonText}>📡 Manual Poll</Text>
-            </Pressable>
-          </View>
-        </View>
       </View>
 
       {lastReportsUpdate && (
@@ -247,6 +157,7 @@ const ReportsScreen = () => {
                     time={report.time}
                     onPress={() => navigateToReport(report)}
                     reportImage={report.image}
+                    isReportOpened={isReportOpened(report.id)}
                   />
                 ))}
               </View>

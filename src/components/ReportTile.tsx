@@ -9,6 +9,7 @@ interface ReportTileProps {
   time: string;
   onPress: () => void;
   reportImage: string;
+  isReportOpened: boolean;
 }
 
 const getTime = (time: string) => {
@@ -22,9 +23,14 @@ export const ReportTile = ({
   time,
   onPress,
   reportImage,
+  isReportOpened,
 }: ReportTileProps) => {
   return (
-    <TouchableOpacity style={styles.container} onPress={onPress}>
+    <TouchableOpacity
+      style={
+        isReportOpened ? {...styles.container, opacity: 0.6} : styles.container
+      }
+      onPress={onPress}>
       <View style={styles.row}>
         <View
           style={{
