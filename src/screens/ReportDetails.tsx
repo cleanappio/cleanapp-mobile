@@ -15,6 +15,7 @@ import {theme} from '../services/Common/theme';
 import {fontFamilies} from '../utils/fontFamilies';
 import {useTranslation} from 'react-i18next';
 import ResponsiveImage from '../components/ResponsiveImage';
+import ChevronLeft from '../components/ChevronLeft';
 
 type ReportsStackParamList = {
   ReportsScreen: undefined;
@@ -42,7 +43,7 @@ const ReportDetails = ({
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
         <Pressable style={styles.backButton} onPress={goBack}>
-          <Text style={styles.backButtonText}>Back</Text>
+          <ChevronLeft color={theme.COLORS.WHITE} />
         </Pressable>
         <Text style={styles.headerTitle}>Report Details</Text>
       </View>
