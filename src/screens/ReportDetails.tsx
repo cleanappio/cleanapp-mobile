@@ -9,6 +9,8 @@ import {
   ScrollView,
   Image,
   Dimensions,
+  Linking,
+  Alert,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {theme} from '../services/Common/theme';
@@ -16,6 +18,7 @@ import {fontFamilies} from '../utils/fontFamilies';
 import {useTranslation} from 'react-i18next';
 import ResponsiveImage from '../components/ResponsiveImage';
 import ChevronLeft from '../components/ChevronLeft';
+import NavigationIcon from '../components/NavigationIcon';
 
 type ReportsStackParamList = {
   ReportsScreen: undefined;
@@ -39,6 +42,39 @@ const ReportDetails = ({
     navigation.goBack();
   };
 
+  const openGoogleMaps = () => {
+    if (report.latitude && report.longitude) {
+      const url = `https://www.google.com/maps?q=${report.latitude},${report.longitude}`;
+
+      Linking.canOpenURL(url)
+        .then(supported => {
+          if (supported) {
+            Linking.openURL(url);
+          } else {
+            // Fallback to web browser
+            Linking.openURL(url);
+          }
+        })
+        .catch(err => {
+          console.error('Error opening Google Maps:', err);
+          Alert.alert('Error', 'Could not open Google Maps');
+        });
+    } else {
+      Alert.alert('Location Error', 'No coordinates available for this report');
+    }
+  };
+
+  const formatTime = (time: string) => {
+    const date = new Date(time);
+    return date.toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
@@ -51,7 +87,7 @@ const ReportDetails = ({
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.section}>
           <View style={styles.infoCard}>
-            <View style={{padding: 16}}>
+            <View style={{padding: 16, gap: 8}}>
               <Text style={styles.value}>{report.title}</Text>
               <Text style={{...styles.value, fontSize: 14}}>
                 {report.description}
@@ -71,7 +107,7 @@ const ReportDetails = ({
               <View
                 style={{flexDirection: 'row', gap: 12, alignItems: 'center'}}>
                 <Text style={styles.label}>Date:</Text>
-                <Text style={styles.value}>{report.time}</Text>
+                <Text style={styles.value}>{formatTime(report.time)}</Text>
               </View>
 
               {/* <View style={{flexDirection: 'row', gap: 12, alignItems: 'center'}}>
@@ -81,14 +117,31 @@ const ReportDetails = ({
 
               <View
                 style={{flexDirection: 'row', gap: 12, alignItems: 'center'}}>
-                <Text style={styles.label}>Location:</Text>
-                <Text style={styles.value}>{report.location}</Text>
+                <Text style={styles.label}>Severity:</Text>
+                <Text style={styles.value}>{report.severity}</Text>
               </View>
 
               <View
                 style={{flexDirection: 'row', gap: 12, alignItems: 'center'}}>
-                <Text style={styles.label}>Severity:</Text>
-                <Text style={styles.value}>{report.severity}</Text>
+                <Text style={styles.label}>Location:</Text>
+                <Pressable
+                  onPress={openGoogleMaps}
+                  style={styles.locationButton}>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: 4,
+                    }}>
+                    <Text style={[styles.value, styles.locationText]}>
+                      {report.latitude && report.longitude
+                        ? `${report.latitude.toFixed(6)}, ${report.longitude.toFixed(6)}`
+                        : report.location || 'Coordinates not available'}
+                    </Text>
+                    <NavigationIcon color={theme.COLORS.BTN_BG_BLUE} />
+                  </View>
+                </Pressable>
               </View>
             </View>
           </View>
@@ -154,6 +207,26 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: theme.COLORS.WHITE,
     fontFamily: fontFamilies.Default,
+  },
+  locationButton: {
+    flex: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: theme.COLORS.BTN_BG_BLUE_30P,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: theme.COLORS.BTN_BG_BLUE,
+  },
+  locationText: {
+    color: theme.COLORS.BTN_BG_BLUE,
+    fontWeight: '600',
+  },
+  mapLink: {
+    fontSize: 12,
+    color: theme.COLORS.BTN_BG_BLUE,
+    fontFamily: fontFamilies.Default,
+    marginTop: 4,
+    textAlign: 'center',
   },
 });
 
