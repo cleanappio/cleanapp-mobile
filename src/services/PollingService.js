@@ -213,12 +213,12 @@ class PollingService {
 
   // Convert severity level number to readable string
   getSeverityLevel(level) {
-    if (level === null || level === undefined) return 'unknown';
-    if (level >= 0.8) return 'critical';
-    if (level >= 0.6) return 'high';
-    if (level >= 0.4) return 'medium';
-    if (level >= 0.2) return 'low';
-    return 'very_low';
+    if (level === null || level === undefined) return '-';
+    if (level >= 0.8) return 'Critical';
+    if (level >= 0.6) return 'High';
+    if (level >= 0.4) return 'Medium';
+    if (level >= 0.2) return 'Low';
+    return 'Very Low';
   }
 
   // Method to manually trigger a poll (useful for testing)

@@ -12,7 +12,7 @@ import PollingService from '../services/PollingService';
 
 type ReportsStackParamList = {
   ReportsScreen: undefined;
-  ReportDetails: undefined;
+  ReportDetails: {report: any};
 };
 
 type ReportsScreenNavigationProp = StackNavigationProp<
@@ -26,8 +26,8 @@ const ReportsScreen = () => {
   const [{reports, lastReportsUpdate, totalReports}, dispatch] =
     useStateValue();
 
-  const navigateToReport = () => {
-    navigation.navigate('ReportDetails');
+  const navigateToReport = (report: any) => {
+    navigation.navigate('ReportDetails', {report});
   };
 
   const handleManualRefresh = () => {
@@ -70,7 +70,7 @@ const ReportsScreen = () => {
               title={report.title}
               description={report.description}
               time={report.time}
-              onPress={navigateToReport}
+              onPress={() => navigateToReport(report)}
             />
           ))
         ) : (

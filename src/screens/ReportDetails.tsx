@@ -1,15 +1,24 @@
 import React from 'react';
-import {useNavigation} from '@react-navigation/native';
+import {RouteProp, useNavigation} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
-import {Pressable, StyleSheet, Text, View, ScrollView} from 'react-native';
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  ScrollView,
+  Image,
+  Dimensions,
+} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {theme} from '../services/Common/theme';
 import {fontFamilies} from '../utils/fontFamilies';
 import {useTranslation} from 'react-i18next';
+import ResponsiveImage from '../components/ResponsiveImage';
 
 type ReportsStackParamList = {
   ReportsScreen: undefined;
-  ReportDetails: undefined;
+  ReportDetails: {report: any};
 };
 
 type ReportDetailsNavigationProp = StackNavigationProp<
@@ -17,10 +26,14 @@ type ReportDetailsNavigationProp = StackNavigationProp<
   'ReportDetails'
 >;
 
-const ReportDetails = () => {
+const ReportDetails = ({
+  route,
+}: {
+  route: RouteProp<ReportsStackParamList, 'ReportDetails'>;
+}) => {
   const navigation = useNavigation<ReportDetailsNavigationProp>();
   const {t} = useTranslation();
-
+  const {report} = route.params;
   const goBack = () => {
     navigation.goBack();
   };
@@ -29,44 +42,54 @@ const ReportDetails = () => {
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
         <Pressable style={styles.backButton} onPress={goBack}>
-          <Text style={styles.backButtonText}>← Back</Text>
+          <Text style={styles.backButtonText}>Back</Text>
         </Pressable>
         <Text style={styles.headerTitle}>Report Details</Text>
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Report Information</Text>
           <View style={styles.infoCard}>
-            <Text style={styles.label}>Title:</Text>
-            <Text style={styles.value}>Sample Report Title</Text>
+            <View style={{padding: 16}}>
+              <Text style={styles.value}>{report.title}</Text>
+              <Text style={{...styles.value, fontSize: 14}}>
+                {report.description}
+              </Text>
+            </View>
 
-            <Text style={styles.label}>Description:</Text>
-            <Text style={styles.value}>
-              This is a sample report description that shows the details of the
-              report.
-            </Text>
+            <ResponsiveImage
+              base64Image={report.image}
+              maxHeight={400}
+              borderRadius={0}
+              showPlaceholder={true}
+              placeholderText="No Image Available"
+              containerWidth={Dimensions.get('window').width - 32} // Account for screen padding (16) + infoCard padding (16) on each side
+            />
 
-            <Text style={styles.label}>Status:</Text>
-            <Text style={styles.value}>Pending</Text>
+            <View style={{padding: 16, flexDirection: 'column', gap: 12}}>
+              <View
+                style={{flexDirection: 'row', gap: 12, alignItems: 'center'}}>
+                <Text style={styles.label}>Date:</Text>
+                <Text style={styles.value}>{report.time}</Text>
+              </View>
 
-            <Text style={styles.label}>Location:</Text>
-            <Text style={styles.value}>Central Park, New York</Text>
+              {/* <View style={{flexDirection: 'row', gap: 12, alignItems: 'center'}}>
+              <Text style={styles.label}>Status:</Text>
+              <Text style={styles.value}>{report.status}</Text>
+            </View> */}
 
-            <Text style={styles.label}>Severity:</Text>
-            <Text style={styles.value}>Medium</Text>
-          </View>
-        </View>
+              <View
+                style={{flexDirection: 'row', gap: 12, alignItems: 'center'}}>
+                <Text style={styles.label}>Location:</Text>
+                <Text style={styles.value}>{report.location}</Text>
+              </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Actions</Text>
-          <View style={styles.actionsContainer}>
-            <Pressable style={styles.actionButton}>
-              <Text style={styles.actionButtonText}>Mark as Complete</Text>
-            </Pressable>
-            <Pressable style={[styles.actionButton, styles.secondaryButton]}>
-              <Text style={styles.secondaryButtonText}>Edit Report</Text>
-            </Pressable>
+              <View
+                style={{flexDirection: 'row', gap: 12, alignItems: 'center'}}>
+                <Text style={styles.label}>Severity:</Text>
+                <Text style={styles.value}>{report.severity}</Text>
+              </View>
+            </View>
           </View>
         </View>
       </ScrollView>
@@ -117,48 +140,18 @@ const styles = StyleSheet.create({
   },
   infoCard: {
     backgroundColor: theme.COLORS.PANEL_BG,
-    padding: 16,
     borderRadius: 8,
+    flexDirection: 'column',
   },
   label: {
     fontSize: 14,
     fontWeight: '600',
     color: theme.COLORS.TEXT_GREY,
-    marginTop: 12,
-    marginBottom: 4,
     fontFamily: fontFamilies.Default,
   },
   value: {
-    fontSize: 16,
+    fontSize: 14,
     color: theme.COLORS.WHITE,
-    marginBottom: 8,
-    fontFamily: fontFamilies.Default,
-  },
-  actionsContainer: {
-    gap: 12,
-  },
-  actionButton: {
-    backgroundColor: theme.COLORS.BTN_BG_BLUE,
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  actionButtonText: {
-    color: theme.COLORS.WHITE,
-    fontSize: 16,
-    fontWeight: '600',
-    fontFamily: fontFamilies.Default,
-  },
-  secondaryButton: {
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: theme.COLORS.BTN_BG_BLUE,
-  },
-  secondaryButtonText: {
-    color: theme.COLORS.BTN_BG_BLUE,
-    fontSize: 16,
-    fontWeight: '600',
     fontFamily: fontFamilies.Default,
   },
 });
