@@ -1,12 +1,14 @@
 import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
 import {fontFamilies} from '../utils/fontFamilies';
 import {theme} from '../services/Common/theme';
+import ResponsiveImage from './ResponsiveImage';
 
 interface ReportTileProps {
   title: string;
   description: string;
   time: string;
   onPress: () => void;
+  reportImage: string;
 }
 
 const getTime = (time: string) => {
@@ -19,10 +21,28 @@ export const ReportTile = ({
   description,
   time,
   onPress,
+  reportImage,
 }: ReportTileProps) => {
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>
       <View style={styles.row}>
+        <View
+          style={{
+            ...styles.col,
+            width: 50,
+            height: 50,
+            marginRight: 10,
+            alignItems: 'flex-end',
+          }}>
+          <ResponsiveImage
+            base64Image={reportImage}
+            containerWidth={50}
+            maxHeight={50}
+            borderRadius={2}
+            resizeMode="cover"
+          />
+        </View>
+
         <View style={{...styles.col, flex: 4}}>
           <Text style={styles.txt12} numberOfLines={1}>
             {title}
@@ -32,7 +52,7 @@ export const ReportTile = ({
           </Text>
         </View>
 
-        <View style={{...styles.col, flex: 1, alignItems: 'flex-end'}}>
+        <View style={{...styles.col, width: 100, alignItems: 'flex-end'}}>
           <Text style={styles.txt12} numberOfLines={1}>
             {getTime(time)}
           </Text>

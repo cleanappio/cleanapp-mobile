@@ -9,6 +9,7 @@ interface ResponsiveImageProps {
   showPlaceholder?: boolean;
   placeholderText?: string;
   containerWidth?: number;
+  resizeMode?: 'contain' | 'cover' | 'stretch' | 'repeat' | 'center';
 }
 
 const ResponsiveImage: React.FC<ResponsiveImageProps> = ({
@@ -18,6 +19,7 @@ const ResponsiveImage: React.FC<ResponsiveImageProps> = ({
   showPlaceholder = true,
   placeholderText = 'No Image',
   containerWidth: propContainerWidth,
+  resizeMode = 'contain',
 }) => {
   const [imageHeight, setImageHeight] = useState<number | null>(null);
   const [imageLoading, setImageLoading] = useState(true);
@@ -111,7 +113,7 @@ const ResponsiveImage: React.FC<ResponsiveImageProps> = ({
             opacity: imageLoading ? 0 : 1,
           },
         ]}
-        resizeMode="contain"
+        resizeMode={resizeMode}
         onLoad={onImageLoad}
         onError={onImageError}
       />

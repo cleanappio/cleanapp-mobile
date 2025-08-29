@@ -149,6 +149,7 @@ const ReportsScreen = () => {
                     description={report.description}
                     time={report.time}
                     onPress={() => navigateToReport(report)}
+                    reportImage={report.image}
                   />
                 ))}
               </View>
