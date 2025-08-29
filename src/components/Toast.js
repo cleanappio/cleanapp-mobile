@@ -97,7 +97,7 @@ const styles = StyleSheet.create({
     zIndex: 1000,
   },
   toast: {
-    backgroundColor: theme.COLORS.BTN_BG_BLUE,
+    backgroundColor: theme.COLORS.BLACK,
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderRadius: 8,
