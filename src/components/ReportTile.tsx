@@ -9,6 +9,11 @@ interface ReportTileProps {
   onPress: () => void;
 }
 
+const getTime = (time: string) => {
+  const date = new Date(time);
+  return date.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+};
+
 export const ReportTile = ({
   title,
   description,
@@ -18,7 +23,7 @@ export const ReportTile = ({
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>
       <View style={styles.row}>
-        <View style={{...styles.col, flex: 3}}>
+        <View style={{...styles.col, flex: 4}}>
           <Text style={styles.txt12} numberOfLines={1}>
             {title}
           </Text>
@@ -27,9 +32,9 @@ export const ReportTile = ({
           </Text>
         </View>
 
-        <View style={{...styles.col, flex: 2}}>
+        <View style={{...styles.col, flex: 1, alignItems: 'flex-end'}}>
           <Text style={styles.txt12} numberOfLines={1}>
-            {time}
+            {getTime(time)}
           </Text>
         </View>
       </View>
@@ -41,10 +46,11 @@ const styles = StyleSheet.create({
   container: {
     borderRadius: 10,
     paddingHorizontal: 0,
-    paddingVertical: 12,
+    paddingBottom: 20,
     width: '100%',
   },
   row: {
+    width: '100%',
     flexDirection: 'row',
     justifyContent: 'space-between',
     overflow: 'hidden',

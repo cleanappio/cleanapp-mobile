@@ -180,15 +180,15 @@ class PollingService {
         analysis.find(a => a.language === 'en') || analysis[0] || {};
 
       // Format timestamp
-      const timestamp = report.timestamp
-        ? new Date(report.timestamp).toLocaleString()
-        : '-';
+      // const timestamp = report.timestamp
+      //   ? new Date(report.timestamp).toLocaleString()
+      //   : '-';
 
       return {
         id: report.seq || `report_${index}`,
         title: primaryAnalysis.title || 'Untitled Report',
         description: primaryAnalysis.description || 'No description available',
-        time: timestamp,
+        time: report.timestamp,
         status: 'pending', // Default status since API doesn't provide this
         location: `${report.latitude?.toFixed(4)}, ${report.longitude?.toFixed(4)}`,
         severity: this.getSeverityLevel(primaryAnalysis.severity_level),

@@ -42,6 +42,79 @@ const ReportsScreen = () => {
     }
   };
 
+  const formatDate = (timestamp: string) => {
+    try {
+      const date = new Date(timestamp);
+      const today = new Date();
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+
+      if (date.toDateString() === today.toDateString()) {
+        return 'Today';
+      } else if (date.toDateString() === yesterday.toDateString()) {
+        return 'Yesterday';
+      } else {
+        return date.toLocaleDateString('en-US', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        });
+      }
+    } catch {
+      return 'Unknown Date';
+    }
+  };
+
+  const groupReportsByDate = (reportsList: any[]) => {
+    if (!reportsList || reportsList.length === 0) return {};
+
+    const grouped: {[key: string]: any[]} = {};
+
+    reportsList.forEach(report => {
+      const dateKey = formatDate(report.timestamp || report.time);
+      if (!grouped[dateKey]) {
+        grouped[dateKey] = [];
+      }
+      grouped[dateKey].push(report);
+    });
+
+    // Sort dates in descending order: Today (1st), Yesterday (2nd), then older dates (newest first)
+    const sortedDates = Object.keys(grouped).sort((a, b) => {
+      // Today always comes first
+      if (a === 'Today') return -1;
+      if (b === 'Today') return 1;
+
+      // Yesterday comes second
+      if (a === 'Yesterday') return -1;
+      if (b === 'Yesterday') return 1;
+
+      // For other dates, sort chronologically (newest first)
+      try {
+        const dateA = new Date(
+          reportsList.find(r => formatDate(r.timestamp || r.time) === a)
+            ?.timestamp || '',
+        );
+        const dateB = new Date(
+          reportsList.find(r => formatDate(r.timestamp || r.time) === b)
+            ?.timestamp || '',
+        );
+        return dateB.getTime() - dateA.getTime();
+      } catch {
+        return 0;
+      }
+    });
+
+    console.log('Sorted dates:', sortedDates); // Debug log
+
+    const sortedGrouped: {[key: string]: any[]} = {};
+    sortedDates.forEach(date => {
+      sortedGrouped[date] = grouped[date];
+    });
+
+    return sortedGrouped;
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
@@ -64,15 +137,23 @@ const ReportsScreen = () => {
         style={styles.reportsList}
         showsVerticalScrollIndicator={false}>
         {reports && reports.length > 0 ? (
-          reports.map((report: any, index: number) => (
-            <ReportTile
-              key={report.id || index}
-              title={report.title}
-              description={report.description}
-              time={report.time}
-              onPress={() => navigateToReport(report)}
-            />
-          ))
+          (() => {
+            const groupedReports = groupReportsByDate(reports);
+            return Object.entries(groupedReports).map(([date, dateReports]) => (
+              <View key={date} style={styles.dateGroup}>
+                <Text style={styles.dateHeader}>{date}</Text>
+                {dateReports.map((report: any, index: number) => (
+                  <ReportTile
+                    key={report.id || `${date}_${index}`}
+                    title={report.title}
+                    description={report.description}
+                    time={report.time}
+                    onPress={() => navigateToReport(report)}
+                  />
+                ))}
+              </View>
+            ));
+          })()
         ) : (
           <View style={styles.noReports}>
             <Text style={styles.noReportsText}>No reports available</Text>
@@ -159,6 +240,20 @@ const styles = StyleSheet.create({
     fontFamily: fontFamilies.Default,
     opacity: 0.7,
     textAlign: 'center',
+  },
+  dateGroup: {
+    marginBottom: 24,
+  },
+  dateHeader: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: theme.COLORS.WHITE,
+    fontFamily: fontFamilies.Default,
+    marginBottom: 16,
+    paddingHorizontal: 4,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.COLORS.BORDER_GREY,
+    paddingBottom: 8,
   },
 });
 
