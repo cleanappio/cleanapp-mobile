@@ -19,6 +19,7 @@ import {useTranslation} from 'react-i18next';
 import ResponsiveImage from '../components/ResponsiveImage';
 import ChevronLeft from '../components/ChevronLeft';
 import NavigationIcon from '../components/NavigationIcon';
+// import {useReportsContext} from '../contexts/ReportsContext';
 
 type ReportsStackParamList = {
   ReportsScreen: undefined;
@@ -38,6 +39,15 @@ const ReportDetails = ({
   const navigation = useNavigation<ReportDetailsNavigationProp>();
   const {t} = useTranslation();
   const {report} = route.params;
+  // const {markReportAsRead} = useReportsContext();
+
+  // Mark report as read when component mounts
+  // React.useEffect(() => {
+  //   if (report?.id) {
+  //     markReportAsRead(report.id);
+  //   }
+  // }, [report?.id, markReportAsRead]);
+  
   const goBack = () => {
     navigation.goBack();
   };

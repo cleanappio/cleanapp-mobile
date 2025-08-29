@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {StyleSheet, Text, View, Pressable, ScrollView} from 'react-native';
@@ -9,6 +9,7 @@ import {useTranslation} from 'react-i18next';
 import {ReportTile} from '../components/ReportTile';
 import {useStateValue} from '../services/State/State';
 import PollingService from '../services/PollingService';
+import {useReportsContext} from '../contexts/ReportsContext';
 
 type ReportsStackParamList = {
   ReportsScreen: undefined;
@@ -25,14 +26,52 @@ const ReportsScreen = () => {
   const {t} = useTranslation();
   const [{reports, lastReportsUpdate, totalReports}, dispatch] =
     useStateValue();
+  const {markReportAsRead, markReportAsOpened, openedReports} =
+    useReportsContext();
 
   const navigateToReport = (report: any) => {
+    // Mark report as read when navigating to it
+    // markReportAsRead(report.id);
+
+    // Mark report as opened for notification badge
+    markReportAsOpened(report.id);
+
+    // Note: No need to refresh local state since openedReports comes from the hook
     navigation.navigate('ReportDetails', {report});
   };
 
+  // Note: markReportAsOpened is now provided by the ReportsContext
+
   const handleManualRefresh = () => {
+    // Note: These functions are now provided by the useNotifiedReports hook
+    // removeOpenedReports();
+    // getOpenedReports().then(openedReports => {
+    //   console.log('🔍 [ReportsScreen] openedReports:', openedReports);
+    // });
     PollingService.manualPoll();
   };
+
+  // Test function to clear corrupted data and start fresh
+  const clearCorruptedData = async () => {
+    try {
+      // Note: removeOpenedReports is now provided by the useNotifiedReports hook
+      // await removeOpenedReports();
+
+      // Force a refresh to see the clean state
+      PollingService.manualPoll();
+    } catch (error) {
+      console.error('❌ [ReportsScreen] Clearing data:', error);
+    }
+  };
+
+  // Note: openedReports is now provided by the useNotifiedReports hook via context
+
+  // Note: openedReports is now provided by the useNotifiedReports hook via context
+  // No need to load from AsyncStorage manually
+
+  // useEffect(() => {
+  //   clearCorruptedData();
+  // }, []);
 
   const formatTime = (timeString: string) => {
     try {
@@ -105,8 +144,6 @@ const ReportsScreen = () => {
       }
     });
 
-    console.log('Sorted dates:', sortedDates); // Debug log
-
     const sortedGrouped: {[key: string]: any[]} = {};
     sortedDates.forEach(date => {
       sortedGrouped[date] = grouped[date];
@@ -115,6 +152,14 @@ const ReportsScreen = () => {
     return sortedGrouped;
   };
 
+  // Debug log to see current state
+  // console.log('🔍 [ReportsScreen] Rendering with storedReadReports:', {
+  //   type: typeof storedReadReports,
+  //   isArray: Array.isArray(storedReadReports),
+  //   value: storedReadReports,
+  //   length: storedReadReports?.length,
+  // });
+
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
@@ -122,6 +167,58 @@ const ReportsScreen = () => {
         <Pressable style={styles.refreshButton} onPress={handleManualRefresh}>
           <Text style={styles.refreshButtonText}>Refresh</Text>
         </Pressable>
+      </View>
+
+      {/* Stored Read Reports Display */}
+      <View style={styles.storedReportsSection}>
+        <View style={styles.storedReportsCard}>
+          <View style={styles.storedReportsHeader}>
+            <Text style={styles.storedReportsTitle}>Stored Opened Reports</Text>
+            <Pressable
+              style={styles.refreshButton}
+              onPress={() => {
+                // Note: No need to reload since openedReports comes from the hook
+              }}
+              disabled={false}>
+              <Text style={styles.refreshButtonText}>🔄 Refresh</Text>
+            </Pressable>
+          </View>
+
+          {false ? ( // Note: No loading state needed since openedReports comes from hook
+            <Text style={styles.storedReportsSubtext}>
+              Loading stored reports...
+            </Text>
+          ) : openedReports && openedReports.length > 0 ? (
+            <View>
+              <Text style={styles.storedReportsSubtext}>
+                {openedReports.length} opened report(s) from hook:
+              </Text>
+              <View style={styles.reportIdsContainer}>
+                {Array.isArray(openedReports) &&
+                  openedReports.map((reportId: any, index: number) => (
+                    <View key={index} style={styles.reportIdItem}>
+                      <Text style={styles.reportIdText}>{reportId}</Text>
+                    </View>
+                  ))}
+              </View>
+            </View>
+          ) : (
+            <Text style={styles.storedReportsSubtext}>
+              No opened reports from hook yet
+            </Text>
+          )}
+
+          <View style={styles.storedReportsButtons}>
+            <Pressable style={styles.clearButton} onPress={clearCorruptedData}>
+              <Text style={styles.clearButtonText}>🗑️ Clear All</Text>
+            </Pressable>
+            <Pressable
+              style={styles.manualRefreshButton}
+              onPress={handleManualRefresh}>
+              <Text style={styles.manualRefreshButtonText}>📡 Manual Poll</Text>
+            </Pressable>
+          </View>
+        </View>
       </View>
 
       {lastReportsUpdate && (
@@ -255,6 +352,76 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: theme.COLORS.BORDER_GREY,
     paddingBottom: 8,
+  },
+  // Stored Read Reports Styles
+  storedReportsSection: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  storedReportsCard: {
+    backgroundColor: theme.COLORS.PANEL_BG || '#2a2a2a',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+  },
+  storedReportsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  storedReportsTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: theme.COLORS.WHITE,
+  },
+  storedReportsSubtext: {
+    fontSize: 14,
+    color: theme.COLORS.TEXT_GREY,
+    marginBottom: 8,
+  },
+  reportIdsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 12,
+  },
+  reportIdItem: {
+    backgroundColor: theme.COLORS.BTN_BG_BLUE,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  reportIdText: {
+    fontSize: 12,
+    color: theme.COLORS.WHITE,
+    fontWeight: '500',
+  },
+  storedReportsButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  clearButton: {
+    backgroundColor: '#FF3B30',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  clearButtonText: {
+    fontSize: 12,
+    color: theme.COLORS.WHITE,
+    fontWeight: '500',
+  },
+  manualRefreshButton: {
+    backgroundColor: theme.COLORS.BTN_BG_BLUE,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  manualRefreshButtonText: {
+    fontSize: 12,
+    color: theme.COLORS.WHITE,
+    fontWeight: '500',
   },
 });
 
