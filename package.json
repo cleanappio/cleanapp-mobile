@@ -94,10 +94,5 @@
   },
   "engines": {
     "node": ">=18"
-  },
-  "codegenConfig": {
-    "name": "cleanapp",
-    "type": "app",
-    "jsSrcsDir": "./src"
   }
 }
