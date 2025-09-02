@@ -23,6 +23,7 @@ export const actions = {
   SET_CACHE_VAULT: 'SET_CACHE_VAULT',
   SET_MAP_LOCATION: 'SET_MAP_LOCATION',
   SET_REPORTS: 'SET_REPORTS',
+  UPDATE_REPORTS: 'UPDATE_REPORTS',
   SET_GUILDS: 'SET_GUILDS',
   SET_PLAYERS: 'SET_PLAYERS',
 };
@@ -160,6 +161,14 @@ export const reducer = (state, action) => {
       return {
         ...state,
         reports: action.reports,
+      };
+
+    case actions.UPDATE_REPORTS:
+      return {
+        ...state,
+        reports: action.payload.reports,
+        lastReportsUpdate: action.payload.lastUpdated,
+        totalReports: action.payload.totalReports,
       };
 
     case actions.SET_GUILDS:

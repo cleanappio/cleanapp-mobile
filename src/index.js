@@ -1,110 +1,248 @@
 /* eslint-disable react-native/no-inline-styles */
 import 'react-native-gesture-handler';
 import 'react-native-screens';
-import { enableScreens } from 'react-native-screens';
-import React, { useEffect, useState } from 'react';
-import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import {enableScreens} from 'react-native-screens';
+import React, {useEffect, useState} from 'react';
+import {NavigationContainer, DefaultTheme} from '@react-navigation/native';
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import TabComponent from './components/Tab';
-import { onboard } from './functions/onboarding';
-import { theme } from './services/Common/theme';
-import { Leaderboard } from './screens/Leaderboard';
+import {onboard} from './functions/onboarding';
+import {theme} from './services/Common/theme';
+import {Leaderboard} from './screens/Leaderboard';
 import CameraScreen from './screens/CameraScreen';
 import CacheScreen from './screens/CacheScreen';
-import ReferralScreen from './screens/ReferralScreen';
+import ReportsScreen from './screens/ReportsScreen';
+import ReportDetails from './screens/ReportDetails';
 import MapScreen from './screens/MapScreen';
-import { getFirstRun, getPrivacySetting, getUserName, getWalletAddress, isPrivacyAndTermsAccepted } from './services/DataManager';
-import { updateOrCreateUser, updatePrivacyAndTOC } from './services/API/APIManager';
+import {
+  getFirstRun,
+  getPrivacySetting,
+  getUserName,
+  getWalletAddress,
+  isPrivacyAndTermsAccepted,
+} from './services/DataManager';
+import {
+  updateOrCreateUser,
+  updatePrivacyAndTOC,
+} from './services/API/APIManager';
+import {createStackNavigator} from '@react-navigation/stack';
+import {useStateValue} from './services/State/State';
+import {useNotifiedReports} from './hooks/useReadReports';
+import Toast from './components/Toast';
+import {ReportsProvider} from './contexts/ReportsContext';
 
 enableScreens();
 
 const Tab = createBottomTabNavigator();
+const Stack = createStackNavigator();
 
-const BottomTabs = ({ navigation }) => {
-  const insets = useSafeAreaInsets();
-  
+const ReportsStack = ({
+  markReportAsRead,
+  markReportAsOpened,
+  openedReports,
+}) => {
   return (
-    <Tab.Navigator
-      initialRouteName="Camera"
-      detachInactiveScreens={true}
-      screenOptions={{
-        tabBarStyle: {
-          alignItems: "center",
-          justifyContent: "space-evenly",
-          height: 60 + insets.bottom,
+    <ReportsProvider
+      markReportAsRead={markReportAsRead}
+      markReportAsOpened={markReportAsOpened}
+      openedReports={openedReports}>
+      <Stack.Navigator
+        screenOptions={{
           headerShown: false,
-          paddingHorizontal: 30,
-          paddingBottom: insets.bottom,
-          backgroundColor: theme.APP_COLOR_1,
-          borderTopWidth: 0,
-          elevation: 0,
-          shadowOpacity: 0,
-        },
-        headerShown: false,
-      }}
-    >
-      <Tab.Screen
-        name="Cache"
-        component={CacheScreen}
-        options={{
-          tabBarLabel: "Cache",
-          tabBarButton: (props) => (
-            <TabComponent label="Cache" {...props} />
-          ),
-        }}
+        }}>
+        <Stack.Screen name="ReportsScreen" component={ReportsScreen} />
+        <Stack.Screen name="ReportDetails" component={ReportDetails} />
+      </Stack.Navigator>
+    </ReportsProvider>
+  );
+};
+
+const BottomTabs = ({navigation}) => {
+  const insets = useSafeAreaInsets();
+  const [{reports}] = useStateValue();
+  const {
+    notifiedReports,
+    openedReports,
+    isNewReport,
+    isReportOpened,
+    toastMessage,
+    showToast,
+    hideToast,
+    saveNotifiedReports,
+    clearNotifiedReports,
+    setToastMessage,
+    setShowToast,
+    markReportAsRead,
+    markReportAsOpened,
+  } = useNotifiedReports(reports);
+
+  return (
+    <>
+      <Toast
+        message={toastMessage}
+        visible={showToast}
+        onHide={hideToast}
+        duration={4000}
       />
-      <Tab.Screen
-        name="Leaderboard"
-        component={Leaderboard}
-        options={{
-          tabBarLabel: "Leaderboard",
-          tabBarButton: (props) => (
-            <TabComponent label="Leaderboard" {...props} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Camera"
-        component={CameraScreen}
-        options={{
-          tabBarLabel: "Camera",
-          tabBarButton: (props) => (
-            <TabComponent
-              label="Camera"
-              {...props}
+      <Tab.Navigator
+        initialRouteName="Camera"
+        detachInactiveScreens={true}
+        screenOptions={{
+          tabBarStyle: {
+            alignItems: 'center',
+            justifyContent: 'space-evenly',
+            height: 60 + insets.bottom,
+            headerShown: false,
+            paddingHorizontal: 30,
+            paddingBottom: insets.bottom,
+            backgroundColor: theme.APP_COLOR_1,
+            borderTopWidth: 0,
+            elevation: 0,
+            shadowOpacity: 0,
+          },
+          headerShown: false,
+        }}>
+        <Tab.Screen
+          name="Cache"
+          component={CacheScreen}
+          options={{
+            tabBarLabel: 'Cache',
+            tabBarButton: props => (
+              <TabComponent
+                label="Cache"
+                {...props}
+                notifiedReports={notifiedReports}
+                openedReports={openedReports}
+                isNewReport={isNewReport}
+                isReportOpened={isReportOpened}
+                toastMessage={toastMessage}
+                showToast={showToast}
+                hideToast={hideToast}
+                saveNotifiedReports={saveNotifiedReports}
+                clearNotifiedReports={clearNotifiedReports}
+                setToastMessage={setToastMessage}
+                setShowToast={setShowToast}
+                markReportAsOpened={markReportAsOpened}
+              />
+            ),
+          }}
+        />
+        <Tab.Screen
+          name="Leaderboard"
+          component={Leaderboard}
+          options={{
+            tabBarLabel: 'Leaderboard',
+            tabBarButton: props => (
+              <TabComponent
+                label="Leaderboard"
+                {...props}
+                notifiedReports={notifiedReports}
+                openedReports={openedReports}
+                isNewReport={isNewReport}
+                isReportOpened={isReportOpened}
+                toastMessage={toastMessage}
+                showToast={showToast}
+                hideToast={hideToast}
+                saveNotifiedReports={saveNotifiedReports}
+                clearNotifiedReports={clearNotifiedReports}
+                setToastMessage={setToastMessage}
+                setShowToast={setShowToast}
+                markReportAsOpened={markReportAsOpened}
+              />
+            ),
+          }}
+        />
+        <Tab.Screen
+          name="Camera"
+          component={CameraScreen}
+          options={{
+            tabBarLabel: 'Camera',
+            tabBarButton: props => (
+              <TabComponent
+                label="Camera"
+                {...props}
+                notifiedReports={notifiedReports}
+                openedReports={openedReports}
+                isNewReport={isNewReport}
+                isReportOpened={isReportOpened}
+                toastMessage={toastMessage}
+                showToast={showToast}
+                hideToast={hideToast}
+                saveNotifiedReports={saveNotifiedReports}
+                clearNotifiedReports={clearNotifiedReports}
+                setToastMessage={setToastMessage}
+                setShowToast={setShowToast}
+                markReportAsOpened={markReportAsOpened}
+              />
+            ),
+          }}
+        />
+        <Tab.Screen
+          name="Reports"
+          component={() => (
+            <ReportsStack
+              markReportAsRead={markReportAsRead}
+              markReportAsOpened={markReportAsOpened}
+              openedReports={openedReports}
             />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Referral"
-        component={ReferralScreen}
-        options={{
-          tabBarLabel: "Referral",
-          tabBarButton: (props) => (
-            <TabComponent label="Referral" {...props} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Map"
-        component={MapScreen}
-        options={{
-          tabBarLabel: "Map",
-          tabBarButton: (props) => (
-            <TabComponent label="Map" {...props} />
-          ),
-        }}
-      />
-    </Tab.Navigator>
+          )}
+          options={{
+            tabBarLabel: 'Reports',
+            tabBarButton: props => (
+              <TabComponent
+                label="Reports"
+                {...props}
+                notifiedReports={notifiedReports}
+                openedReports={openedReports}
+                isNewReport={isNewReport}
+                isReportOpened={isReportOpened}
+                toastMessage={toastMessage}
+                showToast={showToast}
+                hideToast={hideToast}
+                saveNotifiedReports={saveNotifiedReports}
+                clearNotifiedReports={clearNotifiedReports}
+                setToastMessage={setToastMessage}
+                setShowToast={setShowToast}
+                markReportAsRead={markReportAsRead}
+                markReportAsOpened={markReportAsOpened}
+              />
+            ),
+          }}
+        />
+        <Tab.Screen
+          name="Map"
+          component={MapScreen}
+          options={{
+            tabBarLabel: 'Map',
+            tabBarButton: props => (
+              <TabComponent
+                label="Map"
+                {...props}
+                notifiedReports={notifiedReports}
+                openedReports={openedReports}
+                isNewReport={isNewReport}
+                isReportOpened={isReportOpened}
+                toastMessage={toastMessage}
+                showToast={showToast}
+                hideToast={hideToast}
+                saveNotifiedReports={saveNotifiedReports}
+                clearNotifiedReports={clearNotifiedReports}
+                setToastMessage={setToastMessage}
+                setShowToast={setShowToast}
+                markReportAsOpened={markReportAsOpened}
+              />
+            ),
+          }}
+        />
+      </Tab.Navigator>
+    </>
   );
 };
 
 const RootScreen = () => {
-
   useEffect(() => {
-    getFirstRun().then(async (ret) => {
+    getFirstRun().then(async ret => {
       if (ret && ret.firstRun) {
         const walletAddress = await getWalletAddress();
         const userAvatar = await getUserName();
@@ -126,17 +264,16 @@ const RootScreen = () => {
     });
   }, []);
 
-  return (
-    <BottomTabs />
-  );
+  return <BottomTabs />;
 };
 
 const CreateRootNavigator = () => {
   return (
-    <NavigationContainer theme={{
-      colors: { background: theme.COLORS.BG },
-      fonts: DefaultTheme.fonts,
-    }}>
+    <NavigationContainer
+      theme={{
+        colors: {background: theme.COLORS.BG},
+        fonts: DefaultTheme.fonts,
+      }}>
       <RootScreen />
     </NavigationContainer>
   );
