@@ -125,7 +125,7 @@ const ReportsScreen = () => {
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Reports</Text>
+        <Text style={styles.headerTitle}>Review Nearby Reports</Text>
         <Pressable style={styles.refreshButton} onPress={handleManualRefresh}>
           <Text style={styles.refreshButtonText}>Refresh</Text>
         </Pressable>
