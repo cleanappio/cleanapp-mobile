@@ -14,6 +14,7 @@ import CameraScreen from './screens/CameraScreen';
 import CacheScreen from './screens/CacheScreen';
 import ReportsScreen from './screens/ReportsScreen';
 import ReportDetails from './screens/ReportDetails';
+import ReviewCameraScreen from './screens/ReviewCameraScreen';
 import MapScreen from './screens/MapScreen';
 import {
   getFirstRun,
@@ -53,6 +54,7 @@ const ReportsStack = ({
         }}>
         <Stack.Screen name="ReportsScreen" component={ReportsScreen} />
         <Stack.Screen name="ReportDetails" component={ReportDetails} />
+        <Stack.Screen name="ReviewCameraScreen" component={ReviewCameraScreen} />
       </Stack.Navigator>
     </ReportsProvider>
   );

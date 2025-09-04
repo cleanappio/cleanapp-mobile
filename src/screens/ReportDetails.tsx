@@ -19,35 +19,47 @@ import {useTranslation} from 'react-i18next';
 import ResponsiveImage from '../components/ResponsiveImage';
 import ChevronLeft from '../components/ChevronLeft';
 import NavigationIcon from '../components/NavigationIcon';
+import {getLocation} from '../functions/geolocation';
+import {calculateDistance} from '../utils/calculateDistance';
 // import {useReportsContext} from '../contexts/ReportsContext';
 
 type ReportsStackParamList = {
   ReportsScreen: undefined;
   ReportDetails: {report: any};
+  ReviewCameraScreen: {report: any};
 };
 
 type ReportDetailsNavigationProp = StackNavigationProp<
   ReportsStackParamList,
-  'ReportDetails'
+  'ReportDetails' | 'ReviewCameraScreen'
 >;
 
 const ReportDetails = ({
   route,
 }: {
-  route: RouteProp<ReportsStackParamList, 'ReportDetails'>;
+  route: RouteProp<ReportsStackParamList, 'ReportDetails' | 'ReviewCameraScreen'>;
 }) => {
   const navigation = useNavigation<ReportDetailsNavigationProp>();
   const {t} = useTranslation();
   const {report} = route.params;
-  // const {markReportAsRead} = useReportsContext();
 
-  // Mark report as read when component mounts
-  // React.useEffect(() => {
-  //   if (report?.id) {
-  //     markReportAsRead(report.id);
-  //   }
-  // }, [report?.id, markReportAsRead]);
-  
+  const checkDistanceFromReport = async (): Promise<number> => {
+    console.log('Checking distance from report');
+    const userLocation = await getLocation();
+    console.log('User location is ', userLocation);
+
+    console.log('Calculating distance');
+    const distance = calculateDistance(
+      userLocation.latitude,
+      userLocation.longitude,
+      report.latitude,
+      report.longitude,
+    );
+
+    console.log('Distance is ', distance, ' meters');
+    return distance;
+  };
+
   const goBack = () => {
     navigation.goBack();
   };
@@ -157,6 +169,25 @@ const ReportDetails = ({
           </View>
         </View>
       </ScrollView>
+
+      <View style={{padding: 16, height: 70}}>
+        <Pressable
+          onPress={() => {
+            checkDistanceFromReport().then(distance => {
+              if (distance < 50) {
+                console.log('Distance is less than 50 meters');
+                navigation.navigate('ReviewCameraScreen', {report});
+              } else {
+                console.log('Distance is greater than 50 meters');
+              }
+            });
+          }}
+          style={styles.reviewButton}>
+          <Text style={[styles.value, styles.reviewButtonText]}>
+            Review Report
+          </Text>
+        </Pressable>
+      </View>
     </SafeAreaView>
   );
 };
@@ -237,6 +268,19 @@ const styles = StyleSheet.create({
     fontFamily: fontFamilies.Default,
     marginTop: 4,
     textAlign: 'center',
+  },
+  reviewButton: {
+    flex: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    backgroundColor: theme.COLORS.GREEN_TEAM_BG,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  reviewButtonText: {
+    color: theme.COLORS.WHITE,
+    fontWeight: '600',
   },
 });
 
