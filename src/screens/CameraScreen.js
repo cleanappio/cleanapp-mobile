@@ -139,6 +139,12 @@ const CameraScreen = (props) => {
   const isFocused = useIsFocused();
 
   useEffect(() => {
+    setTimeout(async () => {
+      await getLocation();
+    }, 1500);
+  }, []);
+
+  useEffect(() => {
     setIsCameraFocused(isFocused);
   }, [isFocused]);
 
