@@ -360,6 +360,17 @@ const CameraScreen = (props) => {
         setPhototaken(true);
         return;
       }
+      
+      if (!backDevice || !backDevice.supportsPhotoCapture) {
+        Alert.alert(
+          t('camerascreen.notice'),
+          'Camera does not support photo capture',
+          [{ text: t('camerascreen.ok'), onPress: () => { } }],
+          { cancelable: false },
+        );
+        return;
+      }
+      
       const photo = await camera.current.takePhoto(takePhotoOptions);
       
       // Resize the photo to height 1000 while preserving aspect ratio
@@ -608,13 +619,24 @@ const CameraScreen = (props) => {
             {isCameraAvailable && (
               <ReanimatedCamera
                 ref={camera}
-                hdr={true}
                 style={StyleSheet.absoluteFill}
                 device={backDevice}
                 isActive={isCameraActive}
                 photo={true}
                 torch={'off'}
                 animatedProps={animatedProps}
+                enableZoomGesture={true}
+                enableFpsGraph={false}
+                enableHighQualityPhotos={true}
+                onError={(error) => {
+                  console.error('Camera error:', error);
+                  Alert.alert(
+                    t('camerascreen.notice'),
+                    'Camera configuration error: ' + error.message,
+                    [{ text: t('camerascreen.ok'), onPress: () => { } }],
+                    { cancelable: false },
+                  );
+                }}
               />
             )}
             {isInAnnotationMode && photoData && (
