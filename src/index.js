@@ -58,6 +58,9 @@ const ReportsStack = ({
   );
 };
 
+// Create a memoized component to avoid inline function issues
+const MemoizedReportsStack = React.memo(ReportsStack);
+
 const BottomTabs = ({navigation}) => {
   const insets = useSafeAreaInsets();
   const [{reports}] = useStateValue();
@@ -180,13 +183,6 @@ const BottomTabs = ({navigation}) => {
         />
         <Tab.Screen
           name="Reports"
-          component={() => (
-            <ReportsStack
-              markReportAsRead={markReportAsRead}
-              markReportAsOpened={markReportAsOpened}
-              openedReports={openedReports}
-            />
-          )}
           options={{
             tabBarLabel: 'Reports',
             tabBarButton: props => (
@@ -208,8 +204,15 @@ const BottomTabs = ({navigation}) => {
                 markReportAsOpened={markReportAsOpened}
               />
             ),
-          }}
-        />
+          }}>
+          {() => (
+            <MemoizedReportsStack
+              markReportAsRead={markReportAsRead}
+              markReportAsOpened={markReportAsOpened}
+              openedReports={openedReports}
+            />
+          )}
+        </Tab.Screen>
         <Tab.Screen
           name="Map"
           component={MapScreen}
