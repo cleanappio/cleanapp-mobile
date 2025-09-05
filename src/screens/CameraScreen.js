@@ -48,7 +48,7 @@ import CameraShootIcon from '../assets/ico_camera_shoot.svg';
 import TargetIcon from '../assets/ico_target.svg';
 import { BlurView } from '@react-native-community/blur';
 import { useTranslation } from 'react-i18next';
-import { report } from '../services/API/APIManager';
+import { report, matchReports } from '../services/API/APIManager';
 import { getLocation } from '../functions/geolocation';
 import { getWalletAddress } from '../services/DataManager';
 
@@ -117,6 +117,12 @@ const GreenFlash = ({
 }
 
 const CameraScreen = (props) => {
+  const { reportId } = props;
+
+  const isReviewMode = useMemo(() => {
+    return reportId !== undefined;
+  }, [reportId]);
+
   const appState = useRef(AppState.currentState);
   const camera = useRef(null);
   const [isCameraActive, setIsCameraActive] = useState(true);
@@ -137,6 +143,12 @@ const CameraScreen = (props) => {
   const { hasPermission, requestPermission } = useCameraPermission();
 
   const isFocused = useIsFocused();
+
+  useEffect(() => {
+    setTimeout(async () => {
+      await getLocation();
+    }, 1500);
+  }, []);
 
   useEffect(() => {
     setIsCameraFocused(isFocused);
@@ -320,7 +332,17 @@ const CameraScreen = (props) => {
       var path = file.uri;
       const imageData = await RNFS.readFile(path, 'base64');
       const walletAddress = await getWalletAddress();
-      const res = await report(
+      let res = null;
+
+      if (isReviewMode) {
+        res = await matchReports(
+          walletAddress,
+          userLocation.latitude,
+          userLocation.longitude,
+          imageData,
+        );
+      } else {
+        res = await report(
         walletAddress,
         userLocation.latitude,
         userLocation.longitude,
@@ -328,6 +350,7 @@ const CameraScreen = (props) => {
         /*tapY=*/0.5,
         imageData,
         annotation);
+      }
       
       // Clean up the image file after upload
       await cleanupImageFile(path);
@@ -354,6 +377,17 @@ const CameraScreen = (props) => {
         setPhototaken(true);
         return;
       }
+      
+      if (!backDevice) {
+        Alert.alert(
+          t('camerascreen.notice'),
+          'Camera not available',
+          [{ text: t('camerascreen.ok'), onPress: () => { } }],
+          { cancelable: false },
+        );
+        return;
+      }
+      
       const photo = await camera.current.takePhoto(takePhotoOptions);
       
       // Resize the photo to height 1000 while preserving aspect ratio
@@ -602,13 +636,24 @@ const CameraScreen = (props) => {
             {isCameraAvailable && (
               <ReanimatedCamera
                 ref={camera}
-                hdr={true}
                 style={StyleSheet.absoluteFill}
                 device={backDevice}
                 isActive={isCameraActive}
                 photo={true}
                 torch={'off'}
                 animatedProps={animatedProps}
+                enableZoomGesture={true}
+                enableFpsGraph={false}
+                enableHighQualityPhotos={true}
+                onError={(error) => {
+                  console.error('Camera error:', error);
+                  Alert.alert(
+                    t('camerascreen.notice'),
+                    'Camera configuration error: ' + error.message,
+                    [{ text: t('camerascreen.ok'), onPress: () => { } }],
+                    { cancelable: false },
+                  );
+                }}
               />
             )}
             {isInAnnotationMode && photoData && (

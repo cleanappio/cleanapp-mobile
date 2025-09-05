@@ -1,6 +1,7 @@
 import {getJSONData, postJSONData} from './CoreAPICalls';
 import {settings as s} from './Settings';
 import {getMapLocation} from '../DataManager';
+import MatchReportsLogger from '../../utils/MatchReportsLogger';
 
 // === API v.2
 
@@ -418,5 +419,147 @@ export const getReportsByLatLon = async (lat, lon) => {
   } catch (err) {
     console.error(err);
     return null;
+  }
+};
+
+export const matchReports = async (
+  publicAddress,
+  latitude,
+  longitude,
+  image,
+) => {
+  const startTime = Date.now();
+  const processId = `match_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+  try {
+    // Log process start
+    MatchReportsLogger.logProcessStart({
+      processId,
+      publicAddress,
+      latitude,
+      longitude,
+      imageSize: image ? image.length : 0,
+    });
+
+    // Validate input data
+    const validationErrors = [];
+    if (!publicAddress) validationErrors.push('publicAddress is required');
+    if (!latitude || typeof latitude !== 'number')
+      validationErrors.push('latitude must be a valid number');
+    if (!longitude || typeof longitude !== 'number')
+      validationErrors.push('longitude must be a valid number');
+    if (!image || typeof image !== 'string')
+      validationErrors.push('image must be a valid base64 string');
+
+    MatchReportsLogger.logDataValidation(
+      {
+        publicAddress,
+        latitude,
+        longitude,
+        image,
+      },
+      validationErrors,
+    );
+
+    if (validationErrors.length > 0) {
+      throw new Error(`Validation failed: ${validationErrors.join(', ')}`);
+    }
+
+    // Prepare request data
+    const data = {
+      version: '2.0',
+      id: publicAddress,
+      latitude: latitude,
+      longitude: longitude,
+      x: 0.5,
+      y: 0.5,
+      image: image,
+    };
+
+    // Log API request
+    MatchReportsLogger.logApiRequest(data, s.v3api.matchReport);
+
+    const apiStartTime = Date.now();
+    const config = {
+      method: 'post',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    };
+    const response = await fetch(
+      `https://processing.cleanapp.io/api/v3/match_report`,
+      config,
+    );
+    const apiDuration = Date.now() - apiStartTime;
+
+    // Log API response
+    MatchReportsLogger.logApiResponse(
+      response,
+      s.v3api.matchReport,
+      apiDuration,
+    );
+
+    const ret = {
+      ok: response.ok,
+      processId,
+    };
+
+    if (response.ok) {
+      const responseData = await response.json();
+      ret.success = responseData.success;
+      ret.message = responseData.message;
+      ret.results = responseData.results || [];
+
+      // Log process success
+      const totalDuration = Date.now() - startTime;
+      MatchReportsLogger.logProcessSuccess(ret, totalDuration);
+
+      // Log performance metrics
+      MatchReportsLogger.logPerformanceMetrics({
+        totalDuration,
+        apiCallDuration: apiDuration,
+        dataProcessingDuration: totalDuration - apiDuration,
+        imageSize: image.length,
+        matchCount: ret.results.length,
+      });
+    } else {
+      if (response.error) {
+        ret.error = response.error;
+      } else if (response.status) {
+        ret.error = response.statusText;
+      }
+
+      // Log process error
+      const totalDuration = Date.now() - startTime;
+      MatchReportsLogger.logProcessError(
+        new Error(ret.error || 'API call failed'),
+        {processId, response},
+        totalDuration,
+      );
+    }
+
+    return ret;
+  } catch (err) {
+    const totalDuration = Date.now() - startTime;
+
+    // Log process error
+    MatchReportsLogger.logProcessError(
+      err,
+      {
+        processId,
+        publicAddress,
+        latitude,
+        longitude,
+        imageSize: image ? image.length : 0,
+      },
+      totalDuration,
+    );
+
+    return {
+      ok: false,
+      error: err.message || 'Unknown error occurred',
+      processId,
+    };
   }
 };

@@ -56,8 +56,9 @@ export const getLocation = async () => {
         {
           forceLocationManager: true,
           enableHighAccuracy: true,
-          maximumAge: 10000,
-          timeout: 15000,
+          maximumAge: 5000, // Reduced for fresher data
+          timeout: 30000, // Increased for better accuracy
+          distanceFilter: 0, // Get updates for any movement
         },
       );
     } else {
