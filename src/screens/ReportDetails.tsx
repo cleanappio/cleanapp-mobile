@@ -37,7 +37,10 @@ type ReportDetailsNavigationProp = StackNavigationProp<
 const ReportDetails = ({
   route,
 }: {
-  route: RouteProp<ReportsStackParamList, 'ReportDetails' | 'ReviewCameraScreen'>;
+  route: RouteProp<
+    ReportsStackParamList,
+    'ReportDetails' | 'ReviewCameraScreen'
+  >;
 }) => {
   const navigation = useNavigation<ReportDetailsNavigationProp>();
   const {t} = useTranslation();
@@ -173,14 +176,15 @@ const ReportDetails = ({
       <View style={{padding: 16, height: 70}}>
         <Pressable
           onPress={() => {
-            checkDistanceFromReport().then(distance => {
-              if (distance < 50) {
-                console.log('Distance is less than 50 meters');
-                navigation.navigate('ReviewCameraScreen', {report});
-              } else {
-                console.log('Distance is greater than 50 meters');
-              }
-            });
+            // checkDistanceFromReport().then(distance => {
+            //   if (distance < 50) {
+            //     console.log('Distance is less than 50 meters');
+            //     navigation.navigate('ReviewCameraScreen', {report});
+            //   } else {
+            //     console.log('Distance is greater than 50 meters');
+            //   }
+            // });
+            navigation.navigate('ReviewCameraScreen', {report});
           }}
           style={styles.reviewButton}>
           <Text style={[styles.value, styles.reviewButtonText]}>

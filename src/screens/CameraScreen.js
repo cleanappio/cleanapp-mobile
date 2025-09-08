@@ -334,23 +334,24 @@ const CameraScreen = (props) => {
       const walletAddress = await getWalletAddress();
       let res = null;
 
-      if (isReviewMode) {
+      // TODO: Refactor and allow annotations
+      // if (isReviewMode) {
         res = await matchReports(
           walletAddress,
           userLocation.latitude,
           userLocation.longitude,
           imageData,
         );
-      } else {
-        res = await report(
-        walletAddress,
-        userLocation.latitude,
-        userLocation.longitude,
-        /*tapX=*/0.5,
-        /*tapY=*/0.5,
-        imageData,
-        annotation);
-      }
+      // } else {
+      //   res = await report(
+      //   walletAddress,
+      //   userLocation.latitude,
+      //   userLocation.longitude,
+      //   /*tapX=*/0.5,
+      //   /*tapY=*/0.5,
+      //   imageData,
+      //   annotation);
+      // }
       
       // Clean up the image file after upload
       await cleanupImageFile(path);
