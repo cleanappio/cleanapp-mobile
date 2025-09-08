@@ -52,6 +52,15 @@ class PollingService {
       //   console.log(
       //     'No map location available, trying to get current location...',
       //   );
+
+      // Dispatch that we're starting to fetch location
+      if (this.dispatch) {
+        this.dispatch({
+          type: 'SET_FETCHING_LOCATION',
+          isFetchingLocation: true,
+        });
+      }
+
       try {
         const currentLocation = await getLocation();
         if (
@@ -63,15 +72,44 @@ class PollingService {
           console.log('Using current location:', currentLocation);
         } else {
           console.log('No location available, skipping poll');
+          // Dispatch that location fetching is complete (failed)
+          if (this.dispatch) {
+            this.dispatch({
+              type: 'SET_FETCHING_LOCATION',
+              isFetchingLocation: false,
+            });
+          }
           return;
         }
       } catch (locationError) {
         console.error('Failed to get current location:', locationError);
+        // Dispatch that location fetching is complete (failed)
+        if (this.dispatch) {
+          this.dispatch({
+            type: 'SET_FETCHING_LOCATION',
+            isFetchingLocation: false,
+          });
+        }
         return;
+      } finally {
+        // Always dispatch that location fetching is complete (success)
+        if (this.dispatch) {
+          this.dispatch({
+            type: 'SET_FETCHING_LOCATION',
+            isFetchingLocation: false,
+          });
+        }
       }
       // }
 
       const {latitude, longitude} = mapLocation;
+
+      if (this.dispatch) {
+        this.dispatch({
+          type: 'SET_FETCHING_REPORTS',
+          isFetchingReports: true,
+        });
+      }
 
       // Get reports by location
       const response = await getReportsByLatLon(latitude, longitude);
@@ -102,9 +140,23 @@ class PollingService {
         });
       } else if (response && !response.ok) {
         console.error('API call failed:', response.error);
+        if (this.dispatch) {
+          this.dispatch({
+            type: 'SET_FETCHING_REPORTS',
+            isFetchingReports: false,
+          });
+        }
+        return;
       }
     } catch (error) {
       console.error('Polling error:', error);
+    } finally {
+      if (this.dispatch) {
+        this.dispatch({
+          type: 'SET_FETCHING_REPORTS',
+          isFetchingReports: false,
+        });
+      }
     }
   }
 

@@ -1,7 +1,15 @@
 import React, {useEffect, useState} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
-import {StyleSheet, Text, View, Pressable, ScrollView} from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  Pressable,
+  ScrollView,
+  Animated,
+  ActivityIndicator,
+} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {theme} from '../services/Common/theme';
 import {fontFamilies} from '../utils/fontFamilies';
@@ -10,6 +18,9 @@ import {ReportTile} from '../components/ReportTile';
 import {useStateValue} from '../services/State/State';
 import PollingService from '../services/PollingService';
 import {useReportsContext} from '../contexts/ReportsContext';
+import {useLocationFetching} from '../hooks/useLocationFetching';
+import PulsatingCircles from '../components/PulsatingCircles';
+import {useReportsFetching} from '../hooks/useReportsFetching';
 
 type ReportsStackParamList = {
   ReportsScreen: undefined;
@@ -28,6 +39,8 @@ const ReportsScreen = () => {
     useStateValue();
   const {markReportAsRead, markReportAsOpened, openedReports} =
     useReportsContext();
+  const isFetchingLocation = useLocationFetching();
+  const isFetchingReports = useReportsFetching();
 
   const navigateToReport = (report: any) => {
     markReportAsOpened(report.id);
@@ -140,6 +153,24 @@ const ReportsScreen = () => {
         </View>
       )}
 
+      {isFetchingLocation && !isFetchingReports && reports.length === 0 && (
+        <View style={styles.locationFetchingIndicator}>
+          <PulsatingCircles />
+        </View>
+      )}
+
+      {isFetchingReports && !isFetchingLocation && reports.length === 0 && (
+        <View style={styles.locationFetchingIndicator}>
+          <ActivityIndicator size="large" color={theme.COLORS.BTN_BG_BLUE} />
+        </View>
+      )}
+
+      {reports.length === 0 && !isFetchingLocation && !isFetchingReports && (
+        <View style={styles.locationFetchingIndicator}>
+          <Text style={styles.locationFetchingText}>No reports found</Text>
+        </View>
+      )}
+
       <ScrollView
         style={styles.reportsList}
         showsVerticalScrollIndicator={false}>
@@ -164,12 +195,7 @@ const ReportsScreen = () => {
             ));
           })()
         ) : (
-          <View style={styles.noReports}>
-            <Text style={styles.noReportsText}>No reports available</Text>
-            <Text style={styles.noReportsSubtext}>
-              Reports will appear here as they are generated
-            </Text>
-          </View>
+          <></>
         )}
       </ScrollView>
     </SafeAreaView>
@@ -237,7 +263,7 @@ const styles = StyleSheet.create({
     paddingVertical: 40,
   },
   noReportsText: {
-    color: theme.COLORS.TEXT_GREY,
+    color: theme.COLORS.WHITE_OPACITY_10P,
     fontSize: 18,
     fontWeight: '600',
     fontFamily: fontFamilies.Default,
@@ -331,6 +357,22 @@ const styles = StyleSheet.create({
   },
   manualRefreshButtonText: {
     fontSize: 12,
+    color: theme.COLORS.WHITE,
+    fontWeight: '500',
+  },
+  locationFetchingIndicator: {
+    backgroundColor: theme.COLORS.TRANSPARENT,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    marginHorizontal: 16,
+    marginBottom: 8,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '70%',
+  },
+  locationFetchingText: {
+    fontSize: 14,
     color: theme.COLORS.WHITE,
     fontWeight: '500',
   },
