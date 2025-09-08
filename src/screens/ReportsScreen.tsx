@@ -42,6 +42,36 @@ const ReportsScreen = () => {
   const isFetchingLocation = useLocationFetching();
   const isFetchingReports = useReportsFetching();
 
+  // Dynamic loading text state
+  const [loadingText, setLoadingText] = useState('Loading...');
+  const [loadingTextIndex, setLoadingTextIndex] = useState(0);
+  const [locationText, setLocationText] = useState('Getting your location...');
+  const [locationTextIndex, setLocationTextIndex] = useState(0);
+
+  // Array of loading messages for reports
+  const loadingMessages = [
+    'Loading...',
+    'Just a moment...',
+    'Fetching reports...',
+    'Almost there...',
+    'This is taking longer than expected...',
+    'Still working on it...',
+    'Hang tight...',
+    'Almost done...',
+  ];
+
+  // Array of loading messages for location
+  const locationMessages = [
+    'Getting your location...',
+    'Finding your position...',
+    'Locating you...',
+    'Almost there...',
+    'This is taking longer than expected...',
+    'Still working on it...',
+    'Hang tight...',
+    'Almost done...',
+  ];
+
   const navigateToReport = (report: any) => {
     markReportAsOpened(report.id);
     navigation.navigate('ReportDetails', {report});
@@ -55,6 +85,46 @@ const ReportsScreen = () => {
   const handleManualRefresh = () => {
     PollingService.manualPoll();
   };
+
+  // Effect to cycle through loading messages for reports
+  useEffect(() => {
+    if (!isFetchingReports) {
+      // Reset when not fetching
+      setLoadingTextIndex(0);
+      setLoadingText(loadingMessages[0]);
+      return;
+    }
+
+    const interval = setInterval(() => {
+      setLoadingTextIndex(prevIndex => {
+        const nextIndex = (prevIndex + 1) % loadingMessages.length;
+        setLoadingText(loadingMessages[nextIndex]);
+        return nextIndex;
+      });
+    }, 2000); // Change text every 2 seconds
+
+    return () => clearInterval(interval);
+  }, [isFetchingReports, loadingMessages]);
+
+  // Effect to cycle through loading messages for location
+  useEffect(() => {
+    if (!isFetchingLocation) {
+      // Reset when not fetching
+      setLocationTextIndex(0);
+      setLocationText(locationMessages[0]);
+      return;
+    }
+
+    const interval = setInterval(() => {
+      setLocationTextIndex(prevIndex => {
+        const nextIndex = (prevIndex + 1) % locationMessages.length;
+        setLocationText(locationMessages[nextIndex]);
+        return nextIndex;
+      });
+    }, 2000); // Change text every 2 seconds
+
+    return () => clearInterval(interval);
+  }, [isFetchingLocation, locationMessages]);
 
   const formatTime = (timeString: string) => {
     try {
@@ -156,12 +226,14 @@ const ReportsScreen = () => {
       {isFetchingLocation && !isFetchingReports && reports.length === 0 && (
         <View style={styles.locationFetchingIndicator}>
           <PulsatingCircles />
+          <Text style={styles.locationFetchingText}>{locationText}</Text>
         </View>
       )}
 
       {isFetchingReports && !isFetchingLocation && reports.length === 0 && (
         <View style={styles.locationFetchingIndicator}>
           <ActivityIndicator size="large" color={theme.COLORS.BTN_BG_BLUE} />
+          <Text style={styles.reportsFetchingText}>{loadingText}</Text>
         </View>
       )}
 
@@ -372,9 +444,20 @@ const styles = StyleSheet.create({
     height: '70%',
   },
   locationFetchingText: {
-    fontSize: 14,
+    fontSize: 12,
     color: theme.COLORS.WHITE,
-    fontWeight: '500',
+    fontWeight: '600',
+    textAlign: 'center',
+    marginTop: 20,
+    paddingHorizontal: 20,
+  },
+  reportsFetchingText: {
+    fontSize: 12,
+    color: theme.COLORS.WHITE,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginTop: 20,
+    paddingHorizontal: 20,
   },
 });
 
