@@ -54,7 +54,10 @@ const ReportsStack = ({
         }}>
         <Stack.Screen name="ReportsScreen" component={ReportsScreen} />
         <Stack.Screen name="ReportDetails" component={ReportDetails} />
-        <Stack.Screen name="ReviewCameraScreen" component={ReviewCameraScreen} />
+        <Stack.Screen
+          name="ReviewCameraScreen"
+          component={ReviewCameraScreen}
+        />
       </Stack.Navigator>
     </ReportsProvider>
   );
@@ -117,18 +120,7 @@ const BottomTabs = ({navigation}) => {
               <TabComponent
                 label="Cache"
                 {...props}
-                notifiedReports={notifiedReports}
                 openedReports={openedReports}
-                isNewReport={isNewReport}
-                isReportOpened={isReportOpened}
-                toastMessage={toastMessage}
-                showToast={showToast}
-                hideToast={hideToast}
-                saveNotifiedReports={saveNotifiedReports}
-                clearNotifiedReports={clearNotifiedReports}
-                setToastMessage={setToastMessage}
-                setShowToast={setShowToast}
-                markReportAsOpened={markReportAsOpened}
               />
             ),
           }}
@@ -142,18 +134,7 @@ const BottomTabs = ({navigation}) => {
               <TabComponent
                 label="Leaderboard"
                 {...props}
-                notifiedReports={notifiedReports}
                 openedReports={openedReports}
-                isNewReport={isNewReport}
-                isReportOpened={isReportOpened}
-                toastMessage={toastMessage}
-                showToast={showToast}
-                hideToast={hideToast}
-                saveNotifiedReports={saveNotifiedReports}
-                clearNotifiedReports={clearNotifiedReports}
-                setToastMessage={setToastMessage}
-                setShowToast={setShowToast}
-                markReportAsOpened={markReportAsOpened}
               />
             ),
           }}
@@ -167,18 +148,7 @@ const BottomTabs = ({navigation}) => {
               <TabComponent
                 label="Camera"
                 {...props}
-                notifiedReports={notifiedReports}
                 openedReports={openedReports}
-                isNewReport={isNewReport}
-                isReportOpened={isReportOpened}
-                toastMessage={toastMessage}
-                showToast={showToast}
-                hideToast={hideToast}
-                saveNotifiedReports={saveNotifiedReports}
-                clearNotifiedReports={clearNotifiedReports}
-                setToastMessage={setToastMessage}
-                setShowToast={setShowToast}
-                markReportAsOpened={markReportAsOpened}
               />
             ),
           }}
@@ -191,19 +161,7 @@ const BottomTabs = ({navigation}) => {
               <TabComponent
                 label="Reports"
                 {...props}
-                notifiedReports={notifiedReports}
                 openedReports={openedReports}
-                isNewReport={isNewReport}
-                isReportOpened={isReportOpened}
-                toastMessage={toastMessage}
-                showToast={showToast}
-                hideToast={hideToast}
-                saveNotifiedReports={saveNotifiedReports}
-                clearNotifiedReports={clearNotifiedReports}
-                setToastMessage={setToastMessage}
-                setShowToast={setShowToast}
-                markReportAsRead={markReportAsRead}
-                markReportAsOpened={markReportAsOpened}
               />
             ),
           }}>
@@ -224,18 +182,7 @@ const BottomTabs = ({navigation}) => {
               <TabComponent
                 label="Map"
                 {...props}
-                notifiedReports={notifiedReports}
                 openedReports={openedReports}
-                isNewReport={isNewReport}
-                isReportOpened={isReportOpened}
-                toastMessage={toastMessage}
-                showToast={showToast}
-                hideToast={hideToast}
-                saveNotifiedReports={saveNotifiedReports}
-                clearNotifiedReports={clearNotifiedReports}
-                setToastMessage={setToastMessage}
-                setShowToast={setShowToast}
-                markReportAsOpened={markReportAsOpened}
               />
             ),
           }}
