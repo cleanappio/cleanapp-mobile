@@ -11,6 +11,7 @@ import {
   Dimensions,
   Linking,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {theme} from '../services/Common/theme';
@@ -21,6 +22,7 @@ import ChevronLeft from '../components/ChevronLeft';
 import NavigationIcon from '../components/NavigationIcon';
 import {getLocation} from '../functions/geolocation';
 import {calculateDistance} from '../utils/calculateDistance';
+import {useReverseGeocoding} from '../hooks/useReverseGeocoding';
 // import {useReportsContext} from '../contexts/ReportsContext';
 
 type ReportsStackParamList = {
@@ -45,6 +47,19 @@ const ReportDetails = ({
   const navigation = useNavigation<ReportDetailsNavigationProp>();
   const {t} = useTranslation();
   const {report} = route.params;
+
+  // Reverse geocoding hook to get human-readable address
+  const {
+    address,
+    loading: addressLoading,
+    error: addressError,
+    refetch: refetchAddress,
+  } = useReverseGeocoding({
+    latitude: report.latitude,
+    longitude: report.longitude,
+    language: 'en',
+    autoFetch: true,
+  });
 
   const checkDistanceFromReport = async (): Promise<number> => {
     console.log('Checking distance from report');
@@ -159,11 +174,38 @@ const ReportDetails = ({
                       justifyContent: 'space-between',
                       gap: 4,
                     }}>
-                    <Text style={[styles.value, styles.locationText]}>
-                      {report.latitude && report.longitude
-                        ? `${report.latitude.toFixed(6)}, ${report.longitude.toFixed(6)}`
-                        : report.location || 'Coordinates not available'}
-                    </Text>
+                    <View style={styles.locationContainer}>
+                      {addressLoading ? (
+                        <View style={styles.loadingContainer}>
+                          <ActivityIndicator
+                            size="small"
+                            color={theme.COLORS.BTN_BG_BLUE}
+                          />
+                          <Text style={[styles.value, styles.loadingText]}>
+                            Getting address...
+                          </Text>
+                        </View>
+                      ) : addressError ? (
+                        <View style={styles.errorContainer}>
+                          <Text style={[styles.value, styles.errorText]}>
+                            {addressError}
+                          </Text>
+                          <Pressable
+                            onPress={refetchAddress}
+                            style={styles.retryButton}>
+                            <Text style={styles.retryText}>Retry</Text>
+                          </Pressable>
+                        </View>
+                      ) : address ? (
+                        <Text style={[styles.value, styles.locationText]}>
+                          {address}
+                        </Text>
+                      ) : (
+                        <Text style={[styles.value, styles.locationText]}>
+                          {report.location || 'Address not available'}
+                        </Text>
+                      )}
+                    </View>
                     <NavigationIcon color={theme.COLORS.BTN_BG_BLUE} />
                   </View>
                 </Pressable>
@@ -173,7 +215,7 @@ const ReportDetails = ({
         </View>
       </ScrollView>
 
-      <View style={{paddingHorizontal: 16, paddingTop: 8,minHeight: 70}}>
+      <View style={{paddingHorizontal: 16, paddingTop: 8, minHeight: 70}}>
         <Pressable
           onPress={() => {
             // checkDistanceFromReport().then(distance => {
@@ -264,6 +306,42 @@ const styles = StyleSheet.create({
   },
   locationText: {
     color: theme.COLORS.BTN_BG_BLUE,
+    fontWeight: '600',
+  },
+  locationContainer: {
+    flex: 1,
+  },
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  loadingText: {
+    color: theme.COLORS.TEXT_GREY,
+    fontStyle: 'italic',
+  },
+  errorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flexWrap: 'wrap',
+  },
+  errorText: {
+    color: '#FF6B6B',
+    fontSize: 12,
+    flex: 1,
+  },
+  retryButton: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    backgroundColor: theme.COLORS.BTN_BG_BLUE_30P || 'rgba(59, 130, 246, 0.3)',
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: theme.COLORS.BTN_BG_BLUE,
+  },
+  retryText: {
+    color: theme.COLORS.BTN_BG_BLUE,
+    fontSize: 12,
     fontWeight: '600',
   },
   mapLink: {
