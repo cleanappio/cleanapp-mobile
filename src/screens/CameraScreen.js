@@ -51,6 +51,7 @@ import { useTranslation } from 'react-i18next';
 import { report, matchReports } from '../services/API/APIManager';
 import { getLocation } from '../functions/geolocation';
 import { getWalletAddress } from '../services/DataManager';
+import Toast from '../components/Toast';
 
 import Svg, {
   Ellipse,
@@ -341,6 +342,8 @@ const CameraScreen = (props) => {
           userLocation.longitude,
           imageData,
         );
+
+        showMatchReportsResult(res);
       } else {
         res = await report(
         walletAddress,
@@ -366,6 +369,32 @@ const CameraScreen = (props) => {
       return null;
     }
   };
+
+  const showMatchReportsResult = (res) => {
+    try {
+      if (res.success && res.success === true) {
+        if (res.results.length > 0) {
+          // show toast notification
+          Toast.show({
+            text1: res.message || 'Match found. Thank you for submitting your report.',
+          });
+        } else {
+          console.log('No reports matched');
+        }
+      } else {
+        // Show error toast if report submission failed
+        console.log('Report Submission Failed');
+      }
+
+      console.log('res', res);
+    } catch (error) {
+      console.log('error', error);
+      // Show error toast for exceptions
+      Toast.show({
+        text1: 'Something went wrong! Please try again.',
+      });
+    }
+  }
 
   const takePhoto = async (withAnnotation = false) => {
     let originalPhotoPath = null;

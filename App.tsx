@@ -30,6 +30,7 @@ import {I18nextProvider} from 'react-i18next';
 import {MenuProvider} from 'react-native-popup-menu';
 import {ethers} from 'ethers';
 import SplashScreen from 'react-native-splash-screen';
+import {GlobalToast} from './src/components/Toast';
 
 enableScreens();
 
@@ -163,6 +164,7 @@ const App = () => {
         <MenuProvider>
           <I18nextProvider i18n={i18next}>
             <RootNavigator />
+            <GlobalToast />
           </I18nextProvider>
         </MenuProvider>
       </StateProvider>
