@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { fontFamilies } from '../utils/fontFamilies';
 import { theme } from '../services/Common/theme';
 import Ripple from '../components/Ripple';
+import { ANDROID_APP_VERSION, IOS_APP_VERSION } from '../utils/constants';
 
 import WalletSettingsIcon from '../assets/ico_cache_settings.svg';
 import BottomSheetDialog from '../components/BotomSheetDialog';
@@ -582,6 +583,10 @@ const CacheScreen = props => {
               </Pressable>
             </View>
           </View>
+
+          <View style={styles.appVersionContainer}> 
+            <Text style={styles.txt10}>App version: {Platform.OS === 'ios' ? IOS_APP_VERSION : ANDROID_APP_VERSION}</Text>
+          </View>
         </View>
       </ScrollView>
       <AvatarSheet
@@ -864,6 +869,17 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     fontFamily: fontFamilies.Default,
     paddingHorizontal: 16,
+  },
+  appVersionContainer: {
+    marginVertical: 16,
+    alignItems: 'center',
+  },
+  txt10: {
+    fontFamily: fontFamilies.Default,
+    fontSize: 10,
+    lineHeight: 15,
+    fontWeight: '400',
+    color: theme.COLORS.TEXT_GREY,
   },
 });
 
