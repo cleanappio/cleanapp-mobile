@@ -173,7 +173,7 @@ const ReportDetails = ({
         </View>
       </ScrollView>
 
-      <View style={{padding: 16, height: 70}}>
+      <View style={{paddingHorizontal: 16, paddingTop: 8,minHeight: 70}}>
         <Pressable
           onPress={() => {
             // checkDistanceFromReport().then(distance => {
@@ -281,10 +281,13 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
+    minHeight: 40,
+    marginBottom: 8,
   },
   reviewButtonText: {
     color: theme.COLORS.WHITE,
     fontWeight: '600',
+    fontSize: 16,
   },
 });
 
