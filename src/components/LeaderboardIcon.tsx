@@ -2,7 +2,7 @@ import * as React from 'react';
 import Svg, {Path} from 'react-native-svg';
 import {theme} from '../services/Common/theme';
 
-function ReportIcon(props: any) {
+function MemberIcon(props: any) {
   const {strokeColor = theme.COLORS.TEXT_GREY, ...svgProps} = props;
 
   return (
@@ -16,15 +16,14 @@ function ReportIcon(props: any) {
       strokeWidth={2}
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="feather feather-file-text"
+      className="feather feather-users"
       {...svgProps}>
-      <Path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-      <Path d="M14 2L14 8 20 8" />
-      <Path d="M16 13L8 13" />
-      <Path d="M16 17L8 17" />
-      <Path d="M10 9L9 9 8 9" />
+      <Path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+      <Path d="M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" />
+      <Path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+      <Path d="M16 3.13a4 4 0 0 1 0 7.75" />
     </Svg>
   );
 }
 
-export default ReportIcon;
+export default MemberIcon;

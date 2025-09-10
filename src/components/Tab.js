@@ -1,11 +1,13 @@
 import React from 'react';
 import {Image, Pressable, StyleSheet, View, Text} from 'react-native';
-import LeaderboardIcon from '../assets/ico_leaderboard.svg';
-import MapIcon from '../assets/ico_map.svg';
-import MemberIcon from '../assets/ico_member.svg';
+import {useNavigationState} from '@react-navigation/native';
+import ProfileIcon from './ProfileIcon';
+import MapIcon from './MapIcon';
+import LeaderboardIcon from './LeaderboardIcon';
 import ReportIcon from './ReportIcon';
 const CleanAppIcon = require('../assets/CleanApp_Logo.png');
 import {useStateValue} from '../services/State/State';
+import {theme} from '../services/Common/theme';
 
 const styles = StyleSheet.create({
   icon: {
@@ -47,6 +49,8 @@ const styles = StyleSheet.create({
 
 function TabComponent({label, onPress, openedReports = []}) {
   const [{reports}] = useStateValue();
+  const currentRoute = useNavigationState(state => state.routes[state.index]);
+  const isSelected = currentRoute.name === label;
 
   // Calculate unopened reports count for notification badge
   const unopenedCount = reports.filter(
@@ -54,17 +58,25 @@ function TabComponent({label, onPress, openedReports = []}) {
   ).length;
 
   const renderIcon = () => {
+    const iconProps = {
+      width: 24,
+      height: 24,
+      strokeColor: isSelected
+        ? theme.COLORS.BTN_BG_BLUE
+        : theme.COLORS.TEXT_GREY,
+    };
+
     switch (label) {
       case 'Camera':
         return <Image source={CleanAppIcon} style={styles.centralIcon} />;
       case 'Cache':
-        return <MemberIcon />;
+        return <ProfileIcon {...iconProps} />;
       case 'Leaderboard':
-        return <LeaderboardIcon />;
+        return <LeaderboardIcon {...iconProps} />;
       case 'Reports':
         return (
           <View style={styles.reportsContainer}>
-            <ReportIcon />
+            <ReportIcon {...iconProps} />
             <View
               style={[
                 styles.notificationBadge,
@@ -77,7 +89,7 @@ function TabComponent({label, onPress, openedReports = []}) {
           </View>
         );
       case 'Map':
-        return <MapIcon />;
+        return <MapIcon {...iconProps} />;
       default:
         return null;
     }
