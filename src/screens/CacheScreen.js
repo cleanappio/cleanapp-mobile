@@ -5,7 +5,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { fontFamilies } from '../utils/fontFamilies';
 import { theme } from '../services/Common/theme';
 import Ripple from '../components/Ripple';
-import { ANDROID_APP_VERSION, IOS_APP_VERSION } from '../utils/constants';
 
 import WalletSettingsIcon from '../assets/ico_cache_settings.svg';
 import BottomSheetDialog from '../components/BotomSheetDialog';
