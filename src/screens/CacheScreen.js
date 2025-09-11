@@ -38,6 +38,7 @@ import {generateReferralUrl} from '../functions/referral';
 import {useStateValue} from '../services/State/State';
 import {actions} from '../services/State/Reducer';
 import ShareIcon from '../assets/ico_share.svg';
+import AppVersionDisplay from '../components/AppVersionDisplay';
 
 const CacheScreen = props => {
   const navigation = useNavigation();
@@ -584,8 +585,13 @@ const CacheScreen = props => {
             </View>
           </View>
 
-          <View style={styles.appVersionContainer}> 
-            <Text style={styles.txt10}>App version: {Platform.OS === 'ios' ? IOS_APP_VERSION : ANDROID_APP_VERSION}</Text>
+          {/* Version Display */}
+          <View style={styles.versionContainer}>
+            <AppVersionDisplay
+              showBuildNumber={true}
+              style={styles.versionDisplay}
+              textStyle={styles.versionText}
+            />
           </View>
         </View>
       </ScrollView>
@@ -870,16 +876,18 @@ const styles = StyleSheet.create({
     fontFamily: fontFamilies.Default,
     paddingHorizontal: 16,
   },
-  appVersionContainer: {
-    marginVertical: 16,
+  versionContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
     alignItems: 'center',
   },
-  txt10: {
-    fontFamily: fontFamilies.Default,
-    fontSize: 10,
-    lineHeight: 15,
-    fontWeight: '400',
+  versionDisplay: {
+    paddingVertical: 4,
+  },
+  versionText: {
+    fontSize: 11,
     color: theme.COLORS.TEXT_GREY,
+    fontFamily: fontFamilies.Default,
   },
 });
 
