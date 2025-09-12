@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {
   Alert,
   Animated,
@@ -17,12 +17,12 @@ import {
   Keyboard,
   Linking,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import {SafeAreaView} from 'react-native-safe-area-context';
 import {
   Gesture,
   GestureDetector,
   GestureHandlerRootView,
-} from 'react-native-gesture-handler'
+} from 'react-native-gesture-handler';
 import Reanimated, {
   Extrapolation,
   runOnJS,
@@ -36,21 +36,21 @@ import {
   useCameraPermission,
 } from 'react-native-vision-camera';
 import RNFS from 'react-native-fs';
-import { useIsFocused } from '@react-navigation/native';
-import { launchImageLibrary } from 'react-native-image-picker';
-import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
+import {useIsFocused} from '@react-navigation/native';
+import {launchImageLibrary} from 'react-native-image-picker';
+import {check, request, PERMISSIONS, RESULTS} from 'react-native-permissions';
 import ImageResizer from '@bam.tech/react-native-image-resizer';
 
-import { theme } from '../services/Common/theme';
-import { fontFamilies } from '../utils/fontFamilies';
+import {theme} from '../services/Common/theme';
+import {fontFamilies} from '../utils/fontFamilies';
 import CheckBigIcon from '../assets/ico_check_big.svg';
 import CameraShootIcon from '../assets/ico_camera_shoot.svg';
 import TargetIcon from '../assets/ico_target.svg';
-import { BlurView } from '@react-native-community/blur';
-import { useTranslation } from 'react-i18next';
-import { report, matchReports } from '../services/API/APIManager';
-import { getLocation } from '../functions/geolocation';
-import { getWalletAddress } from '../services/DataManager';
+import {BlurView} from '@react-native-community/blur';
+import {useTranslation} from 'react-i18next';
+import {report, matchReports} from '../services/API/APIManager';
+import {getLocation} from '../functions/geolocation';
+import {getWalletAddress} from '../services/DataManager';
 import Toast from '../components/Toast';
 
 import Svg, {
@@ -64,17 +64,10 @@ const tapSpotDiameter = 450;
 
 Reanimated.addWhitelistedNativeProps({
   zoom: true,
-})
+});
 const ReanimatedCamera = Reanimated.createAnimatedComponent(Camera);
 
-const GreenFlash = ({
-  flashDiameterX,
-  flashDiameterY,
-  x,
-  y,
-  scaleX,
-  scaleY,
-}) => {
+const GreenFlash = ({flashDiameterX, flashDiameterY, x, y, scaleX, scaleY}) => {
   const left = x - flashDiameterX / 2;
   const top = y - flashDiameterY / 2;
   return (
@@ -87,8 +80,7 @@ const GreenFlash = ({
         alignItems: 'center',
         top: top,
         left: left,
-      }}
-    >
+      }}>
       <Svg
         height={flashDiameterY * scaleY[0]}
         width={flashDiameterX * scaleX[0]}
@@ -98,27 +90,35 @@ const GreenFlash = ({
             id="grad"
             fx={flashDiameterX / 2}
             fy={flashDiameterY / 2}
-            rx={flashDiameterX / 2 * scaleX[0]}
-            ry={flashDiameterY / 2 * scaleY[0]}
+            rx={(flashDiameterX / 2) * scaleX[0]}
+            ry={(flashDiameterY / 2) * scaleY[0]}
             gradientUnits="userSpaceOnUse">
-            <Stop offset="0" stopColor={theme.COLORS.CAMERA_GRADIENT[0]} stopOpacity="1" />
-            <Stop offset="1" stopColor={theme.COLORS.CAMERA_GRADIENT[0]} stopOpacity="0" />
+            <Stop
+              offset="0"
+              stopColor={theme.COLORS.CAMERA_GRADIENT[0]}
+              stopOpacity="1"
+            />
+            <Stop
+              offset="1"
+              stopColor={theme.COLORS.CAMERA_GRADIENT[0]}
+              stopOpacity="0"
+            />
           </SvgRadialGradient>
         </Defs>
         <Ellipse
           cx={flashDiameterX / 2}
           cy={flashDiameterY / 2}
-          rx={flashDiameterX / 2 * scaleX[0]}
-          ry={flashDiameterY / 2 * scaleY[0]}
+          rx={(flashDiameterX / 2) * scaleX[0]}
+          ry={(flashDiameterY / 2) * scaleY[0]}
           fill="url(#grad)"
         />
       </Svg>
     </Animated.View>
-  )
-}
+  );
+};
 
-const CameraScreen = (props) => {
-  const { reportId } = props;
+const CameraScreen = props => {
+  const {reportId} = props;
 
   const isReviewMode = useMemo(() => {
     return reportId !== undefined;
@@ -134,14 +134,15 @@ const CameraScreen = (props) => {
   const [photoData, setPhotoData] = useState(null);
   const [isInAnnotationMode, setIsInAnnotationMode] = useState(false);
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
-  const [hasPhotoLibraryPermission, setHasPhotoLibraryPermission] = useState(false);
+  const [hasPhotoLibraryPermission, setHasPhotoLibraryPermission] =
+    useState(false);
   const flashAnimatedValue = useRef(new Animated.Value(0));
   const tapAnimatedValue = useRef(new Animated.Value(0.2));
   const flashScale = useState(0);
   const flashScaleStatic = useState(1);
   const tapScale = useState(0);
-  const { t } = useTranslation();
-  const { hasPermission, requestPermission } = useCameraPermission();
+  const {t} = useTranslation();
+  const {hasPermission, requestPermission} = useCameraPermission();
 
   const isFocused = useIsFocused();
 
@@ -156,22 +157,31 @@ const CameraScreen = (props) => {
   }, [isFocused]);
 
   useEffect(() => {
-    const appStateSubscription = AppState.addEventListener('change', nextAppState => {
-      appState.current = nextAppState;
-      setIsCameraActive(appState.current === 'active');
-    });
+    const appStateSubscription = AppState.addEventListener(
+      'change',
+      nextAppState => {
+        appState.current = nextAppState;
+        setIsCameraActive(appState.current === 'active');
+      },
+    );
     return () => {
       appStateSubscription.remove();
-    }
+    };
   }, []);
 
   useEffect(() => {
-    const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {
-      setIsKeyboardVisible(true);
-    });
-    const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
-      setIsKeyboardVisible(false);
-    });
+    const keyboardDidShowListener = Keyboard.addListener(
+      'keyboardDidShow',
+      () => {
+        setIsKeyboardVisible(true);
+      },
+    );
+    const keyboardDidHideListener = Keyboard.addListener(
+      'keyboardDidHide',
+      () => {
+        setIsKeyboardVisible(false);
+      },
+    );
 
     return () => {
       keyboardDidShowListener.remove();
@@ -179,24 +189,23 @@ const CameraScreen = (props) => {
     };
   }, []);
 
-  tapAnimatedValue.current.addListener((state) => {
+  tapAnimatedValue.current.addListener(state => {
     tapScale[1](state.value);
   });
 
-  flashAnimatedValue.current.addListener((state) => {
+  flashAnimatedValue.current.addListener(state => {
     flashScale[1](state.value);
   });
 
   const device = useCameraDevice('back');
   const frontDevice = useCameraDevice('front');
-  
+
   // Fallback logic for Android 9 devices where back camera might be undefined
   const backDevice = React.useMemo(() => {
-    
     if (device) {
       return device;
     }
-    
+
     // If back device is not available, try to get any available device
     if (Platform.OS === 'android') {
       // For Android, we can try to get the first available device
@@ -204,30 +213,46 @@ const CameraScreen = (props) => {
       if (frontDevice) {
         return frontDevice;
       }
-      
+
       return null;
     }
-    
+
     return null;
   }, [device, frontDevice]);
 
   // Enhanced camera availability check
   const isCameraAvailable = React.useMemo(() => {
-    const available = hasPermission && !!backDevice && isCameraActive && isCameraFocused && !isInAnnotationMode;
+    const available =
+      hasPermission &&
+      !!backDevice &&
+      isCameraActive &&
+      isCameraFocused &&
+      !isInAnnotationMode;
     return available;
-  }, [hasPermission, backDevice, isCameraActive, isCameraFocused, isInAnnotationMode]);
+  }, [
+    hasPermission,
+    backDevice,
+    isCameraActive,
+    isCameraFocused,
+    isInAnnotationMode,
+  ]);
 
   const minCameraZoom = backDevice ? backDevice.minZoom : 1.0;
-  const maxCameraZoom = backDevice ? backDevice.maxZoom : (Platform.OS === 'ios' ? 123 : 6);
+  const maxCameraZoom = backDevice
+    ? backDevice.maxZoom
+    : Platform.OS === 'ios'
+      ? 123
+      : 6;
 
   const minZoom = 1.0;
-  const maxZoom = (Platform.OS === 'ios' ? 50.0 : 5.0);
+  const maxZoom = Platform.OS === 'ios' ? 50.0 : 5.0;
   const zoom = useSharedValue(backDevice ? backDevice.neutralZoom : minZoom);
   const zoomOffset = useSharedValue(minZoom);
   const currZoomOffset = useSharedValue(minZoom);
 
   const cameraShootButtonPosition = React.useMemo(() => {
-    const left = Dimensions.get('screen').width / 2 - styles.cameraShootButton.width / 2;
+    const left =
+      Dimensions.get('screen').width / 2 - styles.cameraShootButton.width / 2;
     const bottom = 30;
     const right = left + styles.cameraShootButton.width;
     const top = bottom - styles.cameraShootButton.height;
@@ -236,7 +261,7 @@ const CameraScreen = (props) => {
       top: top,
       right: right,
       bottom: bottom,
-    }
+    };
   }, []);
 
   useEffect(() => {
@@ -296,10 +321,13 @@ const CameraScreen = (props) => {
             t('camerascreen.notice'),
             t('camerascreen.photolibraryaccesspermissionnotgranted'),
             [
-              { text: t('camerascreen.no'), style: 'cancel' },
-              { text: t('camerascreen.yes'), onPress: () => Linking.openSettings() }
+              {text: t('camerascreen.no'), style: 'cancel'},
+              {
+                text: t('camerascreen.yes'),
+                onPress: () => Linking.openSettings(),
+              },
             ],
-            { cancelable: false },
+            {cancelable: false},
           );
           setHasPhotoLibraryPermission(false);
           return false;
@@ -324,8 +352,8 @@ const CameraScreen = (props) => {
         Alert.alert(
           t('camerascreen.notice'),
           t('camerascreen.invalidlocation'),
-          [{ text: t('camerascreen.ok'), onPress: () => { } }],
-          { cancelable: false },
+          [{text: t('camerascreen.ok'), onPress: () => {}}],
+          {cancelable: false},
         );
         return null;
       }
@@ -346,37 +374,45 @@ const CameraScreen = (props) => {
         showMatchReportsResult(res);
       } else {
         res = await report(
-        walletAddress,
-        userLocation.latitude,
-        userLocation.longitude,
-        /*tapX=*/0.5,
-        /*tapY=*/0.5,
-        imageData,
-        annotation);
+          walletAddress,
+          userLocation.latitude,
+          userLocation.longitude,
+          /*tapX=*/ 0.5,
+          /*tapY=*/ 0.5,
+          imageData,
+          annotation,
+        );
       }
-      
+
       // Clean up the image file after upload
       await cleanupImageFile(path);
-      
+
       return res;
     } else {
       Alert.alert(
         t('camerascreen.notice'),
         t('camerascreen.invalidlocation'),
-        [{ text: t('camerascreen.ok'), onPress: () => { } }],
-        { cancelable: false },
+        [{text: t('camerascreen.ok'), onPress: () => {}}],
+        {cancelable: false},
       );
       return null;
     }
   };
 
-  const showMatchReportsResult = (res) => {
+  const showMatchReportsResult = res => {
+    const resolvedMessage =
+      'Thank you a lot for the resolving verification! You got +2 KITN ✅';
+    const reportMessage =
+      'Thank you for the issue confirmation! You got +1 KITN.';
     try {
       if (res.success && res.success === true) {
         if (res.results.length > 0) {
+          const isResolved = res.results.find(
+            result => result.resolved === true,
+          );
           // show toast notification
           Toast.show({
-            text1: "Thank you a lot for the resolving verification! You got +2 KITN.",
+            text1: isResolved ? resolvedMessage : reportMessage,
           });
         } else {
           console.log('No reports matched');
@@ -385,7 +421,7 @@ const CameraScreen = (props) => {
         // Show error toast if report submission failed
         console.log('Report Submission Failed');
         Toast.show({
-          text1: "Thank you for the issue confirmation! You got +1 KITN.",
+          text1: reportMessage,
         });
       }
 
@@ -397,63 +433,66 @@ const CameraScreen = (props) => {
         text1: 'Something went wrong! Please try again.',
       });
     }
-  }
+  };
 
   const takePhoto = async (withAnnotation = false) => {
     let originalPhotoPath = null;
     let resizedPhotoPath = null;
-    
+
     try {
       if (!camera || !camera.current) {
         // Gracefully handle null camera (e.g., iOS simulator)
         setPhototaken(true);
         return;
       }
-      
+
       if (!backDevice) {
         Alert.alert(
           t('camerascreen.notice'),
           'Camera not available',
-          [{ text: t('camerascreen.ok'), onPress: () => { } }],
-          { cancelable: false },
+          [{text: t('camerascreen.ok'), onPress: () => {}}],
+          {cancelable: false},
         );
         return;
       }
-      
+
       const photo = await camera.current.takePhoto(takePhotoOptions);
-      
+
       // Resize the photo to height 1000 while preserving aspect ratio
-      const originalUri = Platform.OS === 'ios' ? photo.path.replace('file://', '') : 'file://' + photo.path;
+      const originalUri =
+        Platform.OS === 'ios'
+          ? photo.path.replace('file://', '')
+          : 'file://' + photo.path;
       originalPhotoPath = originalUri;
       const resizedUri = await resizePhoto(originalUri);
       resizedPhotoPath = resizedUri;
-      
+
       const photoFile = {
         uri: resizedUri,
         type: 'image/jpeg',
         name: 'photo.jpg',
       };
-      
+
       if (withAnnotation) {
         setPhotoData(photoFile);
         setShowAnnotationModal(true);
         setIsInAnnotationMode(true);
       } else {
         setPhototaken(true);
-        const res = await uploadPhoto(photoFile).catch((err) => {
+        const res = await uploadPhoto(photoFile).catch(err => {
           Alert.alert(
             t('camerascreen.notice'),
             t('camerascreen.failedtosaveimage') + err.message,
-            [{ text: t('camerascreen.ok'), onPress: () => { } }],
-            { cancelable: false },
+            [{text: t('camerascreen.ok'), onPress: () => {}}],
+            {cancelable: false},
           );
         });
         if (!res.ok) {
           Alert.alert(
             t('camerascreen.notice'),
             t('camerascreen.failedtosaveimage') + res.error,
-            [{ text: t('camerascreen.ok'), onPress: () => { } }],
-            { cancelable: false },
+            [{text: t('camerascreen.ok'), onPress: () => {}}],
+            {cancelable: false},
           );
           return;
         }
@@ -464,8 +503,8 @@ const CameraScreen = (props) => {
         Alert.alert(
           t('camerascreen.notice'),
           t('camerascreen.failedtotakephoto') + e.message,
-          [{ text: t('camerascreen.ok'), onPress: () => { } }],
-          { cancelable: false },
+          [{text: t('camerascreen.ok'), onPress: () => {}}],
+          {cancelable: false},
         );
       }
     } finally {
@@ -480,27 +519,27 @@ const CameraScreen = (props) => {
     if (!photoData) return;
 
     setShowAnnotationModal(false);
-    setPhototaken(true);    
+    setPhototaken(true);
     try {
-      const res = await uploadPhoto(photoData, annotationText).catch((err) => {
+      const res = await uploadPhoto(photoData, annotationText).catch(err => {
         Alert.alert(
           t('camerascreen.notice'),
           t('camerascreen.failedtosaveimage') + err.message,
-          [{ text: t('camerascreen.ok'), onPress: () => { } }],
-          { cancelable: false },
+          [{text: t('camerascreen.ok'), onPress: () => {}}],
+          {cancelable: false},
         );
       });
-      
+
       if (!res || !res.ok) {
         Alert.alert(
           t('camerascreen.notice'),
           t('camerascreen.failedtosaveimage') + (res?.error || 'Unknown error'),
-          [{ text: t('camerascreen.ok'), onPress: () => { } }],
-          { cancelable: false },
+          [{text: t('camerascreen.ok'), onPress: () => {}}],
+          {cancelable: false},
         );
         return;
       }
-      
+
       setAnnotationText('');
       setPhotoData(null);
       setIsInAnnotationMode(false);
@@ -508,8 +547,8 @@ const CameraScreen = (props) => {
       Alert.alert(
         t('camerascreen.notice'),
         t('camerascreen.failedtosaveimage') + e.message,
-        [{ text: t('camerascreen.ok'), onPress: () => { } }],
-        { cancelable: false },
+        [{text: t('camerascreen.ok'), onPress: () => {}}],
+        {cancelable: false},
       );
     }
   };
@@ -519,7 +558,7 @@ const CameraScreen = (props) => {
     if (photoData && photoData.uri) {
       await cleanupImageFile(photoData.uri);
     }
-    
+
     setShowAnnotationModal(false);
     setAnnotationText('');
     setPhotoData(null);
@@ -539,7 +578,7 @@ const CameraScreen = (props) => {
   const selectPhotoFromGallery = async () => {
     let originalPhotoPath = null;
     let resizedPhotoPath = null;
-    
+
     try {
       // Check photo library permission first
       if (!hasPhotoLibraryPermission) {
@@ -563,8 +602,8 @@ const CameraScreen = (props) => {
         Alert.alert(
           t('camerascreen.notice'),
           'Failed to select photo: ' + result.errorMessage,
-          [{ text: t('camerascreen.ok'), onPress: () => { } }],
-          { cancelable: false },
+          [{text: t('camerascreen.ok'), onPress: () => {}}],
+          {cancelable: false},
         );
         return;
       }
@@ -572,11 +611,11 @@ const CameraScreen = (props) => {
       if (result.assets && result.assets.length > 0) {
         const selectedPhoto = result.assets[0];
         originalPhotoPath = selectedPhoto.uri;
-        
+
         // Resize the selected photo to height 1000 while preserving aspect ratio
         const resizedUri = await resizePhoto(selectedPhoto.uri);
         resizedPhotoPath = resizedUri;
-        
+
         const photoFile = {
           uri: resizedUri,
           type: selectedPhoto.type || 'image/jpeg',
@@ -591,8 +630,8 @@ const CameraScreen = (props) => {
       Alert.alert(
         t('camerascreen.notice'),
         'Failed to open gallery: ' + error.message,
-        [{ text: t('camerascreen.ok'), onPress: () => { } }],
-        { cancelable: false },
+        [{text: t('camerascreen.ok'), onPress: () => {}}],
+        {cancelable: false},
       );
     } finally {
       // Clean up original photo file if it exists and is different from resized
@@ -604,29 +643,28 @@ const CameraScreen = (props) => {
 
   const pinchGestureInit = Gesture.Pinch();
   const pinchGesture = pinchGestureInit
-    .onUpdate((event) => {
-      currZoomOffset.value = Math.min(maxZoom, Math.max(minZoom, zoomOffset.value * event.scale));
+    .onUpdate(event => {
+      currZoomOffset.value = Math.min(
+        maxZoom,
+        Math.max(minZoom, zoomOffset.value * event.scale),
+      );
       zoom.value = interpolate(
         currZoomOffset.value,
         [minZoom, maxZoom],
         [minCameraZoom, maxCameraZoom],
         Extrapolation.CLAMP,
       );
-    }).onEnd(() => {
+    })
+    .onEnd(() => {
       zoomOffset.value = currZoomOffset.value;
     });
 
-  const allGestures = Gesture.Race(
-    pinchGesture,
-  );
+  const allGestures = Gesture.Race(pinchGesture);
 
-  const animatedProps = useAnimatedProps(
-    () => ({ zoom: zoom.value }),
-    [zoom]
-  );
+  const animatedProps = useAnimatedProps(() => ({zoom: zoom.value}), [zoom]);
 
   // Function to resize photo to height 1000 while preserving aspect ratio
-  const resizePhoto = async (photoUri) => {
+  const resizePhoto = async photoUri => {
     try {
       // First, get the image dimensions to calculate the proper width
       const imageInfo = await ImageResizer.createResizedImage(
@@ -638,9 +676,9 @@ const CameraScreen = (props) => {
         0, // rotation
         undefined, // outputPath
         false, // keepMetadata
-        { mode: 'contain', onlyScaleDown: false }
+        {mode: 'contain', onlyScaleDown: false},
       );
-      
+
       // The resized image will maintain aspect ratio with height 1000
       return imageInfo.uri;
     } catch (error) {
@@ -650,7 +688,7 @@ const CameraScreen = (props) => {
   };
 
   // Function to clean up image files
-  const cleanupImageFile = async (filePath) => {
+  const cleanupImageFile = async filePath => {
     try {
       await RNFS.unlink(filePath);
     } catch (cleanupError) {
@@ -662,9 +700,7 @@ const CameraScreen = (props) => {
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <GestureHandlerRootView>
         <GestureDetector gesture={allGestures}>
-          <View
-            style={styles.container}
-          >
+          <View style={styles.container}>
             {isCameraAvailable && (
               <ReanimatedCamera
                 ref={camera}
@@ -677,20 +713,20 @@ const CameraScreen = (props) => {
                 enableZoomGesture={true}
                 enableFpsGraph={false}
                 enableHighQualityPhotos={true}
-                onError={(error) => {
+                onError={error => {
                   console.error('Camera error:', error);
                   Alert.alert(
                     t('camerascreen.notice'),
                     'Camera configuration error: ' + error.message,
-                    [{ text: t('camerascreen.ok'), onPress: () => { } }],
-                    { cancelable: false },
+                    [{text: t('camerascreen.ok'), onPress: () => {}}],
+                    {cancelable: false},
                   );
                 }}
               />
             )}
             {isInAnnotationMode && photoData && (
               <Image
-                source={{ uri: photoData.uri }}
+                source={{uri: photoData.uri}}
                 style={StyleSheet.absoluteFill}
                 resizeMode="cover"
               />
@@ -708,7 +744,10 @@ const CameraScreen = (props) => {
               {/* Bottom */}
               <GreenFlash
                 x={Dimensions.get('screen').width / 2}
-                y={Dimensions.get('screen').height - (Platform.OS === 'ios' ? 150 : 100)}
+                y={
+                  Dimensions.get('screen').height -
+                  (Platform.OS === 'ios' ? 150 : 100)
+                }
                 flashDiameterX={Dimensions.get('screen').width}
                 flashDiameterY={200}
                 scaleX={flashScaleStatic}
@@ -735,16 +774,13 @@ const CameraScreen = (props) => {
               {!phototaken && hasPermission && !isInAnnotationMode && (
                 <>
                   <View
-                    style={
-                      {
-                        ...styles.blurview2,
-                        position: 'absolute',
-                        top: 40,
-                        left: 40,
-                        width: Dimensions.get('screen').width - 80,
-                      }
-                    }
-                  >
+                    style={{
+                      ...styles.blurview2,
+                      position: 'absolute',
+                      top: 40,
+                      left: 40,
+                      width: Dimensions.get('screen').width - 80,
+                    }}>
                     <Text style={styles.centerText}>
                       {t('camerascreen.prompt')}
                     </Text>
@@ -752,13 +788,12 @@ const CameraScreen = (props) => {
                 </>
               )}
               {phototaken && (
-                <View style={
-                  {
+                <View
+                  style={{
                     ...styles.blurview2,
                     width: 221,
                     height: 191,
-                  }
-                }>
+                  }}>
                   <CheckBigIcon
                     style={{
                       width: 72,
@@ -775,46 +810,46 @@ const CameraScreen = (props) => {
             </View>
             {!phototaken && !isInAnnotationMode && (
               <>
-                <View style={
-                  {
+                <View
+                  style={{
                     ...styles.target,
-                    left: Dimensions.get('screen').width / 2 - Dimensions.get('screen').width / 1.5 / 2,
-                    top: Dimensions.get('screen').height / 2 - Dimensions.get('screen').width / 1.5 / 2 - 50,
+                    left:
+                      Dimensions.get('screen').width / 2 -
+                      Dimensions.get('screen').width / 1.5 / 2,
+                    top:
+                      Dimensions.get('screen').height / 2 -
+                      Dimensions.get('screen').width / 1.5 / 2 -
+                      50,
                     width: Dimensions.get('screen').width / 1.5,
                     height: Dimensions.get('screen').width / 1.5,
-                  }
-                }>
+                  }}>
                   <TargetIcon />
                 </View>
                 <GestureDetector
                   gesture={Gesture.Race(
-                    Gesture.Tap()
-                      .onEnd(() => {
-                        runOnJS(takePhoto)(false);
-                      }),
+                    Gesture.Tap().onEnd(() => {
+                      runOnJS(takePhoto)(false);
+                    }),
                     Gesture.LongPress()
                       .minDuration(500)
                       .onStart(() => {
                         runOnJS(takePhoto)(true);
-                      })
-                  )}
-                >
+                      }),
+                  )}>
                   <View
                     style={{
                       ...styles.cameraShootButton,
                       left: cameraShootButtonPosition.left,
                       bottom: cameraShootButtonPosition.bottom,
-                    }}
-                  >
+                    }}>
                     <CameraShootIcon />
                   </View>
                 </GestureDetector>
-                
+
                 {/* Upload Button */}
                 <TouchableOpacity
                   style={styles.uploadButton}
-                  onPress={selectPhotoFromGallery}
-                >
+                  onPress={selectPhotoFromGallery}>
                   <Text style={styles.uploadButtonText}>
                     {t('camerascreen.upload') || 'Upload'}
                   </Text>
@@ -824,19 +859,17 @@ const CameraScreen = (props) => {
           </View>
         </GestureDetector>
       </GestureHandlerRootView>
-      
+
       {/* Annotation Modal */}
       <Modal
         visible={showAnnotationModal}
         transparent={true}
         animationType="slide"
-        onRequestClose={handleOverlayPress}
-      >
+        onRequestClose={handleOverlayPress}>
         <TouchableOpacity
           style={styles.modalOverlay}
           activeOpacity={1}
-          onPress={handleOverlayPress}
-        >
+          onPress={handleOverlayPress}>
           {/* Annotation Input */}
           {/* <TouchableOpacity
             style={styles.annotationInputContainer}
@@ -847,38 +880,39 @@ const CameraScreen = (props) => {
               }
             }}
           > */}
-            <Text style={styles.annotationTitle}>
-              {t('camerascreen.addannotation') || 'Add Annotation'}
-            </Text>
-            <TextInput
-              style={styles.annotationInput}
-              placeholder={t('camerascreen.annotationplaceholder') || 'Enter your annotation...'}
-              placeholderTextColor={theme.COLORS.TEXT_GREY}
-              value={annotationText}
-              onChangeText={setAnnotationText}
-              multiline={true}
-              numberOfLines={4}
-              textAlignVertical="top"
-            />
+          <Text style={styles.annotationTitle}>
+            {t('camerascreen.addannotation') || 'Add Annotation'}
+          </Text>
+          <TextInput
+            style={styles.annotationInput}
+            placeholder={
+              t('camerascreen.annotationplaceholder') ||
+              'Enter your annotation...'
+            }
+            placeholderTextColor={theme.COLORS.TEXT_GREY}
+            value={annotationText}
+            onChangeText={setAnnotationText}
+            multiline={true}
+            numberOfLines={4}
+            textAlignVertical="top"
+          />
           {/* </TouchableOpacity> */}
-          
+
           {/* Buttons Container */}
           <View style={styles.buttonsContainer}>
             {/* Submit Button */}
             <TouchableOpacity
               style={styles.submitButtonContainer}
-              onPress={submitAnnotation}
-            >
+              onPress={submitAnnotation}>
               <Text style={styles.submitButtonText}>
                 {t('camerascreen.submit') || 'Submit'}
               </Text>
             </TouchableOpacity>
-            
+
             {/* Cancel Button */}
             <TouchableOpacity
               style={styles.cancelButtonContainer}
-              onPress={cancelAnnotation}
-            >
+              onPress={cancelAnnotation}>
               <Text style={styles.cancelButtonText}>
                 {t('camerascreen.cancel') || 'Cancel'}
               </Text>

@@ -165,8 +165,7 @@ Toast.show = options => {
   const {text1, message, duration = 3000, onHide = () => {}} = options;
 
   // Combine text1 and text2 if both provided, otherwise use message
-  const toastMessage =
-    text1 ? `${text1}` : message || text1 || '';
+  const toastMessage = text1 ? `${text1}` : message || text1 || '';
 
   globalToastState = {
     visible: true,
