@@ -376,7 +376,7 @@ const CameraScreen = (props) => {
         if (res.results.length > 0) {
           // show toast notification
           Toast.show({
-            text1: res.message || 'Match found. Thank you for submitting your report.',
+            text1: "Thank you a lot for the resolving verification! You got +2 KITN.",
           });
         } else {
           console.log('No reports matched');
@@ -384,6 +384,9 @@ const CameraScreen = (props) => {
       } else {
         // Show error toast if report submission failed
         console.log('Report Submission Failed');
+        Toast.show({
+          text1: "Thank you for the issue confirmation! You got +1 KITN.",
+        });
       }
 
       console.log('res', res);
