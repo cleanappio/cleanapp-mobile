@@ -160,62 +160,57 @@ const ReportDetails = ({
                 <Text style={styles.label}>Severity:</Text>
                 <Text style={styles.value}>{report.severity}</Text>
               </View>
-
-              <View
-                style={{flexDirection: 'row', gap: 12, alignItems: 'center'}}>
-                <Text style={styles.label}>Location:</Text>
-                <Pressable
-                  onPress={openGoogleMaps}
-                  style={styles.locationButton}>
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      gap: 4,
-                    }}>
-                    <View style={styles.locationContainer}>
-                      {addressLoading ? (
-                        <View style={styles.loadingContainer}>
-                          <ActivityIndicator
-                            size="small"
-                            color={theme.COLORS.BTN_BG_BLUE}
-                          />
-                          <Text style={[styles.value, styles.loadingText]}>
-                            Getting address...
-                          </Text>
-                        </View>
-                      ) : addressError ? (
-                        <View style={styles.errorContainer}>
-                          <Text style={[styles.value, styles.errorText]}>
-                            {addressError}
-                          </Text>
-                          <Pressable
-                            onPress={refetchAddress}
-                            style={styles.retryButton}>
-                            <Text style={styles.retryText}>Retry</Text>
-                          </Pressable>
-                        </View>
-                      ) : address ? (
-                        <Text style={[styles.value, styles.locationText]}>
-                          {address}
-                        </Text>
-                      ) : (
-                        <Text style={[styles.value, styles.locationText]}>
-                          {report.location || 'Address not available'}
-                        </Text>
-                      )}
-                    </View>
-                    <NavigationIcon color={theme.COLORS.BTN_BG_BLUE} />
-                  </View>
-                </Pressable>
-              </View>
             </View>
           </View>
         </View>
       </ScrollView>
 
-      <View style={{paddingHorizontal: 16, paddingTop: 8, minHeight: 70}}>
+      <View style={styles.fixedBottomContainer}>
+        <Pressable onPress={openGoogleMaps} style={styles.locationButton}>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 4,
+            }}>
+            <View style={styles.locationContainer}>
+              {addressLoading ? (
+                <View style={styles.loadingContainer}>
+                  <ActivityIndicator
+                    size="small"
+                    color={theme.COLORS.BTN_BG_BLUE}
+                  />
+                  <Text style={[styles.value, styles.loadingText]}>
+                    Getting address...
+                  </Text>
+                </View>
+              ) : addressError ? (
+                <View style={styles.errorContainer}>
+                  <Text style={[styles.value, styles.errorText]}>
+                    {addressError}
+                  </Text>
+                  <Pressable
+                    onPress={refetchAddress}
+                    style={styles.retryButton}>
+                    <Text style={styles.retryText}>Retry</Text>
+                  </Pressable>
+                </View>
+              ) : address ? (
+                <Text style={[styles.value, styles.locationText]}>
+                  {address}
+                </Text>
+              ) : (
+                <Text
+                  numberOfLines={3}
+                  style={[styles.value, styles.locationText]}>
+                  {report.location || 'Address not available'}
+                </Text>
+              )}
+            </View>
+            <NavigationIcon color={theme.COLORS.BTN_BG_BLUE} />
+          </View>
+        </Pressable>
         <Pressable
           onPress={() => {
             // checkDistanceFromReport().then(distance => {
@@ -269,6 +264,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 20,
   },
+  fixedBottomContainer: {
+    flexDirection: 'column',
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    backgroundColor: theme.COLORS.BG,
+    borderTopWidth: 1,
+    borderTopColor: theme.COLORS.BORDER_GREY,
+    minHeight: 120,
+  },
   section: {
     marginBottom: 24,
   },
@@ -296,9 +301,9 @@ const styles = StyleSheet.create({
     fontFamily: fontFamilies.Default,
   },
   locationButton: {
-    flex: 1,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
+    minHeight: 48,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
     backgroundColor: theme.COLORS.BTN_BG_BLUE_30P,
     borderRadius: 8,
     borderWidth: 1,
@@ -352,15 +357,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   reviewButton: {
-    flex: 1,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
+    minHeight: 48,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
     backgroundColor: theme.COLORS.GREEN_TEAM_BG,
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 40,
-    marginBottom: 8,
   },
   reviewButtonText: {
     color: theme.COLORS.WHITE,
