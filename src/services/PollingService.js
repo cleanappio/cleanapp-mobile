@@ -274,8 +274,8 @@ class PollingService {
   }
 
   // Method to manually trigger a poll (useful for testing)
-  manualPoll() {
-    this.fetchData();
+  async manualPoll() {
+    await this.fetchData();
   }
 }
 

@@ -5,10 +5,10 @@ import {
   StyleSheet,
   Text,
   View,
-  Pressable,
   ScrollView,
   Animated,
   ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {theme} from '../services/Common/theme';
@@ -48,6 +48,9 @@ const ReportsScreen = () => {
   const [locationText, setLocationText] = useState('Getting your location...');
   const [locationTextIndex, setLocationTextIndex] = useState(0);
 
+  // Pull to refresh state
+  const [refreshing, setRefreshing] = useState(false);
+
   // Array of loading messages for reports
   const loadingMessages = [
     'Loading...',
@@ -82,8 +85,15 @@ const ReportsScreen = () => {
     return openedReports.includes(reportId);
   };
 
-  const handleManualRefresh = () => {
-    PollingService.manualPoll();
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await PollingService.manualPoll();
+    } catch (error) {
+      console.error('Error refreshing reports:', error);
+    } finally {
+      setRefreshing(false);
+    }
   };
 
   // Effect to cycle through loading messages for reports
@@ -209,9 +219,6 @@ const ReportsScreen = () => {
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Review Nearby Reports</Text>
-        <Pressable style={styles.refreshButton} onPress={handleManualRefresh}>
-          <Text style={styles.refreshButtonText}>Refresh</Text>
-        </Pressable>
       </View>
 
       {lastReportsUpdate && (
@@ -245,7 +252,17 @@ const ReportsScreen = () => {
 
       <ScrollView
         style={styles.reportsList}
-        showsVerticalScrollIndicator={false}>
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor={theme.COLORS.BTN_BG_BLUE}
+            colors={[theme.COLORS.BTN_BG_BLUE]}
+            title="Pull to refresh"
+            titleColor={theme.COLORS.TEXT_GREY}
+          />
+        }>
         {reports && reports.length > 0 ? (
           (() => {
             const groupedReports = groupReportsByDate(reports);
@@ -280,9 +297,6 @@ const styles = StyleSheet.create({
     backgroundColor: theme.COLORS.BG,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 16,
   },
@@ -290,18 +304,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     color: theme.COLORS.WHITE,
-  },
-  refreshButton: {
-    backgroundColor: theme.COLORS.BTN_BG_BLUE,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
-  },
-  refreshButtonText: {
-    color: theme.COLORS.WHITE,
-    fontSize: 14,
-    fontWeight: '600',
-    fontFamily: fontFamilies.Default,
   },
   updateInfo: {
     backgroundColor: theme.COLORS.PANEL_BG,
@@ -417,17 +419,6 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   clearButtonText: {
-    fontSize: 12,
-    color: theme.COLORS.WHITE,
-    fontWeight: '500',
-  },
-  manualRefreshButton: {
-    backgroundColor: theme.COLORS.BTN_BG_BLUE,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
-  },
-  manualRefreshButtonText: {
     fontSize: 12,
     color: theme.COLORS.WHITE,
     fontWeight: '500',
