@@ -40,7 +40,7 @@ class AppVersionService {
       if (Platform.OS === 'ios') {
         this._buildNumber = await DeviceInfo.getBuildNumber();
       } else {
-        this._buildNumber = await DeviceInfo.getVersionCode();
+        this._buildNumber = await DeviceInfo.getVersion();
       }
       return this._buildNumber;
     } catch (error) {
@@ -58,10 +58,10 @@ class AppVersionService {
 
     try {
       if (Platform.OS === 'android') {
-        this._versionCode = await DeviceInfo.getVersionCode();
+        this._versionCode = DeviceInfo.getVersion();
       } else {
         // For iOS, we'll use the build number as version code
-        this._versionCode = await DeviceInfo.getBuildNumber();
+        this._versionCode = DeviceInfo.getBuildNumber();
       }
       return this._versionCode;
     } catch (error) {
@@ -78,7 +78,7 @@ class AppVersionService {
     if (this._bundleId) return this._bundleId;
 
     try {
-      this._bundleId = await DeviceInfo.getBundleId();
+      this._bundleId = DeviceInfo.getBundleId();
       return this._bundleId;
     } catch (error) {
       console.error('Error getting bundle ID:', error);

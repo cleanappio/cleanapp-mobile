@@ -587,7 +587,7 @@ const CacheScreen = props => {
           {/* Version Display */}
           <View style={styles.versionContainer}>
             <AppVersionDisplay
-              showBuildNumber={true}
+              showBuildNumber={false}
               style={styles.versionDisplay}
               textStyle={styles.versionText}
             />
