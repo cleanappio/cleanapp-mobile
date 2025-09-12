@@ -11,6 +11,7 @@ import {
   Dimensions,
   Linking,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {theme} from '../services/Common/theme';
@@ -19,35 +20,64 @@ import {useTranslation} from 'react-i18next';
 import ResponsiveImage from '../components/ResponsiveImage';
 import ChevronLeft from '../components/ChevronLeft';
 import NavigationIcon from '../components/NavigationIcon';
+import {getLocation} from '../functions/geolocation';
+import {calculateDistance} from '../utils/calculateDistance';
+import {useReverseGeocoding} from '../hooks/useReverseGeocoding';
 // import {useReportsContext} from '../contexts/ReportsContext';
 
 type ReportsStackParamList = {
   ReportsScreen: undefined;
   ReportDetails: {report: any};
+  ReviewCameraScreen: {report: any};
 };
 
 type ReportDetailsNavigationProp = StackNavigationProp<
   ReportsStackParamList,
-  'ReportDetails'
+  'ReportDetails' | 'ReviewCameraScreen'
 >;
 
 const ReportDetails = ({
   route,
 }: {
-  route: RouteProp<ReportsStackParamList, 'ReportDetails'>;
+  route: RouteProp<
+    ReportsStackParamList,
+    'ReportDetails' | 'ReviewCameraScreen'
+  >;
 }) => {
   const navigation = useNavigation<ReportDetailsNavigationProp>();
   const {t} = useTranslation();
   const {report} = route.params;
-  // const {markReportAsRead} = useReportsContext();
 
-  // Mark report as read when component mounts
-  // React.useEffect(() => {
-  //   if (report?.id) {
-  //     markReportAsRead(report.id);
-  //   }
-  // }, [report?.id, markReportAsRead]);
-  
+  // Reverse geocoding hook to get human-readable address
+  const {
+    address,
+    loading: addressLoading,
+    error: addressError,
+    refetch: refetchAddress,
+  } = useReverseGeocoding({
+    latitude: report.latitude,
+    longitude: report.longitude,
+    language: 'en',
+    autoFetch: true,
+  });
+
+  const checkDistanceFromReport = async (): Promise<number> => {
+    console.log('Checking distance from report');
+    const userLocation = await getLocation();
+    console.log('User location is ', userLocation);
+
+    console.log('Calculating distance');
+    const distance = calculateDistance(
+      userLocation.latitude,
+      userLocation.longitude,
+      report.latitude,
+      report.longitude,
+    );
+
+    console.log('Distance is ', distance, ' meters');
+    return distance;
+  };
+
   const goBack = () => {
     navigation.goBack();
   };
@@ -130,33 +160,75 @@ const ReportDetails = ({
                 <Text style={styles.label}>Severity:</Text>
                 <Text style={styles.value}>{report.severity}</Text>
               </View>
-
-              <View
-                style={{flexDirection: 'row', gap: 12, alignItems: 'center'}}>
-                <Text style={styles.label}>Location:</Text>
-                <Pressable
-                  onPress={openGoogleMaps}
-                  style={styles.locationButton}>
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      gap: 4,
-                    }}>
-                    <Text style={[styles.value, styles.locationText]}>
-                      {report.latitude && report.longitude
-                        ? `${report.latitude.toFixed(6)}, ${report.longitude.toFixed(6)}`
-                        : report.location || 'Coordinates not available'}
-                    </Text>
-                    <NavigationIcon color={theme.COLORS.BTN_BG_BLUE} />
-                  </View>
-                </Pressable>
-              </View>
             </View>
           </View>
         </View>
       </ScrollView>
+
+      <View style={styles.fixedBottomContainer}>
+        <Pressable onPress={openGoogleMaps} style={styles.locationButton}>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 4,
+            }}>
+            <View style={styles.locationContainer}>
+              {addressLoading ? (
+                <View style={styles.loadingContainer}>
+                  <ActivityIndicator
+                    size="small"
+                    color={theme.COLORS.BTN_BG_BLUE}
+                  />
+                  <Text style={[styles.value, styles.loadingText]}>
+                    Getting address...
+                  </Text>
+                </View>
+              ) : addressError ? (
+                <View style={styles.errorContainer}>
+                  <Text style={[styles.value, styles.errorText]}>
+                    {addressError}
+                  </Text>
+                  <Pressable
+                    onPress={refetchAddress}
+                    style={styles.retryButton}>
+                    <Text style={styles.retryText}>Retry</Text>
+                  </Pressable>
+                </View>
+              ) : address ? (
+                <Text style={[styles.value, styles.locationText]}>
+                  {address}
+                </Text>
+              ) : (
+                <Text
+                  numberOfLines={3}
+                  style={[styles.value, styles.locationText]}>
+                  {report.location || 'Address not available'}
+                </Text>
+              )}
+            </View>
+            <NavigationIcon color={theme.COLORS.BTN_BG_BLUE} />
+          </View>
+        </Pressable>
+        <Pressable
+          onPress={() => {
+            // checkDistanceFromReport().then(distance => {
+            //   if (distance < 50) {
+            //     console.log('Distance is less than 50 meters');
+            //     navigation.navigate('ReviewCameraScreen', {report});
+            //   } else {
+            //     console.log('Distance is greater than 50 meters');
+            //   }
+            // });
+            navigation.navigate('ReviewCameraScreen', {report});
+          }}
+          style={styles.reviewButton}>
+          <Text style={[styles.value, styles.reviewButtonText]}>
+            Review Report
+          </Text>
+        </Pressable>
+      </View>
     </SafeAreaView>
   );
 };
@@ -192,6 +264,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 20,
   },
+  fixedBottomContainer: {
+    flexDirection: 'column',
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    backgroundColor: theme.COLORS.BG,
+    borderTopWidth: 1,
+    borderTopColor: theme.COLORS.BORDER_GREY,
+    minHeight: 120,
+  },
   section: {
     marginBottom: 24,
   },
@@ -219,9 +301,9 @@ const styles = StyleSheet.create({
     fontFamily: fontFamilies.Default,
   },
   locationButton: {
-    flex: 1,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
+    minHeight: 48,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
     backgroundColor: theme.COLORS.BTN_BG_BLUE_30P,
     borderRadius: 8,
     borderWidth: 1,
@@ -231,12 +313,62 @@ const styles = StyleSheet.create({
     color: theme.COLORS.BTN_BG_BLUE,
     fontWeight: '600',
   },
+  locationContainer: {
+    flex: 1,
+  },
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  loadingText: {
+    color: theme.COLORS.TEXT_GREY,
+    fontStyle: 'italic',
+  },
+  errorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flexWrap: 'wrap',
+  },
+  errorText: {
+    color: '#FF6B6B',
+    fontSize: 12,
+    flex: 1,
+  },
+  retryButton: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    backgroundColor: theme.COLORS.BTN_BG_BLUE_30P || 'rgba(59, 130, 246, 0.3)',
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: theme.COLORS.BTN_BG_BLUE,
+  },
+  retryText: {
+    color: theme.COLORS.BTN_BG_BLUE,
+    fontSize: 12,
+    fontWeight: '600',
+  },
   mapLink: {
     fontSize: 12,
     color: theme.COLORS.BTN_BG_BLUE,
     fontFamily: fontFamilies.Default,
     marginTop: 4,
     textAlign: 'center',
+  },
+  reviewButton: {
+    minHeight: 48,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: theme.COLORS.GREEN_TEAM_BG,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  reviewButtonText: {
+    color: theme.COLORS.WHITE,
+    fontWeight: '600',
+    fontSize: 16,
   },
 });
 

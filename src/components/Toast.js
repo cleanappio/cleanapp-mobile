@@ -1,4 +1,4 @@
-import React, {useEffect, useRef} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {View, Text, StyleSheet, Animated} from 'react-native';
 import {theme} from '../services/Common/theme';
 import {fontFamilies} from '../utils/fontFamilies';
@@ -128,4 +128,60 @@ const styles = StyleSheet.create({
   },
 });
 
+// Global toast state
+let globalToastState = {
+  visible: false,
+  message: '',
+  duration: 3000,
+  onHide: () => {},
+};
+
+// Global toast component
+const GlobalToast = () => {
+  const [toastState, setToastState] = useState(globalToastState);
+
+  useEffect(() => {
+    const updateToast = () => {
+      setToastState({...globalToastState});
+    };
+
+    // Listen for global state changes
+    const interval = setInterval(updateToast, 100);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <Toast
+      message={toastState.message}
+      visible={toastState.visible}
+      onHide={toastState.onHide}
+      duration={toastState.duration}
+    />
+  );
+};
+
+// Static show method
+Toast.show = options => {
+  const {text1, message, duration = 3000, onHide = () => {}} = options;
+
+  // Combine text1 and text2 if both provided, otherwise use message
+  const toastMessage = text1 ? `${text1}` : message || text1 || '';
+
+  globalToastState = {
+    visible: true,
+    message: toastMessage,
+    duration,
+    onHide: () => {
+      globalToastState.visible = false;
+      onHide();
+    },
+  };
+};
+
+// Hide method
+Toast.hide = () => {
+  globalToastState.visible = false;
+};
+
 export default Toast;
+export {GlobalToast};

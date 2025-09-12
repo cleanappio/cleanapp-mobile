@@ -1,6 +1,6 @@
 {
   "name": "cleanapp",
-  "version": "2.5.1",
+  "version": "3.2.9",
   "private": true,
   "scripts": {
     "android": "react-native run-android --interactive",
@@ -13,7 +13,11 @@
     "clean-ios": "rm -rf ios/Pods ios/Podfile.lock ios/assets/node_modules ios/main.jsbundle",
     "android:bundle": "react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res/",
     "ios:bundle": "NODE_OPTIONS=--openssl-legacy-provider react-native bundle --entry-file='index.js' --bundle-output='./ios/main.jsbundle' --dev=false --platform='ios' --assets-dest ./ios",
-    "reverse": "adb reverse tcp:8081 tcp:8081"
+    "reverse": "adb reverse tcp:8081 tcp:8081",
+    "sync-version": "node scripts/sync-version.js",
+    "version:patch": "npm version patch && npm run sync-version",
+    "version:minor": "npm version minor && npm run sync-version",
+    "version:major": "npm version major && npm run sync-version"
   },
   "dependencies": {
     "@babel/plugin-transform-export-namespace-from": "^7.25.9",
@@ -37,6 +41,7 @@
     "react-i18next": "^15.4.1",
     "react-native": "0.78.2",
     "react-native-config": "^1.5.5",
+    "react-native-device-info": "^14.0.4",
     "react-native-dotenv": "^3.4.11",
     "react-native-elements": "^3.4.3",
     "react-native-fs": "^2.20.0",

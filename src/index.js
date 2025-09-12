@@ -14,6 +14,7 @@ import CameraScreen from './screens/CameraScreen';
 import CacheScreen from './screens/CacheScreen';
 import ReportsScreen from './screens/ReportsScreen';
 import ReportDetails from './screens/ReportDetails';
+import ReviewCameraScreen from './screens/ReviewCameraScreen';
 import MapScreen from './screens/MapScreen';
 import {
   getFirstRun,
@@ -53,10 +54,17 @@ const ReportsStack = ({
         }}>
         <Stack.Screen name="ReportsScreen" component={ReportsScreen} />
         <Stack.Screen name="ReportDetails" component={ReportDetails} />
+        <Stack.Screen
+          name="ReviewCameraScreen"
+          component={ReviewCameraScreen}
+        />
       </Stack.Navigator>
     </ReportsProvider>
   );
 };
+
+// Create a memoized component to avoid inline function issues
+const MemoizedReportsStack = React.memo(ReportsStack);
 
 const BottomTabs = ({navigation}) => {
   const insets = useSafeAreaInsets();
@@ -112,18 +120,7 @@ const BottomTabs = ({navigation}) => {
               <TabComponent
                 label="Cache"
                 {...props}
-                notifiedReports={notifiedReports}
                 openedReports={openedReports}
-                isNewReport={isNewReport}
-                isReportOpened={isReportOpened}
-                toastMessage={toastMessage}
-                showToast={showToast}
-                hideToast={hideToast}
-                saveNotifiedReports={saveNotifiedReports}
-                clearNotifiedReports={clearNotifiedReports}
-                setToastMessage={setToastMessage}
-                setShowToast={setShowToast}
-                markReportAsOpened={markReportAsOpened}
               />
             ),
           }}
@@ -137,18 +134,7 @@ const BottomTabs = ({navigation}) => {
               <TabComponent
                 label="Leaderboard"
                 {...props}
-                notifiedReports={notifiedReports}
                 openedReports={openedReports}
-                isNewReport={isNewReport}
-                isReportOpened={isReportOpened}
-                toastMessage={toastMessage}
-                showToast={showToast}
-                hideToast={hideToast}
-                saveNotifiedReports={saveNotifiedReports}
-                clearNotifiedReports={clearNotifiedReports}
-                setToastMessage={setToastMessage}
-                setShowToast={setShowToast}
-                markReportAsOpened={markReportAsOpened}
               />
             ),
           }}
@@ -162,54 +148,31 @@ const BottomTabs = ({navigation}) => {
               <TabComponent
                 label="Camera"
                 {...props}
-                notifiedReports={notifiedReports}
                 openedReports={openedReports}
-                isNewReport={isNewReport}
-                isReportOpened={isReportOpened}
-                toastMessage={toastMessage}
-                showToast={showToast}
-                hideToast={hideToast}
-                saveNotifiedReports={saveNotifiedReports}
-                clearNotifiedReports={clearNotifiedReports}
-                setToastMessage={setToastMessage}
-                setShowToast={setShowToast}
-                markReportAsOpened={markReportAsOpened}
               />
             ),
           }}
         />
         <Tab.Screen
           name="Reports"
-          component={() => (
-            <ReportsStack
-              markReportAsRead={markReportAsRead}
-              markReportAsOpened={markReportAsOpened}
-              openedReports={openedReports}
-            />
-          )}
           options={{
             tabBarLabel: 'Reports',
             tabBarButton: props => (
               <TabComponent
                 label="Reports"
                 {...props}
-                notifiedReports={notifiedReports}
                 openedReports={openedReports}
-                isNewReport={isNewReport}
-                isReportOpened={isReportOpened}
-                toastMessage={toastMessage}
-                showToast={showToast}
-                hideToast={hideToast}
-                saveNotifiedReports={saveNotifiedReports}
-                clearNotifiedReports={clearNotifiedReports}
-                setToastMessage={setToastMessage}
-                setShowToast={setShowToast}
-                markReportAsRead={markReportAsRead}
-                markReportAsOpened={markReportAsOpened}
               />
             ),
-          }}
-        />
+          }}>
+          {() => (
+            <MemoizedReportsStack
+              markReportAsRead={markReportAsRead}
+              markReportAsOpened={markReportAsOpened}
+              openedReports={openedReports}
+            />
+          )}
+        </Tab.Screen>
         <Tab.Screen
           name="Map"
           component={MapScreen}
@@ -219,18 +182,7 @@ const BottomTabs = ({navigation}) => {
               <TabComponent
                 label="Map"
                 {...props}
-                notifiedReports={notifiedReports}
                 openedReports={openedReports}
-                isNewReport={isNewReport}
-                isReportOpened={isReportOpened}
-                toastMessage={toastMessage}
-                showToast={showToast}
-                hideToast={hideToast}
-                saveNotifiedReports={saveNotifiedReports}
-                clearNotifiedReports={clearNotifiedReports}
-                setToastMessage={setToastMessage}
-                setShowToast={setShowToast}
-                markReportAsOpened={markReportAsOpened}
               />
             ),
           }}

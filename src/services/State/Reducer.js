@@ -26,6 +26,8 @@ export const actions = {
   UPDATE_REPORTS: 'UPDATE_REPORTS',
   SET_GUILDS: 'SET_GUILDS',
   SET_PLAYERS: 'SET_PLAYERS',
+  SET_FETCHING_LOCATION: 'SET_FETCHING_LOCATION',
+  SET_FETCHING_REPORTS: 'SET_FETCHING_REPORTS',
 };
 
 export const reducer = (state, action) => {
@@ -181,6 +183,18 @@ export const reducer = (state, action) => {
       return {
         ...state,
         players: action.players,
+      };
+
+    case actions.SET_FETCHING_LOCATION:
+      return {
+        ...state,
+        isFetchingLocation: action.isFetchingLocation,
+      };
+
+    case actions.SET_FETCHING_REPORTS:
+      return {
+        ...state,
+        isFetchingReports: action.isFetchingReports,
       };
 
     default:

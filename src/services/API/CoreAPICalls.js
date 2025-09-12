@@ -11,7 +11,7 @@ export const postJSONData = async (path, data) => {
       body: JSON.stringify(data),
     }
     var response;
-    for (const i = 0; i < settings.apiSettings.sendingAttempts; i++) {
+    for (let i = 0; i < settings.apiSettings.sendingAttempts; i++) {
       response = await fetch(url, config)
         .then((res) => res);
       if (response.ok) {

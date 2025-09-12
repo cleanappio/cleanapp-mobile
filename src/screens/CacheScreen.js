@@ -37,6 +37,7 @@ import {generateReferralUrl} from '../functions/referral';
 import {useStateValue} from '../services/State/State';
 import {actions} from '../services/State/Reducer';
 import ShareIcon from '../assets/ico_share.svg';
+import AppVersionDisplay from '../components/AppVersionDisplay';
 
 const CacheScreen = props => {
   const navigation = useNavigation();
@@ -582,6 +583,15 @@ const CacheScreen = props => {
               </Pressable>
             </View>
           </View>
+
+          {/* Version Display */}
+          <View style={styles.versionContainer}>
+            <AppVersionDisplay
+              showBuildNumber={false}
+              style={styles.versionDisplay}
+              textStyle={styles.versionText}
+            />
+          </View>
         </View>
       </ScrollView>
       <AvatarSheet
@@ -864,6 +874,19 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     fontFamily: fontFamilies.Default,
     paddingHorizontal: 16,
+  },
+  versionContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    alignItems: 'center',
+  },
+  versionDisplay: {
+    paddingVertical: 4,
+  },
+  versionText: {
+    fontSize: 11,
+    color: theme.COLORS.TEXT_GREY,
+    fontFamily: fontFamilies.Default,
   },
 });
 
