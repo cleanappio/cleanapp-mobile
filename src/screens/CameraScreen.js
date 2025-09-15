@@ -36,7 +36,7 @@ import {
   useCameraPermission,
 } from 'react-native-vision-camera';
 import RNFS from 'react-native-fs';
-import {useIsFocused} from '@react-navigation/native';
+import {useIsFocused, useNavigation} from '@react-navigation/native';
 import {launchImageLibrary} from 'react-native-image-picker';
 import {check, request, PERMISSIONS, RESULTS} from 'react-native-permissions';
 import ImageResizer from '@bam.tech/react-native-image-resizer';
@@ -119,7 +119,7 @@ const GreenFlash = ({flashDiameterX, flashDiameterY, x, y, scaleX, scaleY}) => {
 
 const CameraScreen = props => {
   const {reportId} = props;
-
+  const navigation = useNavigation();
   const isReviewMode = useMemo(() => {
     return reportId !== undefined;
   }, [reportId]);
@@ -499,6 +499,11 @@ const CameraScreen = props => {
       // Clean up original photo file if it exists and is different from resized
       if (originalPhotoPath && originalPhotoPath !== resizedPhotoPath) {
         await cleanupImageFile(originalPhotoPath);
+      }
+
+      // navigate to report details screen if isReviewMode is true
+      if (isReviewMode) {
+        navigation.goBack();
       }
     }
   };
