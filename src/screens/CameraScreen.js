@@ -36,7 +36,7 @@ import {
   useCameraPermission,
 } from 'react-native-vision-camera';
 import RNFS from 'react-native-fs';
-import {useIsFocused} from '@react-navigation/native';
+import {useIsFocused, useNavigation} from '@react-navigation/native';
 import {launchImageLibrary} from 'react-native-image-picker';
 import {check, request, PERMISSIONS, RESULTS} from 'react-native-permissions';
 import ImageResizer from '@bam.tech/react-native-image-resizer';
@@ -119,7 +119,7 @@ const GreenFlash = ({flashDiameterX, flashDiameterY, x, y, scaleX, scaleY}) => {
 
 const CameraScreen = props => {
   const {reportId} = props;
-
+  const navigation = useNavigation();
   const isReviewMode = useMemo(() => {
     return reportId !== undefined;
   }, [reportId]);
@@ -361,28 +361,16 @@ const CameraScreen = props => {
       var path = file.uri;
       const imageData = await RNFS.readFile(path, 'base64');
       const walletAddress = await getWalletAddress();
-      let res = null;
 
-      if (isReviewMode) {
-        res = await matchReports(
-          walletAddress,
-          userLocation.latitude,
-          userLocation.longitude,
-          imageData,
-        );
+      const res = await matchReports(
+        walletAddress,
+        userLocation.latitude,
+        userLocation.longitude,
+        imageData,
+        annotation,
+      );
 
-        showMatchReportsResult(res);
-      } else {
-        res = await report(
-          walletAddress,
-          userLocation.latitude,
-          userLocation.longitude,
-          /*tapX=*/ 0.5,
-          /*tapY=*/ 0.5,
-          imageData,
-          annotation,
-        );
-      }
+      showMatchReportsResult(res);
 
       // Clean up the image file after upload
       await cleanupImageFile(path);
@@ -511,6 +499,11 @@ const CameraScreen = props => {
       // Clean up original photo file if it exists and is different from resized
       if (originalPhotoPath && originalPhotoPath !== resizedPhotoPath) {
         await cleanupImageFile(originalPhotoPath);
+      }
+
+      // navigate to report details screen if isReviewMode is true
+      if (isReviewMode) {
+        navigation.goBack();
       }
     }
   };
