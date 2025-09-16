@@ -30,8 +30,8 @@ import {
 import {createStackNavigator} from '@react-navigation/stack';
 import {useStateValue} from './services/State/State';
 import {useNotifiedReports} from './hooks/useReadReports';
-import Toast from './components/Toast';
 import {ReportsProvider} from './contexts/ReportsContext';
+import {ToastifyManager} from './components/ToastifyToast';
 
 enableScreens();
 
@@ -87,12 +87,8 @@ const BottomTabs = ({navigation}) => {
 
   return (
     <>
-      <Toast
-        message={toastMessage}
-        visible={showToast}
-        onHide={hideToast}
-        duration={4000}
-      />
+      <ToastifyManager />
+
       <Tab.Navigator
         initialRouteName="Camera"
         detachInactiveScreens={true}
