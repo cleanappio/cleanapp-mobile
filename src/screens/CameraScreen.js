@@ -51,7 +51,7 @@ import {useTranslation} from 'react-i18next';
 import {report, matchReports} from '../services/API/APIManager';
 import {getLocation} from '../functions/geolocation';
 import {getWalletAddress} from '../services/DataManager';
-import Toast from '../components/Toast';
+import {ToastService} from '../components/ToastifyToast';
 
 import Svg, {
   Ellipse,
@@ -389,37 +389,42 @@ const CameraScreen = props => {
 
   const showMatchReportsResult = res => {
     const resolvedMessage =
-      'Thank you a lot for the resolving verification! You got +2 KITN ✅';
+      '+2 KITN for verification';
     const reportMessage =
-      'Thank you for the issue confirmation! You got +1 KITN.';
+      '+1 KITN for reporting';
     try {
       if (res.success && res.success === true) {
         if (res.results.length > 0) {
           const isResolved = res.results.find(
             result => result.resolved === true,
           );
-          // show toast notification
-          Toast.show({
-            text1: isResolved ? resolvedMessage : reportMessage,
+          
+          ToastService.show({
+            text1: isResolved ? 'Congratulations!' : 'Great job!',
+            text2: isResolved ? resolvedMessage : reportMessage,
+            type: 'success',
+            position: 'center',
+            duration: 5000,
+            useModal: false,
           });
         } else {
           console.log('No reports matched');
         }
       } else {
-        // Show error toast if report submission failed
+        // Show error toast if report submission failed at top
         console.log('Report Submission Failed');
-        Toast.show({
-          text1: reportMessage,
-        });
+        ToastService.error(reportMessage, 'top', 4000);
       }
 
       console.log('res', res);
     } catch (error) {
       console.log('error', error);
-      // Show error toast for exceptions
-      Toast.show({
-        text1: 'Something went wrong! Please try again.',
-      });
+      // Show error toast for exceptions at top
+      ToastService.error(
+        'Something went wrong! Please try again.',
+        'top',
+        4000,
+      );
     }
   };
 

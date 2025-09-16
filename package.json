@@ -1,6 +1,6 @@
 {
   "name": "cleanapp",
-  "version": "3.2.9",
+  "version": "3.2.10",
   "private": true,
   "scripts": {
     "android": "react-native run-android --interactive",
@@ -64,7 +64,6 @@
     "react-native-svg": "^15.11.2",
     "react-native-svg-transformer": "^1.5.0",
     "react-native-tcp-socket": "^6.2.0",
-    "react-native-vector-icons": "^10.2.0",
     "react-native-view-shot": "^4.0.3",
     "react-native-vision-camera": "^4.6.4",
     "react-native-webview": "^13.15.0",
@@ -75,6 +74,7 @@
     "redux-thunk": "^3.1.0",
     "rn-sliding-up-panel": "^2.4.6",
     "store": "^2.0.12",
+    "toastify-react-native": "^7.2.3",
     "url": "^0.11.3"
   },
   "devDependencies": {
