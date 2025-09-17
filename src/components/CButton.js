@@ -3,7 +3,6 @@ import {ToastAndroid, Alert, Platform} from 'react-native';
 import Ripple from '../components/Ripple';
 import {theme} from '../services/Common/theme';
 import Clipboard from '@react-native-clipboard/clipboard';
-import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 
 const CButton = ({text, onCopied = () => {}}) => {
   const onCopy = () => {
@@ -18,11 +17,7 @@ const CButton = ({text, onCopied = () => {}}) => {
 
   return (
     <Ripple onPress={onCopy}>
-      <MaterialIcon
-        size={15}
-        name="content-copy"
-        color={theme.COLORS.TULIP_TREE}
-      />
+      <Text style={{fontSize: 15, color: theme.COLORS.TULIP_TREE}}>📋</Text>
     </Ripple>
   );
 };

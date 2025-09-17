@@ -1,6 +1,5 @@
 import * as React from 'react';
 import {Text, Animated, TouchableOpacity, Easing} from 'react-native';
-import EntypoIcon from 'react-native-vector-icons/Entypo';
 
 class CheckBox extends React.Component {
   constructor(props) {
@@ -54,7 +53,7 @@ class CheckBox extends React.Component {
             transform: [{scale: springValue}],
           }}>
           {this.props.isChecked ? (
-            <EntypoIcon name="check" color="#fff" size={size - 5} />
+            <Text style={{fontSize: size - 5, color: '#fff'}}>✓</Text>
           ) : null}
         </Animated.View>
         <Text
