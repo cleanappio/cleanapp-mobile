@@ -1406,6 +1406,8 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - react-native-voice (3.2.4):
+    - React-Core
   - react-native-webview (13.16.0):
     - DoubleConversion
     - glog
@@ -2033,6 +2035,8 @@ PODS:
   - SocketRocket (0.7.1)
   - SRSRadialGradient (1.2.1):
     - React
+  - TextToSpeech (4.1.1):
+    - React-Core
   - VisionCamera (4.7.1):
     - VisionCamera/Core (= 4.7.1)
     - VisionCamera/React (= 4.7.1)
@@ -2092,6 +2096,7 @@ DEPENDENCIES:
   - react-native-splash-screen (from `../node_modules/react-native-splash-screen`)
   - react-native-tcp-socket (from `../node_modules/react-native-tcp-socket`)
   - react-native-view-shot (from `../node_modules/react-native-view-shot`)
+  - "react-native-voice (from `../node_modules/@react-native-voice/voice`)"
   - react-native-webview (from `../node_modules/react-native-webview`)
   - React-NativeModulesApple (from `../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios`)
   - React-perflogger (from `../node_modules/react-native/ReactCommon/reactperflogger`)
@@ -2132,6 +2137,7 @@ DEPENDENCIES:
   - RNShare (from `../node_modules/react-native-share`)
   - RNSVG (from `../node_modules/react-native-svg`)
   - SRSRadialGradient (from `../node_modules/react-native-radial-gradient`)
+  - TextToSpeech (from `../node_modules/react-native-tts`)
   - VisionCamera (from `../node_modules/react-native-vision-camera`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
@@ -2239,6 +2245,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-tcp-socket"
   react-native-view-shot:
     :path: "../node_modules/react-native-view-shot"
+  react-native-voice:
+    :path: "../node_modules/@react-native-voice/voice"
   react-native-webview:
     :path: "../node_modules/react-native-webview"
   React-NativeModulesApple:
@@ -2319,6 +2327,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-svg"
   SRSRadialGradient:
     :path: "../node_modules/react-native-radial-gradient"
+  TextToSpeech:
+    :path: "../node_modules/react-native-tts"
   VisionCamera:
     :path: "../node_modules/react-native-vision-camera"
   Yoga:
@@ -2375,6 +2385,7 @@ SPEC CHECKSUMS:
   react-native-splash-screen: 95994222cc95c236bd3cdc59fe45ed5f27969594
   react-native-tcp-socket: 120072c8020262032773f80f0daaf3964aaa08a1
   react-native-view-shot: a38d952d5c7103b79a67c8aa82da95f98be6e5c2
+  react-native-voice: 908a0eba96c8c3d643e4f98b7232c6557d0a6f9c
   react-native-webview: b729d1bcf8fbd141237355dcfd6bb65b9a1d3b1a
   React-NativeModulesApple: fd0545efbb7f936f78edd15a6564a72d2c34bb32
   React-perflogger: 5f8fa36a8e168fb355efe72099efe77213bc2ac6
@@ -2416,6 +2427,7 @@ SPEC CHECKSUMS:
   RNSVG: 8ad5c94593e5e4a6e133e6934e2188e3c688d27a
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   SRSRadialGradient: f93406612258ab93e454aa08b9f82d3bb7adf6c1
+  TextToSpeech: 89b239221ec378d213af422d14789a729705360b
   VisionCamera: 9a8f98ae344fe5d148f84bb45829f9e4caab9d2f
   Yoga: e14bad835e12b6c7e2260fc320bd00e0f4b45add
 
