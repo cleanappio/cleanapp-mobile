@@ -27,7 +27,6 @@ import {
   getReportsById,
   getReportImage,
 } from '../services/API/APIManager';
-import { useStateValue } from '../services/State/State';
 import { useFocusEffect } from '@react-navigation/native';
 
 import LinearGradient from 'react-native-linear-gradient';
@@ -53,7 +52,6 @@ const Tab = ({ title, icon, value, isSelected, setTab }) => {
 export const Leaderboard = (props) => {
   const { t } = useTranslation();
   const navigation = useNavigation();
-  const [{ }, dispatch] = useStateValue();
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [userName, setName] = useState('');
   const [walletAddress, setWalletAddress] = useState('');
@@ -112,6 +110,7 @@ export const Leaderboard = (props) => {
   };
 
   const fetchMyReports = async () => {
+    console.log('Fetching my reports...');
     if (!walletAddress) {
       console.log('No wallet address available for fetching reports');
       return;
