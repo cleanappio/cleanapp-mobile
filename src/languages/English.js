@@ -259,6 +259,8 @@ export default {
       guildcreated: 'Guild Created',
       players: 'Players',
       guilds: 'Guilds',
+      myReports: 'My Reports',
+      myReportsPlaceholder: 'Your reports will appear here soon!',
     },
     mapscreen: {
       maps: 'Maps',

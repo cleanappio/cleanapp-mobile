@@ -10,6 +10,7 @@ import TabComponent from './components/Tab';
 import {onboard} from './functions/onboarding';
 import {theme} from './services/Common/theme';
 import {Leaderboard} from './screens/Leaderboard';
+import MyReportDetails from './screens/MyReportDetails';
 import CameraScreen from './screens/CameraScreen';
 import CacheScreen from './screens/CacheScreen';
 import ReportsScreen from './screens/ReportsScreen';
@@ -63,8 +64,21 @@ const ReportsStack = ({
   );
 };
 
+const LeaderboardStack = () => {
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: false,
+      }}>
+      <Stack.Screen name="Leaderboard" component={Leaderboard} />
+      <Stack.Screen name="MyReportDetails" component={MyReportDetails} />
+    </Stack.Navigator>
+  );
+};
+
 // Create a memoized component to avoid inline function issues
 const MemoizedReportsStack = React.memo(ReportsStack);
+const MemoizedLeaderboardStack = React.memo(LeaderboardStack);
 
 const BottomTabs = ({navigation}) => {
   const insets = useSafeAreaInsets();
@@ -123,7 +137,6 @@ const BottomTabs = ({navigation}) => {
         />
         <Tab.Screen
           name="Leaderboard"
-          component={Leaderboard}
           options={{
             tabBarLabel: 'Leaderboard',
             tabBarButton: props => (
@@ -133,8 +146,9 @@ const BottomTabs = ({navigation}) => {
                 openedReports={openedReports}
               />
             ),
-          }}
-        />
+          }}>
+          {() => <MemoizedLeaderboardStack />}
+        </Tab.Screen>
         <Tab.Screen
           name="Camera"
           component={CameraScreen}
