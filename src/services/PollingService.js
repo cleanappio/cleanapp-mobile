@@ -249,7 +249,6 @@ class PollingService {
         walletAddress: report.id,
         latitude: report.latitude,
         longitude: report.longitude,
-        image: report.image,
         analysis: analysis,
         classification: primaryAnalysis.classification,
         brandName: primaryAnalysis.brand_display_name,

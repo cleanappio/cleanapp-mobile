@@ -23,6 +23,7 @@ import NavigationIcon from '../components/NavigationIcon';
 import {getLocation} from '../functions/geolocation';
 import {calculateDistance} from '../utils/calculateDistance';
 import {useReverseGeocoding} from '../hooks/useReverseGeocoding';
+import {getReportImage} from '../services/API/APIManager';
 // import {useReportsContext} from '../contexts/ReportsContext';
 
 type ReportsStackParamList = {
@@ -48,6 +49,10 @@ const ReportDetails = ({
   const {t} = useTranslation();
   const {report} = route.params;
 
+  // State for report image
+  const [reportImage, setReportImage] = React.useState<string>('');
+  const [isLoadingImage, setIsLoadingImage] = React.useState<boolean>(false);
+
   // Reverse geocoding hook to get human-readable address
   const {
     address,
@@ -60,6 +65,31 @@ const ReportDetails = ({
     language: 'en',
     autoFetch: true,
   });
+
+  // Effect to load report image when component mounts
+  React.useEffect(() => {
+    const loadReportImage = async () => {
+      if (report.seq) {
+        setIsLoadingImage(true);
+        try {
+          const imageResponse = await getReportImage(report.seq);
+          if (imageResponse.ok && imageResponse.imageUrl) {
+            setReportImage(imageResponse.imageUrl);
+          } else {
+            console.log('Failed to load image for seq:', report.seq, imageResponse.error);
+            setReportImage('');
+          }
+        } catch (error) {
+          console.error('Error loading image for report seq:', report.seq, error);
+          setReportImage('');
+        } finally {
+          setIsLoadingImage(false);
+        }
+      }
+    };
+
+    loadReportImage();
+  }, [report.seq]);
 
   const checkDistanceFromReport = async (): Promise<number> => {
     console.log('Checking distance from report');
@@ -135,7 +165,7 @@ const ReportDetails = ({
             </View>
 
             <ResponsiveImage
-              base64Image={report.image}
+              base64Image={reportImage}
               maxHeight={400}
               borderRadius={0}
               showPlaceholder={true}

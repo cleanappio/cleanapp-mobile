@@ -395,7 +395,7 @@ export const getReportsByLatLon = async (lat, lon) => {
     };
 
     // const url = `${s.v3api.getReportsByLatLon}?${new URLSearchParams(params).toString()}`;
-    const url = `${getUrls().liveUrl}/api/v3/reports/by-latlng?latitude=${lat}&longitude=${lon}&radius_km=0.5&n=10&lang='en'`;
+    const url = `${getUrls().liveUrl}/api/v3/reports/by-latlng-lite?latitude=${lat}&longitude=${lon}&radius_km=0.5&n=10&lang='en'`;
     console.log('URL', url);
     const response = await fetch(url);
     console.log('Response', response);
@@ -466,11 +466,10 @@ export const getReportImage = async (reportSeq) => {
       const responseData = await response.json();
       
       if (responseData.image) {
-        // Create data URL from base64 string
-        const imageUrl = `data:image/jpeg;base64,${responseData.image}`;
+        // Return just the base64 string (ResponsiveImage will add the data URL prefix)
         return {
           ok: true,
-          imageUrl: imageUrl,
+          imageUrl: responseData.image,
           error: undefined,
         };
       } else {

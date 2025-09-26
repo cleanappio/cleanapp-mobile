@@ -13,7 +13,7 @@ import {Leaderboard} from './screens/Leaderboard';
 import MyReportDetails from './screens/MyReportDetails';
 import CameraScreen from './screens/CameraScreen';
 import CacheScreen from './screens/CacheScreen';
-import ReportsScreen from './screens/ReportsScreen';
+import NearbyReportsScreen from './screens/NearbyReportsScreen';
 import ReportDetails from './screens/ReportDetails';
 import ReviewCameraScreen from './screens/ReviewCameraScreen';
 import MapScreen from './screens/MapScreen';
@@ -53,7 +53,7 @@ const ReportsStack = ({
         screenOptions={{
           headerShown: false,
         }}>
-        <Stack.Screen name="ReportsScreen" component={ReportsScreen} />
+        <Stack.Screen name="ReportsScreen" component={NearbyReportsScreen} />
         <Stack.Screen name="ReportDetails" component={ReportDetails} />
         <Stack.Screen
           name="ReviewCameraScreen"

@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useCallback} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {
@@ -21,19 +21,20 @@ import {useReportsContext} from '../contexts/ReportsContext';
 import {useLocationFetching} from '../hooks/useLocationFetching';
 import PulsatingCircles from '../components/PulsatingCircles';
 import {useReportsFetching} from '../hooks/useReportsFetching';
+import {getReportImage} from '../services/API/APIManager';
 
-type ReportsStackParamList = {
-  ReportsScreen: undefined;
+type NearbyReportsStackParamList = {
+  NearbyReportsScreen: undefined;
   ReportDetails: {report: any};
 };
 
-type ReportsScreenNavigationProp = StackNavigationProp<
-  ReportsStackParamList,
-  'ReportsScreen'
+type NearbyReportsScreenNavigationProp = StackNavigationProp<
+  NearbyReportsStackParamList,
+  'NearbyReportsScreen'
 >;
 
-const ReportsScreen = () => {
-  const navigation = useNavigation<ReportsScreenNavigationProp>();
+const NearbyReportsScreen = () => {
+  const navigation = useNavigation<NearbyReportsScreenNavigationProp>();
   const {t} = useTranslation();
   const [{reports, lastReportsUpdate, totalReports}, dispatch] =
     useStateValue();
@@ -50,6 +51,9 @@ const ReportsScreen = () => {
 
   // Pull to refresh state
   const [refreshing, setRefreshing] = useState(false);
+
+  // Store loaded images by report seq
+  const [reportImages, setReportImages] = useState<{[key: string]: string}>({});
 
   // Array of loading messages for reports
   const loadingMessages = [
@@ -96,6 +100,41 @@ const ReportsScreen = () => {
     }
   };
 
+  const loadReportImages = useCallback(async (reportsList: any[]) => {
+    if (!Array.isArray(reportsList)) {
+      return;
+    }
+
+    // Create individual async functions for each image load
+    reportsList.forEach(async (report) => {
+      if (report.seq) {
+        // Check if image is already loaded by using the current state
+        setReportImages(currentImages => {
+          if (currentImages[report.seq]) {
+            return currentImages;
+          }
+          
+          // Load the image asynchronously
+          getReportImage(report.seq).then(imageResponse => {
+            if (imageResponse.ok && imageResponse.imageUrl) {
+              console.log('Image loaded for seq:', report.seq);
+              setReportImages(prev => ({
+                ...prev,
+                [report.seq]: imageResponse.imageUrl
+              }));
+            } else {
+              console.log('Failed to load image for seq:', report.seq, imageResponse.error);
+            }
+          }).catch(error => {
+            console.error('Error loading image for report seq:', report.seq, error);
+          });
+          
+          return currentImages;
+        });
+      }
+    });
+  }, []);
+
   // Effect to cycle through loading messages for reports
   useEffect(() => {
     if (!isFetchingReports) {
@@ -135,6 +174,13 @@ const ReportsScreen = () => {
 
     return () => clearInterval(interval);
   }, [isFetchingLocation, locationMessages]);
+
+  // Effect to load images when reports change
+  useEffect(() => {
+    if (reports && reports.length > 0) {
+      loadReportImages(reports);
+    }
+  }, [reports, loadReportImages]);
 
   const formatTime = (timeString: string) => {
     try {
@@ -269,17 +315,22 @@ const ReportsScreen = () => {
             return Object.entries(groupedReports).map(([date, dateReports]) => (
               <View key={date} style={styles.dateGroup}>
                 <Text style={styles.dateHeader}>{date}</Text>
-                {dateReports.map((report: any, index: number) => (
-                  <ReportTile
-                    key={report.id || `${date}_${index}`}
-                    title={report.title}
-                    description={report.description}
-                    time={report.time}
-                    onPress={() => navigateToReport(report)}
-                    reportImage={report.image}
-                    isReportOpened={isReportOpened(report.id)}
-                  />
-                ))}
+                {dateReports.map((report: any, index: number) => {
+                  // Get image URL for this report
+                  const imageUrl = report.seq ? reportImages[report.seq] : '';
+                  
+                  return (
+                    <ReportTile
+                      key={report.id || `${date}_${index}`}
+                      title={report.title}
+                      description={report.description}
+                      time={report.time}
+                      onPress={() => navigateToReport(report)}
+                      reportImage={imageUrl}
+                      isReportOpened={isReportOpened(report.id)}
+                    />
+                  );
+                })}
               </View>
             ));
           })()
@@ -452,4 +503,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ReportsScreen;
+export default NearbyReportsScreen;
