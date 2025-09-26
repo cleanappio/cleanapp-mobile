@@ -111,7 +111,9 @@ export const Leaderboard = (props) => {
 
   const fetchMyReports = async () => {
     console.log('Fetching my reports...');
-    if (!walletAddress) {
+    const wallet = await getWalletAddress();
+
+    if (!wallet) {
       console.log('No wallet address available for fetching reports');
       return;
     }
@@ -120,7 +122,7 @@ export const Leaderboard = (props) => {
     setReportsError(null);
 
     try {
-      const response = await getReportsById(walletAddress);
+      const response = await getReportsById(wallet);
       
       if (response && response.ok) {
         // Handle different possible response structures
@@ -170,9 +172,11 @@ export const Leaderboard = (props) => {
         try {
           const imageResponse = await getReportImage(report.report.seq);
           if (imageResponse.ok && imageResponse.imageUrl) {
+            // Add data URL prefix for React Native Image component
+            const dataUrl = `data:image/jpeg;base64,${imageResponse.imageUrl}`;
             setReportImages(prev => ({
               ...prev,
-              [report.report.seq]: imageResponse.imageUrl
+              [report.report.seq]: dataUrl
             }));
           } else {
             console.log('Failed to load image for seq:', report.report.seq, imageResponse.error);
