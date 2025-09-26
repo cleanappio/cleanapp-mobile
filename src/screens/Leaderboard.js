@@ -72,7 +72,8 @@ export const Leaderboard = (props) => {
   const [isLoadingReports, setIsLoadingReports] = useState(false);
   const [reportsError, setReportsError] = useState(null);
   const [refreshingReports, setRefreshingReports] = useState(false);
-  const [reportImages, setReportImages] = useState({}); // Store loaded images by report seq
+  const reportImages = useRef({}); // Store loaded images by report seq
+  const [imageLoadTrigger, setImageLoadTrigger] = useState(0); // Trigger re-render when needed
 
   const fetchData = async () => {
     const wallet = await getWalletAddress();
@@ -154,7 +155,7 @@ export const Leaderboard = (props) => {
 
   const navigateToReport = (report) => {
     // Get the image URL if it's been loaded
-    const imageUrl = report.report?.seq ? reportImages[report.report.seq] : null;
+    const imageUrl = report.report?.seq ? reportImages.current[report.report.seq] : null;
     
     // Navigate to MyReportDetails within the Leaderboard stack
     navigation.navigate('MyReportDetails', { 
@@ -166,26 +167,50 @@ export const Leaderboard = (props) => {
   const loadReportImages = async (reports) => {
     if (!Array.isArray(reports)) return;
 
-    // Create individual async functions for each image load
-    reports.map(async (report) => {
-      if (report.report.seq && !reportImages[report.report.seq]) {
+    // Batch image loading to prevent excessive re-renders
+    const imagesToLoad = reports.filter(report => 
+      report.report?.seq && !reportImages.current[report.report.seq]
+    );
+
+    if (imagesToLoad.length === 0) return;
+
+    console.log(`Loading ${imagesToLoad.length} images...`);
+
+    // Load images in batches of 3 to prevent memory issues
+    const batchSize = 3;
+    for (let i = 0; i < imagesToLoad.length; i += batchSize) {
+      const batch = imagesToLoad.slice(i, i + batchSize);
+      
+      // Load batch concurrently
+      const promises = batch.map(async (report) => {
         try {
           const imageResponse = await getReportImage(report.report.seq);
-          if (imageResponse.ok && imageResponse.imageUrl) {
-            // Add data URL prefix for React Native Image component
+          if (imageResponse?.ok && imageResponse.imageUrl) {
             const dataUrl = `data:image/jpeg;base64,${imageResponse.imageUrl}`;
-            setReportImages(prev => ({
-              ...prev,
-              [report.report.seq]: dataUrl
-            }));
-          } else {
-            console.log('Failed to load image for seq:', report.report.seq, imageResponse.error);
+            reportImages.current[report.report.seq] = dataUrl;
+            return report.report.seq;
           }
         } catch (error) {
           console.error('Error loading image for report seq:', report.report.seq, error);
         }
+        return null;
+      });
+
+      // Wait for batch to complete
+      const loadedSeqs = await Promise.all(promises);
+      const successfulLoads = loadedSeqs.filter(seq => seq !== null);
+      
+      if (successfulLoads.length > 0) {
+        console.log(`Loaded ${successfulLoads.length} images in batch`);
+        // Trigger a single re-render for the entire batch
+        setImageLoadTrigger(prev => prev + 1);
       }
-    });
+
+      // Small delay between batches to prevent overwhelming
+      if (i + batchSize < imagesToLoad.length) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+    }
   };
 
   useFocusEffect(
@@ -208,6 +233,11 @@ export const Leaderboard = (props) => {
   };
 
   const MyReports = () => {
+    // Force re-render when images are loaded
+    React.useEffect(() => {
+      // This effect runs when imageLoadTrigger changes
+    }, [imageLoadTrigger]);
+
     const formatTime = (timeString) => {
       try {
         return new Date(timeString).toLocaleTimeString();
@@ -359,7 +389,7 @@ export const Leaderboard = (props) => {
                 const description = englishAnalysis.description || '';
                 
                 // Get image URL for this report
-                const imageUrl = report.report.seq ? reportImages[report.report.seq] : null;
+                const imageUrl = report.report.seq ? reportImages.current[report.report.seq] : null;
                 
                 return (
                   <Pressable 
