@@ -1,3 +1,4 @@
+import React from 'react';
 import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
 import {fontFamilies} from '../utils/fontFamilies';
 import {theme} from '../services/Common/theme';
@@ -8,7 +9,7 @@ interface ReportTileProps {
   description: string;
   time: string;
   onPress: () => void;
-  reportImage: string;
+  reportSeq?: string; // New prop for report sequence
   isReportOpened: boolean;
 }
 
@@ -17,12 +18,12 @@ const getTime = (time: string) => {
   return date.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
 };
 
-export const ReportTile = ({
+export const ReportTile = React.memo(({
   title,
   description,
   time,
   onPress,
-  reportImage,
+  reportSeq,
   isReportOpened,
 }: ReportTileProps) => {
   return (
@@ -41,7 +42,7 @@ export const ReportTile = ({
             alignItems: 'flex-end',
           }}>
           <ResponsiveImage
-            base64Image={reportImage}
+            reportSeq={reportSeq}
             containerWidth={50}
             maxHeight={50}
             borderRadius={2}
@@ -66,7 +67,7 @@ export const ReportTile = ({
       </View>
     </TouchableOpacity>
   );
-};
+});
 
 const styles = StyleSheet.create({
   container: {

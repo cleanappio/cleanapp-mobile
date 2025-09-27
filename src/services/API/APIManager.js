@@ -455,47 +455,6 @@ export const getReportsById = async (userId) => {
   }
 };
 
-export const getReportImage = async (reportSeq) => {
-  try {
-    const url = `${getUrls().liveUrl}/api/v3/reports/image?seq=${reportSeq}`;
-    
-    const response = await fetch(url);
-    
-    if (response.ok) {
-      // Parse the JSON response containing base64 image
-      const responseData = await response.json();
-      
-      if (responseData.image) {
-        // Return just the base64 string (ResponsiveImage will add the data URL prefix)
-        return {
-          ok: true,
-          imageUrl: responseData.image,
-          error: undefined,
-        };
-      } else {
-        return {
-          ok: false,
-          imageUrl: undefined,
-          error: 'No image data in response',
-        };
-      }
-    } else {
-      return {
-        ok: false,
-        imageUrl: undefined,
-        error: response.statusText || 'Failed to fetch image',
-      };
-    }
-  } catch (err) {
-    console.error('Error fetching report image:', err);
-    return {
-      ok: false,
-      imageUrl: undefined,
-      error: err.message || 'Unknown error occurred',
-    };
-  }
-};
-
 export const matchReports = async (
   publicAddress,
   latitude,

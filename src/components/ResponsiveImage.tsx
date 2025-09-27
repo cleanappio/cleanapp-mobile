@@ -1,9 +1,10 @@
 import React, {useState} from 'react';
 import {Image, View, Text, StyleSheet, Dimensions} from 'react-native';
 import {theme} from '../services/Common/theme';
+import {getUrls} from '../services/API/Settings';
 
 interface ResponsiveImageProps {
-  base64Image: string;
+  reportSeq?: string; // New prop for report sequence
   maxHeight?: number;
   borderRadius?: number;
   showPlaceholder?: boolean;
@@ -12,8 +13,8 @@ interface ResponsiveImageProps {
   resizeMode?: 'contain' | 'cover' | 'stretch' | 'repeat' | 'center';
 }
 
-const ResponsiveImage: React.FC<ResponsiveImageProps> = ({
-  base64Image,
+const ResponsiveImage: React.FC<ResponsiveImageProps> = React.memo(({
+  reportSeq,
   maxHeight = 400,
   borderRadius = 8,
   showPlaceholder = true,
@@ -28,31 +29,23 @@ const ResponsiveImage: React.FC<ResponsiveImageProps> = ({
   const screenWidth = Dimensions.get('window').width;
   const containerWidth = propContainerWidth || screenWidth - 32; // Use prop or calculate
 
+  // Generate raw image URL
+  const urls = getUrls();
+  const imageUrl = reportSeq && urls?.liveUrl
+    ? `${urls.liveUrl}/api/v3/reports/rawimage?seq=${reportSeq}`
+    : null;
+
   const onImageLoad = (event: any) => {
-    const {width, height} = event.nativeEvent;
-    const aspectRatio = height / width;
-
-    let calculatedHeight = containerWidth * aspectRatio;
-
-    // Apply constraints
-    if (aspectRatio > 1) {
-      // Portrait mode: limit to maxHeight
-      calculatedHeight = Math.min(calculatedHeight, maxHeight);
-    }
-    // Landscape mode: use calculated height (no upper limit)
-
-    setImageHeight(calculatedHeight);
     setImageLoading(false);
     setImageError(false);
   };
 
   const onImageError = (error: any) => {
-    console.log('Image loading error:', error);
     setImageError(true);
     setImageLoading(false);
   };
 
-  if (!base64Image || base64Image.trim() === '') {
+  if (!imageUrl) {
     if (!showPlaceholder) return null;
 
     return (
@@ -105,7 +98,7 @@ const ResponsiveImage: React.FC<ResponsiveImageProps> = ({
       )}
 
       <Image
-        source={{uri: `data:image/jpeg;base64,${base64Image}`}}
+        source={{uri: imageUrl}}
         style={[
           styles.image,
           {
@@ -121,7 +114,7 @@ const ResponsiveImage: React.FC<ResponsiveImageProps> = ({
       />
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   container: {

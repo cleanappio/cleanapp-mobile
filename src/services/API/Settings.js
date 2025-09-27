@@ -18,7 +18,8 @@ export const settings = {
     // URLs need to be tweaked dependent on the local environment
     apiUrl: 'http://192.168.86.125:8080',
     webUrl: 'http://192.168.86.125:3000',
-    mapUrl: 'https://devembed.cleanapp.io'
+    mapUrl: 'https://devembed.cleanapp.io',
+    liveUrl: 'https://devlive.cleanapp.io'
   },
   v2api: {
     updateOrCreateUser: 'update_or_create_user',

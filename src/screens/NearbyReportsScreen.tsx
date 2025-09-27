@@ -21,7 +21,6 @@ import {useReportsContext} from '../contexts/ReportsContext';
 import {useLocationFetching} from '../hooks/useLocationFetching';
 import PulsatingCircles from '../components/PulsatingCircles';
 import {useReportsFetching} from '../hooks/useReportsFetching';
-import {getReportImage} from '../services/API/APIManager';
 
 type NearbyReportsStackParamList = {
   NearbyReportsScreen: undefined;
@@ -51,9 +50,6 @@ const NearbyReportsScreen = () => {
 
   // Pull to refresh state
   const [refreshing, setRefreshing] = useState(false);
-
-  // Store loaded images by report seq
-  const [reportImages, setReportImages] = useState<{[key: string]: string}>({});
 
   // Array of loading messages for reports
   const loadingMessages = [
@@ -100,41 +96,6 @@ const NearbyReportsScreen = () => {
     }
   };
 
-  const loadReportImages = useCallback(async (reportsList: any[]) => {
-    if (!Array.isArray(reportsList)) {
-      return;
-    }
-
-    // Create individual async functions for each image load
-    reportsList.forEach(async (report) => {
-      if (report.seq) {
-        // Check if image is already loaded by using the current state
-        setReportImages(currentImages => {
-          if (currentImages[report.seq]) {
-            return currentImages;
-          }
-          
-          // Load the image asynchronously
-          getReportImage(report.seq).then(imageResponse => {
-            if (imageResponse.ok && imageResponse.imageUrl) {
-              console.log('Image loaded for seq:', report.seq);
-              setReportImages(prev => ({
-                ...prev,
-                [report.seq]: imageResponse.imageUrl
-              }));
-            } else {
-              console.log('Failed to load image for seq:', report.seq, imageResponse.error);
-            }
-          }).catch(error => {
-            console.error('Error loading image for report seq:', report.seq, error);
-          });
-          
-          return currentImages;
-        });
-      }
-    });
-  }, []);
-
   // Effect to cycle through loading messages for reports
   useEffect(() => {
     if (!isFetchingReports) {
@@ -174,13 +135,6 @@ const NearbyReportsScreen = () => {
 
     return () => clearInterval(interval);
   }, [isFetchingLocation, locationMessages]);
-
-  // Effect to load images when reports change
-  useEffect(() => {
-    if (reports && reports.length > 0) {
-      loadReportImages(reports);
-    }
-  }, [reports, loadReportImages]);
 
   const formatTime = (timeString: string) => {
     try {
@@ -315,22 +269,17 @@ const NearbyReportsScreen = () => {
             return Object.entries(groupedReports).map(([date, dateReports]) => (
               <View key={date} style={styles.dateGroup}>
                 <Text style={styles.dateHeader}>{date}</Text>
-                {dateReports.map((report: any, index: number) => {
-                  // Get image URL for this report
-                  const imageUrl = report.seq ? reportImages[report.seq] : '';
-                  
-                  return (
-                    <ReportTile
-                      key={report.id || `${date}_${index}`}
-                      title={report.title}
-                      description={report.description}
-                      time={report.time}
-                      onPress={() => navigateToReport(report)}
-                      reportImage={imageUrl}
-                      isReportOpened={isReportOpened(report.id)}
-                    />
-                  );
-                })}
+                {dateReports.map((report: any, index: number) => (
+                  <ReportTile
+                    key={report.id || `${date}_${index}`}
+                    title={report.title}
+                    description={report.description}
+                    time={report.time}
+                    onPress={() => navigateToReport(report)}
+                    reportSeq={report.seq}
+                    isReportOpened={isReportOpened(report.id)}
+                  />
+                ))}
               </View>
             ));
           })()

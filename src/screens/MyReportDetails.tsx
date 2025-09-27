@@ -22,7 +22,7 @@ import NavigationIcon from '../components/NavigationIcon';
 
 type MyReportsStackParamList = {
   Leaderboard: undefined;
-  MyReportDetails: {report: any; imageUrl?: string};
+  MyReportDetails: {report: any};
 };
 
 type MyReportDetailsNavigationProp = StackNavigationProp<
@@ -37,9 +37,9 @@ const MyReportDetails = ({
 }) => {
   const navigation = useNavigation<MyReportDetailsNavigationProp>();
   const {t} = useTranslation();
-  const {report: reportItem, imageUrl} = route.params;
+  const {report: reportItem} = route.params;
   const report = reportItem.report;
-  var englishAnalysis;
+  var englishAnalysis = reportItem.analysis[0];
   for (const analysisItem of reportItem.analysis) {
     if (analysisItem.language === 'en') {
       englishAnalysis = analysisItem;
@@ -121,10 +121,10 @@ const MyReportDetails = ({
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Report Image */}
-        {imageUrl && (
+        {report.seq && (
           <View style={styles.imageContainer}>
             <ResponsiveImage
-              base64Image={imageUrl.replace('data:image/jpeg;base64,', '')}
+              reportSeq={report.seq}
               resizeMode="contain"
               maxHeight={500}
               borderRadius={0}

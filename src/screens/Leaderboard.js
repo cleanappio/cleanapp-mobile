@@ -31,6 +31,7 @@ import { useFocusEffect } from '@react-navigation/native';
 
 import LinearGradient from 'react-native-linear-gradient';
 import RenderStat from '../components/RenderStat';
+import ResponsiveImage from '../components/ResponsiveImage';
 
 const Tab = ({ title, icon, value, isSelected, setTab }) => {
   return (
@@ -47,6 +48,94 @@ const Tab = ({ title, icon, value, isSelected, setTab }) => {
       ]}>{title}</Text>
     </Ripple>
   );
+};
+
+// Helper functions moved outside component to prevent recreation
+const formatTime = (timeString) => {
+  try {
+    return new Date(timeString).toLocaleTimeString();
+  } catch {
+    return timeString;
+  }
+};
+
+const formatDate = (timestamp) => {
+  try {
+    const date = new Date(timestamp);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    if (date.toDateString() === today.toDateString()) {
+      return 'Today';
+    } else if (date.toDateString() === yesterday.toDateString()) {
+      return 'Yesterday';
+    } else {
+      return date.toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+    }
+  } catch {
+    return 'Unknown Date';
+  }
+};
+
+const groupReportsByDate = (reportsList) => {
+  // Add more robust validation
+  if (!reportsList) {
+    return {};
+  }
+  
+  if (reportsList.length === 0) {
+    console.log('reportsList is empty array');
+    return {};
+  }
+
+  const grouped = {};
+
+  reportsList.forEach(report => {
+    const dateKey = formatDate(report.report.timestamp);
+    if (!grouped[dateKey]) {
+      grouped[dateKey] = [];
+    }
+    grouped[dateKey].push(report);
+  });
+
+  // Sort dates in descending order: Today (1st), Yesterday (2nd), then older dates (newest first)
+  const sortedDates = Object.keys(grouped).sort((a, b) => {
+    // Today always comes first
+    if (a === 'Today') return -1;
+    if (b === 'Today') return 1;
+
+    // Yesterday comes second
+    if (a === 'Yesterday') return -1;
+    if (b === 'Yesterday') return 1;
+
+    // For other dates, sort chronologically (newest first)
+    try {
+      const dateA = new Date(
+        reportsList.find(r => formatDate(r.timestamp || r.time) === a)
+          ?.timestamp || '',
+      );
+      const dateB = new Date(
+        reportsList.find(r => formatDate(r.timestamp || r.time) === b)
+          ?.timestamp || '',
+      );
+      return dateB.getTime() - dateA.getTime();
+    } catch {
+      return 0;
+    }
+  });
+
+  const sortedGrouped = {};
+  sortedDates.forEach(date => {
+    sortedGrouped[date] = grouped[date];
+  });
+
+  return sortedGrouped;
 };
 
 export const Leaderboard = (props) => {
@@ -72,8 +161,6 @@ export const Leaderboard = (props) => {
   const [isLoadingReports, setIsLoadingReports] = useState(false);
   const [reportsError, setReportsError] = useState(null);
   const [refreshingReports, setRefreshingReports] = useState(false);
-  const reportImages = useRef({}); // Store loaded images by report seq
-  const [imageLoadTrigger, setImageLoadTrigger] = useState(0); // Trigger re-render when needed
 
   const fetchData = async () => {
     const wallet = await getWalletAddress();
@@ -130,10 +217,7 @@ export const Leaderboard = (props) => {
         let reportsData = response.reports.reports;
         setMyReports(reportsData);
         
-        // Load images for the reports
-        if (Array.isArray(reportsData)) {
-          loadReportImages(reportsData);
-        }
+        // Images will be loaded by ResponsiveImage components
       } else {
         setReportsError(response?.error || 'Failed to fetch reports');
         setMyReports([]);
@@ -154,63 +238,10 @@ export const Leaderboard = (props) => {
   };
 
   const navigateToReport = (report) => {
-    // Get the image URL if it's been loaded
-    const imageUrl = report.report?.seq ? reportImages.current[report.report.seq] : null;
-    
     // Navigate to MyReportDetails within the Leaderboard stack
     navigation.navigate('MyReportDetails', { 
-      report,
-      imageUrl: imageUrl
+      report
     });
-  };
-
-  const loadReportImages = async (reports) => {
-    if (!Array.isArray(reports)) return;
-
-    // Batch image loading to prevent excessive re-renders
-    const imagesToLoad = reports.filter(report => 
-      report.report?.seq && !reportImages.current[report.report.seq]
-    );
-
-    if (imagesToLoad.length === 0) return;
-
-    console.log(`Loading ${imagesToLoad.length} images...`);
-
-    // Load images in batches of 3 to prevent memory issues
-    const batchSize = 3;
-    for (let i = 0; i < imagesToLoad.length; i += batchSize) {
-      const batch = imagesToLoad.slice(i, i + batchSize);
-      
-      // Load batch concurrently
-      const promises = batch.map(async (report) => {
-        try {
-          const imageResponse = await getReportImage(report.report.seq);
-          if (imageResponse?.ok && imageResponse.imageUrl) {
-            const dataUrl = `data:image/jpeg;base64,${imageResponse.imageUrl}`;
-            reportImages.current[report.report.seq] = dataUrl;
-            return report.report.seq;
-          }
-        } catch (error) {
-          console.error('Error loading image for report seq:', report.report.seq, error);
-        }
-        return null;
-      });
-
-      // Wait for batch to complete
-      const loadedSeqs = await Promise.all(promises);
-      const successfulLoads = loadedSeqs.filter(seq => seq !== null);
-      
-      if (successfulLoads.length > 0) {
-        console.log(`Loaded ${successfulLoads.length} images in batch`);
-        // Trigger a single re-render for the entire batch
-        setImageLoadTrigger(prev => prev + 1);
-      }
-
-      // Small delay between batches to prevent overwhelming
-      if (i + batchSize < imagesToLoad.length) {
-        await new Promise(resolve => setTimeout(resolve, 100));
-      }
-    }
   };
 
   useFocusEffect(
@@ -220,7 +251,7 @@ export const Leaderboard = (props) => {
     }, []),
   );
 
-  const LeaderboardPlayers = () => {
+  const LeaderboardPlayers = React.memo(() => {
     return (
       <GestureHandlerRootView>
         <FlatList
@@ -230,211 +261,8 @@ export const Leaderboard = (props) => {
         />
       </GestureHandlerRootView>
     );
-  };
+  });
 
-  const MyReports = () => {
-    // Force re-render when images are loaded
-    React.useEffect(() => {
-      // This effect runs when imageLoadTrigger changes
-    }, [imageLoadTrigger]);
-
-    const formatTime = (timeString) => {
-      try {
-        return new Date(timeString).toLocaleTimeString();
-      } catch {
-        return timeString;
-      }
-    };
-
-    const formatDate = (timestamp) => {
-      try {
-        const date = new Date(timestamp);
-        const today = new Date();
-        const yesterday = new Date(today);
-        yesterday.setDate(yesterday.getDate() - 1);
-
-        if (date.toDateString() === today.toDateString()) {
-          return 'Today';
-        } else if (date.toDateString() === yesterday.toDateString()) {
-          return 'Yesterday';
-        } else {
-          return date.toLocaleDateString('en-US', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-          });
-        }
-      } catch {
-        return 'Unknown Date';
-      }
-    };
-
-    const groupReportsByDate = (reportsList) => {
-      // Add more robust validation
-      if (!reportsList) {
-        return {};
-      }
-      
-      if (reportsList.length === 0) {
-        console.log('reportsList is empty array');
-        return {};
-      }
-
-      const grouped = {};
-
-      reportsList.forEach(report => {
-        const dateKey = formatDate(report.report.timestamp);
-        if (!grouped[dateKey]) {
-          grouped[dateKey] = [];
-        }
-        grouped[dateKey].push(report);
-      });
-
-      // Sort dates in descending order: Today (1st), Yesterday (2nd), then older dates (newest first)
-      const sortedDates = Object.keys(grouped).sort((a, b) => {
-        // Today always comes first
-        if (a === 'Today') return -1;
-        if (b === 'Today') return 1;
-
-        // Yesterday comes second
-        if (a === 'Yesterday') return -1;
-        if (b === 'Yesterday') return 1;
-
-        // For other dates, sort chronologically (newest first)
-        try {
-          const dateA = new Date(
-            reportsList.find(r => formatDate(r.timestamp || r.time) === a)
-              ?.timestamp || '',
-          );
-          const dateB = new Date(
-            reportsList.find(r => formatDate(r.timestamp || r.time) === b)
-              ?.timestamp || '',
-          );
-          return dateB.getTime() - dateA.getTime();
-        } catch {
-          return 0;
-        }
-      });
-
-      const sortedGrouped = {};
-      sortedDates.forEach(date => {
-        sortedGrouped[date] = grouped[date];
-      });
-
-      return sortedGrouped;
-    };
-
-    if (isLoadingReports && myReports.length === 0) {
-      return (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={theme.COLORS.BTN_BG_BLUE} />
-          <Text style={styles.loadingText}>Loading your reports...</Text>
-        </View>
-      );
-    }
-
-    if (reportsError) {
-      return (
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>Error: {reportsError}</Text>
-          <Ripple style={styles.retryButton} onPress={fetchMyReports}>
-            <Text style={styles.retryButtonText}>Retry</Text>
-          </Ripple>
-        </View>
-      );
-    }
-
-    if (myReports.length === 0) {
-      return (
-        <View style={styles.placeholderContainer}>
-          <Text style={styles.placeholderText}>
-            {t('leaderboard.myReportsPlaceholder')}
-          </Text>
-        </View>
-      );
-    }
-
-    return (
-      <ScrollView
-        style={styles.reportsList}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshingReports}
-            onRefresh={handleRefreshReports}
-            tintColor={theme.COLORS.BTN_BG_BLUE}
-            colors={[theme.COLORS.BTN_BG_BLUE]}
-            title="Pull to refresh"
-            titleColor={theme.COLORS.TEXT_GREY}
-          />
-        }>
-        {(() => {
-          // Ensure myReports is a valid array before processing
-          const validReports = Array.isArray(myReports) ? myReports : [];
-          const groupedReports = groupReportsByDate(validReports);
-          return Object.entries(groupedReports).map(([date, dateReports]) => (
-            <View key={date} style={styles.dateGroup}>
-              <Text style={styles.dateHeader}>{date}</Text>
-              {dateReports.map((report, index) => {
-                // Extract title and description from analysis field with language='en'
-                var englishAnalysis = {};
-                for (const analysis of report.analysis) {
-                  if (analysis.language === 'en') {
-                    englishAnalysis = analysis;
-                    break;
-                  }
-                }
-                const title = englishAnalysis.title || 'Untitled Report';
-                const description = englishAnalysis.description || '';
-                
-                // Get image URL for this report
-                const imageUrl = report.report.seq ? reportImages.current[report.report.seq] : null;
-                
-                return (
-                  <Pressable 
-                    key={report.id || `${date}_${index}`} 
-                    style={({ pressed }) => [
-                      styles.reportItem,
-                      pressed && styles.reportItemPressed
-                    ]}
-                    onPress={() => navigateToReport(report)}
-                  >
-                    {report.report.seq && (
-                      <View style={styles.reportImageContainer}>
-                        {imageUrl ? (
-                          <Image 
-                            source={{ uri: imageUrl }} 
-                            style={styles.reportImage}
-                            resizeMode="cover"
-                          />
-                        ) : (
-                          <Text style={styles.imagePlaceholder}>📷</Text>
-                        )}
-                      </View>
-                    )}
-                    <View style={styles.reportContent}>
-                      <Text style={styles.reportTitle} numberOfLines={2}>
-                        {title}
-                      </Text>
-                      {description && (
-                        <Text style={styles.reportDescription} numberOfLines={3}>
-                          {description}
-                        </Text>
-                      )}
-                      <Text style={styles.reportTime}>
-                        {formatTime(report.report.timestamp || report.report.time)}
-                      </Text>
-                    </View>
-                  </Pressable>
-                );
-              })}
-            </View>
-          ));
-        })()}
-      </ScrollView>
-    );
-  };
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
@@ -541,7 +369,104 @@ export const Leaderboard = (props) => {
         </View>
 
         {selectedIndex === 0 && <LeaderboardPlayers />}
-        {selectedIndex === 1 && <MyReports />}
+        {selectedIndex === 1 && (
+          <>
+            {isLoadingReports && myReports.length === 0 ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color={theme.COLORS.BTN_BG_BLUE} />
+                <Text style={styles.loadingText}>Loading your reports...</Text>
+              </View>
+            ) : reportsError ? (
+              <View style={styles.errorContainer}>
+                <Text style={styles.errorText}>Error: {reportsError}</Text>
+                <Ripple style={styles.retryButton} onPress={fetchMyReports}>
+                  <Text style={styles.retryButtonText}>Retry</Text>
+                </Ripple>
+              </View>
+            ) : myReports.length === 0 ? (
+              <View style={styles.placeholderContainer}>
+                <Text style={styles.placeholderText}>
+                  {t('leaderboard.myReportsPlaceholder')}
+                </Text>
+              </View>
+            ) : (
+              <ScrollView
+                style={styles.reportsList}
+                showsVerticalScrollIndicator={false}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={refreshingReports}
+                    onRefresh={handleRefreshReports}
+                    tintColor={theme.COLORS.BTN_BG_BLUE}
+                    colors={[theme.COLORS.BTN_BG_BLUE]}
+                    title="Pull to refresh"
+                    titleColor={theme.COLORS.TEXT_GREY}
+                  />
+                }>
+                {(() => {
+                  // Ensure myReports is a valid array before processing
+                  const validReports = Array.isArray(myReports) ? myReports : [];
+                  const groupedReports = groupReportsByDate(validReports);
+                  return Object.entries(groupedReports).map(([date, dateReports]) => (
+                    <View key={date} style={styles.dateGroup}>
+                      <Text style={styles.dateHeader}>{date}</Text>
+                      {dateReports.map((report, index) => {
+                        // Extract title and description from analysis field with language='en'
+                        var englishAnalysis = {};
+                        for (const analysis of report.analysis) {
+                          if (analysis.language === 'en') {
+                            englishAnalysis = analysis;
+                            break;
+                          }
+                        }
+                        const title = englishAnalysis.title || 'Untitled Report';
+                        const description = englishAnalysis.description || '';
+                        
+                        return (
+                          <Pressable 
+                            key={report.id || `${date}_${index}`} 
+                            style={({ pressed }) => [
+                              styles.reportItem,
+                              pressed && styles.reportItemPressed
+                            ]}
+                            onPress={() => navigateToReport(report)}
+                          >
+                            {report.report.seq && (
+                              <View style={styles.reportImageContainer}>
+                                <ResponsiveImage
+                                  reportSeq={report.report.seq}
+                                  containerWidth={60}
+                                  maxHeight={60}
+                                  borderRadius={8}
+                                  resizeMode="cover"
+                                  showPlaceholder={true}
+                                  placeholderText="📷"
+                                />
+                              </View>
+                            )}
+                            <View style={styles.reportContent}>
+                              <Text style={styles.reportTitle} numberOfLines={2}>
+                                {title}
+                              </Text>
+                              {description && (
+                                <Text style={styles.reportDescription} numberOfLines={3}>
+                                  {description}
+                                </Text>
+                              )}
+                              <Text style={styles.reportTime}>
+                                {formatTime(report.report.timestamp || report.report.time)}
+                              </Text>
+                            </View>
+                          </Pressable>
+                        );
+                      })}
+                    </View>
+                  ));
+                })()}
+              </ScrollView>
+            )}
+          </>
+        )}
       </View>
     </SafeAreaView>
   );
