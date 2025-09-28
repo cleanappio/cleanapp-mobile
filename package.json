@@ -1,6 +1,6 @@
 {
   "name": "cleanapp",
-  "version": "3.2.16",
+  "version": "3.2.17",
   "private": true,
   "scripts": {
     "android": "react-native run-android --interactive",
