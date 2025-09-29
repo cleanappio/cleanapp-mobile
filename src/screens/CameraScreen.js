@@ -52,6 +52,7 @@ import {report, matchReports} from '../services/API/APIManager';
 import {getLocation} from '../functions/geolocation';
 import {getWalletAddress} from '../services/DataManager';
 import {ToastService} from '../components/ToastifyToast';
+import OpenAIRealtime from '../components/OpenAIRealtime';
 
 import Svg, {
   Ellipse,
@@ -388,17 +389,15 @@ const CameraScreen = props => {
   };
 
   const showMatchReportsResult = res => {
-    const resolvedMessage =
-      '+2 KITN for verification';
-    const reportMessage =
-      '+1 KITN for reporting';
+    const resolvedMessage = '+2 KITN for verification';
+    const reportMessage = '+1 KITN for reporting';
     try {
       if (res.success && res.success === true) {
         if (res.results.length > 0) {
           const isResolved = res.results.find(
             result => result.resolved === true,
           );
-          
+
           ToastService.show({
             text1: isResolved ? 'Congratulations!' : 'Great job!',
             text2: isResolved ? resolvedMessage : reportMessage,
@@ -694,12 +693,16 @@ const CameraScreen = props => {
     }
   };
 
+  const handleOpenAIRealtime = () => {
+    console.log('handleOpenAIRealtime');
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <GestureHandlerRootView>
         <GestureDetector gesture={allGestures}>
           <View style={styles.container}>
-            {isCameraAvailable && (
+            {!isCameraAvailable && (
               <ReanimatedCamera
                 ref={camera}
                 style={StyleSheet.absoluteFill}
@@ -856,6 +859,18 @@ const CameraScreen = props => {
             )}
           </View>
         </GestureDetector>
+
+        <View style={{position: 'absolute', bottom: 30, left: 20}}>
+          {/* <FloatingActionButton
+            onPress={handleOpenAIRealtime}
+            icon={<MicrophoneIcon width={24} height={24} />}
+            position="center-center"
+            size="large"
+            color="#007AFF"
+          /> */}
+
+          <OpenAIRealtime />
+        </View>
       </GestureHandlerRootView>
 
       {/* Annotation Modal */}

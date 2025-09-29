@@ -123,6 +123,32 @@ class VoiceAssistantAPI {
       return false;
     }
   }
+
+  /**
+   * Create a session specifically for OpenAI Realtime
+   */
+  async createRealtimeSession(
+    request: CreateSessionRequest = {},
+  ): Promise<CreateSessionResponse> {
+    const realtimeRequest = {
+      ...request,
+      model: request.model || 'gpt-4o-realtime-preview',
+    };
+
+    return this.createSession(realtimeRequest);
+  }
+
+  /**
+   * Validate if a session is still valid
+   */
+  isSessionValid(session: CreateSessionResponse): boolean {
+    if (!session.client_secret) return false;
+
+    const now = Date.now();
+    const expiresAt = new Date(session.client_secret.expires_at).getTime();
+
+    return now < expiresAt;
+  }
 }
 
 export default VoiceAssistantAPI;
