@@ -135,7 +135,7 @@ const ReportDetails = ({
             </View>
 
             <ResponsiveImage
-              base64Image={report.image}
+              reportSeq={report.seq}
               maxHeight={400}
               borderRadius={0}
               showPlaceholder={true}

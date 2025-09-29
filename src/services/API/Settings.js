@@ -5,18 +5,21 @@ export const settings = {
   prod: {  // Cleanapp Google Cloud Prod
     apiUrl: 'http://api.cleanapp.io:8080',
     webUrl: 'https://cleanapp.io',
-    mapUrl: 'https://embed.cleanapp.io'
+    mapUrl: 'https://embed.cleanapp.io',
+    liveUrl: 'https://live.cleanapp.io'
   },
   dev: {  // Cleanapp Google Cloud Dev
     apiUrl: 'http://dev.api.cleanapp.io:8080',
     webUrl: 'https://dev.cleanapp.io',
-    mapUrl: 'https://devembed.cleanapp.io'
+    mapUrl: 'https://devembed.cleanapp.io',
+    liveUrl: 'https://devlive.cleanapp.io'
   },
   local: {  // Cleanapp Local
     // URLs need to be tweaked dependent on the local environment
     apiUrl: 'http://192.168.86.125:8080',
     webUrl: 'http://192.168.86.125:3000',
-    mapUrl: 'https://devembed.cleanapp.io'
+    mapUrl: 'https://devembed.cleanapp.io',
+    liveUrl: 'https://devlive.cleanapp.io'
   },
   v2api: {
     updateOrCreateUser: 'update_or_create_user',

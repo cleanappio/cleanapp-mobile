@@ -2,14 +2,18 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigation } from '@react-navigation/native';
 import {
   Dimensions,
-  // Image,
+  Image,
   // ImageBackground,
-  // Pressable,
+  Pressable,
   StyleSheet,
   Text,
   View,
+  ScrollView,
+  ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FlatList, GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -20,12 +24,14 @@ import { getTeam, getUserName, getWalletAddress } from '../services/DataManager'
 import {
   getTeams,
   getTopScores,
+  getReportsById,
+  getReportImage,
 } from '../services/API/APIManager';
-import { useStateValue } from '../services/State/State';
 import { useFocusEffect } from '@react-navigation/native';
 
 import LinearGradient from 'react-native-linear-gradient';
 import RenderStat from '../components/RenderStat';
+import ResponsiveImage from '../components/ResponsiveImage';
 
 const Tab = ({ title, icon, value, isSelected, setTab }) => {
   return (
@@ -36,20 +42,105 @@ const Tab = ({ title, icon, value, isSelected, setTab }) => {
       ])}
       onPress={() => setTab(value, title)}>
       {icon}
-      <Text style={styles.tabText}>{title}</Text>
-      <View
-        style={{
-          ...styles.indicator,
-          backgroundColor: isSelected ? theme.COLORS.TEXT_GREY : 'transparent',
-        }}
-      />
+      <Text style={[
+        styles.tabText,
+        isSelected ? styles.tabTextActive : {}
+      ]}>{title}</Text>
     </Ripple>
   );
 };
 
+// Helper functions moved outside component to prevent recreation
+const formatTime = (timeString) => {
+  try {
+    return new Date(timeString).toLocaleTimeString();
+  } catch {
+    return timeString;
+  }
+};
+
+const formatDate = (timestamp) => {
+  try {
+    const date = new Date(timestamp);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    if (date.toDateString() === today.toDateString()) {
+      return 'Today';
+    } else if (date.toDateString() === yesterday.toDateString()) {
+      return 'Yesterday';
+    } else {
+      return date.toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+    }
+  } catch {
+    return 'Unknown Date';
+  }
+};
+
+const groupReportsByDate = (reportsList) => {
+  // Add more robust validation
+  if (!reportsList) {
+    return {};
+  }
+  
+  if (reportsList.length === 0) {
+    console.log('reportsList is empty array');
+    return {};
+  }
+
+  const grouped = {};
+
+  reportsList.forEach(report => {
+    const dateKey = formatDate(report.report.timestamp);
+    if (!grouped[dateKey]) {
+      grouped[dateKey] = [];
+    }
+    grouped[dateKey].push(report);
+  });
+
+  // Sort dates in descending order: Today (1st), Yesterday (2nd), then older dates (newest first)
+  const sortedDates = Object.keys(grouped).sort((a, b) => {
+    // Today always comes first
+    if (a === 'Today') return -1;
+    if (b === 'Today') return 1;
+
+    // Yesterday comes second
+    if (a === 'Yesterday') return -1;
+    if (b === 'Yesterday') return 1;
+
+    // For other dates, sort chronologically (newest first)
+    try {
+      const dateA = new Date(
+        reportsList.find(r => formatDate(r.timestamp || r.time) === a)
+          ?.timestamp || '',
+      );
+      const dateB = new Date(
+        reportsList.find(r => formatDate(r.timestamp || r.time) === b)
+          ?.timestamp || '',
+      );
+      return dateB.getTime() - dateA.getTime();
+    } catch {
+      return 0;
+    }
+  });
+
+  const sortedGrouped = {};
+  sortedDates.forEach(date => {
+    sortedGrouped[date] = grouped[date];
+  });
+
+  return sortedGrouped;
+};
+
 export const Leaderboard = (props) => {
   const { t } = useTranslation();
-  const [{ }, dispatch] = useStateValue();
+  const navigation = useNavigation();
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [userName, setName] = useState('');
   const [walletAddress, setWalletAddress] = useState('');
@@ -64,6 +155,12 @@ export const Leaderboard = (props) => {
   const [blueStat, setBlueStat] = useState(0);
   const [greenStat, setGreenStat] = useState(0);
   const [userTeam, setUserTeam] = useState('');
+
+  // MyReports state
+  const [myReports, setMyReports] = useState([]);
+  const [isLoadingReports, setIsLoadingReports] = useState(false);
+  const [reportsError, setReportsError] = useState(null);
+  const [refreshingReports, setRefreshingReports] = useState(false);
 
   const fetchData = async () => {
     const wallet = await getWalletAddress();
@@ -100,13 +197,61 @@ export const Leaderboard = (props) => {
     });
   };
 
+  const fetchMyReports = async () => {
+    console.log('Fetching my reports...');
+    const wallet = await getWalletAddress();
+
+    if (!wallet) {
+      console.log('No wallet address available for fetching reports');
+      return;
+    }
+
+    setIsLoadingReports(true);
+    setReportsError(null);
+
+    try {
+      const response = await getReportsById(wallet);
+      
+      if (response && response.ok) {
+        // Handle different possible response structures
+        let reportsData = response.reports.reports;
+        setMyReports(reportsData);
+        
+        // Images will be loaded by ResponsiveImage components
+      } else {
+        setReportsError(response?.error || 'Failed to fetch reports');
+        setMyReports([]);
+      }
+    } catch (error) {
+      console.error('Error fetching my reports:', error);
+      setReportsError('Failed to fetch reports');
+      setMyReports([]);
+    } finally {
+      setIsLoadingReports(false);
+    }
+  };
+
+  const handleRefreshReports = async () => {
+    setRefreshingReports(true);
+    await fetchMyReports();
+    setRefreshingReports(false);
+  };
+
+  const navigateToReport = (report) => {
+    // Navigate to MyReportDetails within the Leaderboard stack
+    navigation.navigate('MyReportDetails', { 
+      report
+    });
+  };
+
   useFocusEffect(
     React.useCallback(() => {
       fetchData();
+      fetchMyReports();
     }, []),
   );
 
-  const LeaderboardPlayers = () => {
+  const LeaderboardPlayers = React.memo(() => {
     return (
       <GestureHandlerRootView>
         <FlatList
@@ -116,7 +261,8 @@ export const Leaderboard = (props) => {
         />
       </GestureHandlerRootView>
     );
-  };
+  });
+
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
@@ -211,9 +357,116 @@ export const Leaderboard = (props) => {
               setSelectedIndex(0);
             }}
           />
+          <Tab
+            title={t('leaderboard.myReports')}
+            isSelected={selectedIndex === 1}
+            setTab={() => {
+              setSelectedIndex(1);
+              // Fetch reports when My Reports tab is activated
+              fetchMyReports();
+            }}
+          />
         </View>
 
         {selectedIndex === 0 && <LeaderboardPlayers />}
+        {selectedIndex === 1 && (
+          <>
+            {isLoadingReports && myReports.length === 0 ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color={theme.COLORS.BTN_BG_BLUE} />
+                <Text style={styles.loadingText}>Loading your reports...</Text>
+              </View>
+            ) : reportsError ? (
+              <View style={styles.errorContainer}>
+                <Text style={styles.errorText}>Error: {reportsError}</Text>
+                <Ripple style={styles.retryButton} onPress={fetchMyReports}>
+                  <Text style={styles.retryButtonText}>Retry</Text>
+                </Ripple>
+              </View>
+            ) : myReports.length === 0 ? (
+              <View style={styles.placeholderContainer}>
+                <Text style={styles.placeholderText}>
+                  {t('leaderboard.myReportsPlaceholder')}
+                </Text>
+              </View>
+            ) : (
+              <ScrollView
+                style={styles.reportsList}
+                showsVerticalScrollIndicator={false}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={refreshingReports}
+                    onRefresh={handleRefreshReports}
+                    tintColor={theme.COLORS.BTN_BG_BLUE}
+                    colors={[theme.COLORS.BTN_BG_BLUE]}
+                    title="Pull to refresh"
+                    titleColor={theme.COLORS.TEXT_GREY}
+                  />
+                }>
+                {(() => {
+                  // Ensure myReports is a valid array before processing
+                  const validReports = Array.isArray(myReports) ? myReports : [];
+                  const groupedReports = groupReportsByDate(validReports);
+                  return Object.entries(groupedReports).map(([date, dateReports]) => (
+                    <View key={date} style={styles.dateGroup}>
+                      <Text style={styles.dateHeader}>{date}</Text>
+                      {dateReports.map((report, index) => {
+                        // Extract title and description from analysis field with language='en'
+                        var englishAnalysis = {};
+                        for (const analysis of report.analysis) {
+                          if (analysis.language === 'en') {
+                            englishAnalysis = analysis;
+                            break;
+                          }
+                        }
+                        const title = englishAnalysis.title || 'Untitled Report';
+                        const description = englishAnalysis.description || '';
+                        
+                        return (
+                          <Pressable 
+                            key={report.id || `${date}_${index}`} 
+                            style={({ pressed }) => [
+                              styles.reportItem,
+                              pressed && styles.reportItemPressed
+                            ]}
+                            onPress={() => navigateToReport(report)}
+                          >
+                            {report.report.seq && (
+                              <View style={styles.reportImageContainer}>
+                                <ResponsiveImage
+                                  reportSeq={report.report.seq}
+                                  containerWidth={60}
+                                  maxHeight={60}
+                                  borderRadius={8}
+                                  resizeMode="cover"
+                                  showPlaceholder={true}
+                                  placeholderText="📷"
+                                />
+                              </View>
+                            )}
+                            <View style={styles.reportContent}>
+                              <Text style={styles.reportTitle} numberOfLines={2}>
+                                {title}
+                              </Text>
+                              {description && (
+                                <Text style={styles.reportDescription} numberOfLines={3}>
+                                  {description}
+                                </Text>
+                              )}
+                              <Text style={styles.reportTime}>
+                                {formatTime(report.report.timestamp || report.report.time)}
+                              </Text>
+                            </View>
+                          </Pressable>
+                        );
+                      })}
+                    </View>
+                  ));
+                })()}
+              </ScrollView>
+            )}
+          </>
+        )}
       </View>
     </SafeAreaView>
   );
@@ -285,25 +538,32 @@ const styles = StyleSheet.create({
   },
   tabContainer: {
     marginTop: 22,
+    marginBottom: 16,
     flexDirection: 'row',
     width: '100%',
-    padding: 2,
-    borderRadius: 8,
+    padding: 0,
+    backgroundColor: theme.COLORS.PANEL_BG,
     justifyContent: 'space-evenly',
   },
   tab: {
-    padding: 14,
+    padding: 16,
     alignItems: 'center',
     justifyContent: 'center',
+    borderRadius: 8,
+    minWidth: 100,
   },
   tabActive: {},
   tabText: {
     marginLeft: 8,
     color: theme.COLORS.TEXT_GREY,
-    fontSize: 12,
-    lineHeight: 20,
+    fontSize: 16,
+    lineHeight: 16,
     fontFamily: fontFamilies.Default,
     fontWeight: '400',
+  },
+  tabTextActive: {
+    color: theme.COLORS.BTN_BG_BLUE,
+    fontWeight: '600',
   },
   indicator: {
     backgroundColor: theme.COLORS.TEXT_GREY,
@@ -632,5 +892,131 @@ const styles = StyleSheet.create({
     color: theme.COLORS.TEXT_GREY,
     fontWeight: '500',
     fontFamily: fontFamilies.Default,
+  },
+  placeholderContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 32,
+    paddingVertical: 64,
+  },
+  placeholderText: {
+    fontSize: 16,
+    lineHeight: 24,
+    color: theme.COLORS.TEXT_GREY,
+    fontFamily: fontFamilies.Default,
+    fontWeight: '400',
+    textAlign: 'center',
+  },
+  // MyReports styles
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  loadingText: {
+    fontSize: 16,
+    color: theme.COLORS.TEXT_GREY,
+    fontFamily: fontFamilies.Default,
+    fontWeight: '500',
+    marginTop: 16,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 40,
+    paddingHorizontal: 32,
+  },
+  errorText: {
+    fontSize: 16,
+    color: theme.COLORS.WELL_READ,
+    fontFamily: fontFamilies.Default,
+    fontWeight: '500',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  retryButton: {
+    backgroundColor: theme.COLORS.BTN_BG_BLUE,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: theme.COLORS.WHITE,
+    fontSize: 16,
+    fontFamily: fontFamilies.Default,
+    fontWeight: '600',
+  },
+  reportsList: {
+    flex: 1,
+    paddingHorizontal: 16,
+    width: '100%',
+  },
+  dateGroup: {
+    marginBottom: 24,
+  },
+  dateHeader: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: theme.COLORS.WHITE,
+    fontFamily: fontFamilies.Default,
+    marginBottom: 16,
+    paddingHorizontal: 4,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.COLORS.BORDER_GREY,
+    paddingBottom: 8,
+  },
+  reportItem: {
+    backgroundColor: theme.COLORS.PANEL_BG,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  reportItemPressed: {
+    backgroundColor: theme.COLORS.APP_COLOR_2,
+    opacity: 0.8,
+  },
+  reportContent: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  reportTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: theme.COLORS.WHITE,
+    fontFamily: fontFamilies.Default,
+    marginBottom: 8,
+  },
+  reportDescription: {
+    fontSize: 14,
+    color: theme.COLORS.TEXT_GREY,
+    fontFamily: fontFamilies.Default,
+    lineHeight: 20,
+    marginBottom: 8,
+  },
+  reportTime: {
+    fontSize: 12,
+    color: theme.COLORS.TEXT_GREY_50P,
+    fontFamily: fontFamilies.Default,
+  },
+  reportImageContainer: {
+    width: 60,
+    height: 60,
+    backgroundColor: theme.COLORS.APP_COLOR_2,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+  },
+  reportImage: {
+    width: '100%',
+    height: '100%',
+  },
+  imagePlaceholder: {
+    fontSize: 24,
   },
 });

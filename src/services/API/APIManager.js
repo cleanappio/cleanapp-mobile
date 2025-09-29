@@ -1,5 +1,5 @@
 import {getJSONData, postJSONData} from './CoreAPICalls';
-import {settings as s} from './Settings';
+import {settings as s, getUrls} from './Settings';
 import {getMapLocation} from '../DataManager';
 import MatchReportsLogger from '../../utils/MatchReportsLogger';
 
@@ -395,7 +395,7 @@ export const getReportsByLatLon = async (lat, lon) => {
     };
 
     // const url = `${s.v3api.getReportsByLatLon}?${new URLSearchParams(params).toString()}`;
-    const url = `https://live.cleanapp.io/api/v3/reports/by-latlng?latitude=${lat}&longitude=${lon}&radius_km=0.5&n=10&lang='en'`;
+    const url = `${getUrls().liveUrl}/api/v3/reports/by-latlng-lite?latitude=${lat}&longitude=${lon}&radius_km=0.5&n=10&lang='en'`;
     console.log('URL', url);
     const response = await fetch(url);
     console.log('Response', response);
@@ -419,6 +419,39 @@ export const getReportsByLatLon = async (lat, lon) => {
   } catch (err) {
     console.error(err);
     return null;
+  }
+};
+
+export const getReportsById = async (userId) => {
+  try {
+    const url = `${getUrls().liveUrl}/api/v3/reports/by-id?id=${userId}`;
+    
+    const response = await fetch(url);
+    
+    const ret = {
+      ok: response.ok,
+      reports: undefined,
+      error: undefined,
+    };
+    
+    if (response.ok) {
+      ret.reports = await response.json().then(data => data);
+    } else {
+      if (response.error) {
+        ret.error = response.error;
+      } else if (response.status) {
+        ret.error = response.statusText;
+      }
+    }
+
+    return ret;
+  } catch (err) {
+    console.error('Error fetching reports by ID:', err);
+    return {
+      ok: false,
+      error: err.message || 'Unknown error occurred',
+      reports: undefined,
+    };
   }
 };
 
