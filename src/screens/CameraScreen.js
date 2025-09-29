@@ -702,7 +702,7 @@ const CameraScreen = props => {
       <GestureHandlerRootView>
         <GestureDetector gesture={allGestures}>
           <View style={styles.container}>
-            {!isCameraAvailable && (
+            {isCameraAvailable && (
               <ReanimatedCamera
                 ref={camera}
                 style={StyleSheet.absoluteFill}
