@@ -2,20 +2,24 @@ import React from 'react';
 import {View, StyleSheet} from 'react-native';
 import FloatingActionButton from './FloatingActionButton';
 import {useFAB} from '../hooks/useFAB';
-import {useNavigation} from '@react-navigation/native';
-
-// Import icons - you can replace these with your preferred icon library
-// import CameraIcon from '../assets/ico_camera.svg';
+// import {useNavigation} from '@react-navigation/native';
+import ErrorBoundary from './ErrorBoundary';
+import MicrophoneIcon from './MicrophoneIcon';
 
 const GlobalFAB = () => {
   const {fabShow} = useFAB();
-  const navigation = useNavigation();
+  // const navigation = useNavigation();
+
+  console.log('GlobalFAB rendering, fabShow:', fabShow);
 
   const handleFABPress = () => {
-    // Navigate to camera screen or perform main action
-    // navigation.navigate('Camera');
-    const baseUrl = `https://devvoice.cleanapp.io/`;
-    
+    console.log('FAB pressed - starting handler');
+
+    try {
+      // TODO: Implement main action
+    } catch (error) {
+      console.error('Something went wrong:', error);
+    }
   };
 
   // You can customize this based on your needs
@@ -24,16 +28,18 @@ const GlobalFAB = () => {
   }
 
   return (
-    <View style={styles.container}>
-      <FloatingActionButton
-        onPress={handleFABPress}
-        text="+"
-        position="bottom-right"
-        size="large"
-        color="#007AFF"
-        style={styles.fab}
-      />
-    </View>
+    <ErrorBoundary>
+      <View style={styles.container}>
+        <FloatingActionButton
+          onPress={handleFABPress}
+          icon={<MicrophoneIcon width={24} height={24} />}
+          position="center-center"
+          size="large"
+          color="#007AFF"
+          style={styles.fab}
+        />
+      </View>
+    </ErrorBoundary>
   );
 };
 
