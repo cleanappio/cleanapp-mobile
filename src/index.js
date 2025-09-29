@@ -89,7 +89,7 @@ const BottomTabs = ({navigation}) => {
   return (
     <>
       <ToastifyManager />
-      <GlobalFAB />
+      {/* <GlobalFAB /> */}
 
       <Tab.Navigator
         initialRouteName="Camera"
