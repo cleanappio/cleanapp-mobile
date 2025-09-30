@@ -1,17 +1,17 @@
 import React, {useEffect} from 'react';
 import {
   View,
-  Text,
   TouchableOpacity,
   StyleSheet,
   Alert,
-  ScrollView,
   ActivityIndicator,
 } from 'react-native';
 import {useOpenAIRealtime} from '../hooks/useOpenAIRealtime';
 import RTCAudioPlayer from './RTCAudioPlayer';
 import MicrophoneIcon from './MicrophoneIcon';
+import AudioVisualizer from './AudioVisualizer';
 import {theme} from '../services/Common/theme';
+import {getUrls} from '../services/API/Settings';
 
 const OpenAIRealtime: React.FC = () => {
   const {
@@ -27,21 +27,18 @@ const OpenAIRealtime: React.FC = () => {
     error: realtimeError,
     localStream,
     remoteStream,
-    peerConnection,
 
     // Methods
     createSession,
     startConnection,
     stopConnection,
-    sendMessage,
     checkConnectionHealth,
-    clearSession,
 
     // Computed
     canStartConnection,
     canStopConnection,
   } = useOpenAIRealtime({
-    baseURL: 'https://devvoice.cleanapp.io', // Replace with your actual backend URL
+    baseURL: `${getUrls()?.voiceUrl}`,
     autoRetry: true,
     maxRetries: 3,
   });
@@ -53,11 +50,14 @@ const OpenAIRealtime: React.FC = () => {
     }
   }, [session, sessionLoading, createSession]);
 
+  useEffect(() => {
+    startConnection();
+  }, []);
+
   // Monitor connection state changes
   useEffect(() => {
     if (realtimeConnected) {
       console.log('✅ WebRTC connection established!');
-      Alert.alert('Success', 'Connected to OpenAI Realtime!');
     } else if (realtimeError && !realtimeConnecting) {
       console.log('❌ WebRTC connection failed:', realtimeError);
       Alert.alert('Connection Error', realtimeError);
@@ -89,20 +89,7 @@ const OpenAIRealtime: React.FC = () => {
 
   const handleStopConnection = () => {
     stopConnection();
-    Alert.alert('Info', 'Disconnected from OpenAI Realtime');
   };
-
-  //   const handleSendMessage = () => {
-  //     try {
-  //       sendMessage('Hello, this is a test message!');
-  //       Alert.alert('Success', 'Message sent!');
-  //     } catch (error: unknown) {
-  //       Alert.alert(
-  //         'Error',
-  //         `Failed to send message: ${error instanceof Error ? error.message : 'Unknown error'}`,
-  //       );
-  //     }
-  //   };
 
   const handleCheckHealth = async () => {
     const isHealthy = await checkConnectionHealth();
@@ -154,7 +141,20 @@ const OpenAIRealtime: React.FC = () => {
           <ActivityIndicator size="small" color={theme.COLORS.WHITE} />
         )}
 
-        {!realtimeConnecting && (
+        <AudioVisualizer
+          isActive={realtimeConnected}
+          isConnected={realtimeConnected}
+          size={24}
+          barCount={5}
+          color={
+            realtimeError
+              ? theme.COLORS.ERROR_COLOR
+              : theme.COLORS.GREEN_ITEM_BG_START
+          }
+          inactiveColor={theme.COLORS.TEXT_GREY_50P}
+        />
+
+        {!realtimeConnecting && !realtimeConnected && (
           <MicrophoneIcon
             width={24}
             height={24}
