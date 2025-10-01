@@ -46,7 +46,7 @@ const AudioVisualizer: React.FC<AudioVisualizerProps> = ({
       isConnected,
     );
     startRandomAnimation();
-  }, [isActive, isConnected]);
+  }, [isActive, isConnected, barCount]);
 
   const startRandomAnimation = () => {
     console.log('AudioVisualizer: Starting random animation');

@@ -51,7 +51,12 @@ const OpenAIRealtime: React.FC = () => {
   }, [session, sessionLoading, createSession]);
 
   useEffect(() => {
-    startConnection();
+    try {
+      console.log('Starting connection');
+      startConnection();
+    } catch (error) {
+      console.log('Error starting connection', error);
+    }
   }, []);
 
   // Monitor connection state changes
@@ -102,12 +107,14 @@ const OpenAIRealtime: React.FC = () => {
   const handlePress = () => {
     console.log('handlePress');
     if (sessionError) {
-      console.log('Session error, returning');
+      console.log('Session error, retrying...');
+      createSession();
       return;
     }
 
     if (realtimeError) {
       console.log('Realtime error, returning');
+      startConnection();
       return;
     }
 
