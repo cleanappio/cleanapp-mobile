@@ -1,12 +1,11 @@
 import React from 'react';
 import {Text, View, Image, Platform} from 'react-native';
 import Ripple from './Ripple';
-import FontistoIcon from 'react-native-vector-icons/Fontisto';
 import Permissions from 'react-native-permissions';
 import {useNavigation} from '@react-navigation/native';
 import PropTypes from 'prop-types';
 
-const ImageBox = (props) => {
+const ImageBox = props => {
   const {
     label = '',
     onSelect = () => {},
@@ -87,7 +86,7 @@ const ImageBox = (props) => {
                 padding: 5,
               }}
               onPress={onRemove}>
-              <FontistoIcon name="close" size={20} color="#000" />
+              <Text style={{fontSize: 20, color: '#000'}}>✕</Text>
             </Ripple>
           ) : null}
           <Image
