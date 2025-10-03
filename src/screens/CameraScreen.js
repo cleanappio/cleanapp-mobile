@@ -52,7 +52,6 @@ import {report, matchReports} from '../services/API/APIManager';
 import {getLocation} from '../functions/geolocation';
 import {getWalletAddress} from '../services/DataManager';
 import {ToastService} from '../components/ToastifyToast';
-import OpenAIRealtime from '../components/OpenAIRealtime';
 
 import Svg, {
   Ellipse,
@@ -127,6 +126,8 @@ const CameraScreen = props => {
 
   const appState = useRef(AppState.currentState);
   const camera = useRef(null);
+  const isMountedRef = useRef(true);
+  const locationTimeoutRef = useRef(null);
   const [isCameraActive, setIsCameraActive] = useState(true);
   const [isCameraFocused, setIsCameraFocused] = useState(true);
   const [phototaken, setPhototaken] = useState(false);
@@ -148,9 +149,21 @@ const CameraScreen = props => {
   const isFocused = useIsFocused();
 
   useEffect(() => {
-    setTimeout(async () => {
-      await getLocation();
+    locationTimeoutRef.current = setTimeout(async () => {
+      if (isMountedRef.current) {
+        try {
+          await getLocation();
+        } catch (error) {
+          console.log('Location error:', error);
+        }
+      }
     }, 1500);
+
+    return () => {
+      if (locationTimeoutRef.current) {
+        clearTimeout(locationTimeoutRef.current);
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -190,13 +203,32 @@ const CameraScreen = props => {
     };
   }, []);
 
-  tapAnimatedValue.current.addListener(state => {
-    tapScale[1](state.value);
-  });
+  // Add animated value listeners with cleanup
+  useEffect(() => {
+    const tapListener = tapAnimatedValue.current.addListener(state => {
+      if (isMountedRef.current) {
+        tapScale[1](state.value);
+      }
+    });
 
-  flashAnimatedValue.current.addListener(state => {
-    flashScale[1](state.value);
-  });
+    const flashListener = flashAnimatedValue.current.addListener(state => {
+      if (isMountedRef.current) {
+        flashScale[1](state.value);
+      }
+    });
+
+    return () => {
+      tapAnimatedValue.current.removeListener(tapListener);
+      flashAnimatedValue.current.removeListener(flashListener);
+    };
+  }, []);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   const device = useCameraDevice('back');
   const frontDevice = useCameraDevice('front');
@@ -303,38 +335,52 @@ const CameraScreen = props => {
       }
 
       const result = await check(permission);
+      if (!isMountedRef.current) return false;
+
       switch (result) {
         case RESULTS.UNAVAILABLE:
-          setHasPhotoLibraryPermission(false);
+          if (isMountedRef.current) {
+            setHasPhotoLibraryPermission(false);
+          }
           return false;
         case RESULTS.DENIED:
           const permissionResult = await request(permission);
-          setHasPhotoLibraryPermission(permissionResult === RESULTS.GRANTED);
+          if (isMountedRef.current) {
+            setHasPhotoLibraryPermission(permissionResult === RESULTS.GRANTED);
+          }
           return permissionResult === RESULTS.GRANTED;
         case RESULTS.LIMITED:
-          setHasPhotoLibraryPermission(true);
+          if (isMountedRef.current) {
+            setHasPhotoLibraryPermission(true);
+          }
           return true;
         case RESULTS.GRANTED:
-          setHasPhotoLibraryPermission(true);
+          if (isMountedRef.current) {
+            setHasPhotoLibraryPermission(true);
+          }
           return true;
         case RESULTS.BLOCKED:
-          Alert.alert(
-            t('camerascreen.notice'),
-            t('camerascreen.photolibraryaccesspermissionnotgranted'),
-            [
-              {text: t('camerascreen.no'), style: 'cancel'},
-              {
-                text: t('camerascreen.yes'),
-                onPress: () => Linking.openSettings(),
-              },
-            ],
-            {cancelable: false},
-          );
-          setHasPhotoLibraryPermission(false);
+          if (isMountedRef.current) {
+            Alert.alert(
+              t('camerascreen.notice'),
+              t('camerascreen.photolibraryaccesspermissionnotgranted'),
+              [
+                {text: t('camerascreen.no'), style: 'cancel'},
+                {
+                  text: t('camerascreen.yes'),
+                  onPress: () => Linking.openSettings(),
+                },
+              ],
+              {cancelable: false},
+            );
+            setHasPhotoLibraryPermission(false);
+          }
           return false;
       }
     } catch (error) {
-      setHasPhotoLibraryPermission(false);
+      if (isMountedRef.current) {
+        setHasPhotoLibraryPermission(false);
+      }
       return false;
     }
   };
@@ -347,48 +393,68 @@ const CameraScreen = props => {
   }));
 
   const uploadPhoto = async (file, annotation = '') => {
-    const userLocation = await getLocation();
-    if (userLocation && userLocation.latitude && userLocation.longitude) {
-      if (userLocation.longitude === 0 && userLocation.latitude === 0) {
-        Alert.alert(
-          t('camerascreen.notice'),
-          t('camerascreen.invalidlocation'),
-          [{text: t('camerascreen.ok'), onPress: () => {}}],
-          {cancelable: false},
+    if (!isMountedRef.current) return null;
+
+    try {
+      const userLocation = await getLocation();
+      if (!isMountedRef.current) return null;
+
+      if (userLocation && userLocation.latitude && userLocation.longitude) {
+        if (userLocation.longitude === 0 && userLocation.latitude === 0) {
+          if (isMountedRef.current) {
+            Alert.alert(
+              t('camerascreen.notice'),
+              t('camerascreen.invalidlocation'),
+              [{text: t('camerascreen.ok'), onPress: () => {}}],
+              {cancelable: false},
+            );
+          }
+          return null;
+        }
+
+        var path = file.uri;
+        const imageData = await RNFS.readFile(path, 'base64');
+        if (!isMountedRef.current) return null;
+
+        const walletAddress = await getWalletAddress();
+        if (!isMountedRef.current) return null;
+
+        const res = await matchReports(
+          walletAddress,
+          userLocation.latitude,
+          userLocation.longitude,
+          imageData,
+          annotation,
         );
+
+        if (isMountedRef.current) {
+          showMatchReportsResult(res);
+        }
+
+        // Clean up the image file after upload
+        await cleanupImageFile(path);
+
+        return res;
+      } else {
+        if (isMountedRef.current) {
+          Alert.alert(
+            t('camerascreen.notice'),
+            t('camerascreen.invalidlocation'),
+            [{text: t('camerascreen.ok'), onPress: () => {}}],
+            {cancelable: false},
+          );
+        }
         return null;
       }
-
-      var path = file.uri;
-      const imageData = await RNFS.readFile(path, 'base64');
-      const walletAddress = await getWalletAddress();
-
-      const res = await matchReports(
-        walletAddress,
-        userLocation.latitude,
-        userLocation.longitude,
-        imageData,
-        annotation,
-      );
-
-      showMatchReportsResult(res);
-
-      // Clean up the image file after upload
-      await cleanupImageFile(path);
-
-      return res;
-    } else {
-      Alert.alert(
-        t('camerascreen.notice'),
-        t('camerascreen.invalidlocation'),
-        [{text: t('camerascreen.ok'), onPress: () => {}}],
-        {cancelable: false},
-      );
+    } catch (error) {
+      console.log('Upload photo error:', error);
       return null;
     }
   };
 
   const showMatchReportsResult = res => {
+    if (!isMountedRef.current) return;
+
     const resolvedMessage = '+2 KITN for verification';
     const reportMessage = '+1 KITN for reporting';
     try {
@@ -398,57 +464,70 @@ const CameraScreen = props => {
             result => result.resolved === true,
           );
 
-          ToastService.show({
-            text1: isResolved ? 'Congratulations!' : 'Great job!',
-            text2: isResolved ? resolvedMessage : reportMessage,
-            type: 'success',
-            position: 'center',
-            duration: 5000,
-            useModal: false,
-          });
+          if (isMountedRef.current) {
+            ToastService.show({
+              text1: isResolved ? 'Congratulations!' : 'Great job!',
+              text2: isResolved ? resolvedMessage : reportMessage,
+              type: 'success',
+              position: 'center',
+              duration: 5000,
+              useModal: false,
+            });
+          }
         } else {
           console.log('No reports matched');
         }
       } else {
         // Show error toast if report submission failed at top
         console.log('Report Submission Failed');
-        ToastService.error(reportMessage, 'top', 4000);
+        if (isMountedRef.current) {
+          ToastService.error(reportMessage, 'top', 4000);
+        }
       }
 
       console.log('res', res);
     } catch (error) {
       console.log('error', error);
       // Show error toast for exceptions at top
-      ToastService.error(
-        'Something went wrong! Please try again.',
-        'top',
-        4000,
-      );
+      if (isMountedRef.current) {
+        ToastService.error(
+          'Something went wrong! Please try again.',
+          'top',
+          4000,
+        );
+      }
     }
   };
 
   const takePhoto = async (withAnnotation = false) => {
+    if (!isMountedRef.current) return;
+
     let originalPhotoPath = null;
     let resizedPhotoPath = null;
 
     try {
       if (!camera || !camera.current) {
         // Gracefully handle null camera (e.g., iOS simulator)
-        setPhototaken(true);
+        if (isMountedRef.current) {
+          setPhototaken(true);
+        }
         return;
       }
 
       if (!backDevice) {
-        Alert.alert(
-          t('camerascreen.notice'),
-          'Camera not available',
-          [{text: t('camerascreen.ok'), onPress: () => {}}],
-          {cancelable: false},
-        );
+        if (isMountedRef.current) {
+          Alert.alert(
+            t('camerascreen.notice'),
+            'Camera not available',
+            [{text: t('camerascreen.ok'), onPress: () => {}}],
+            {cancelable: false},
+          );
+        }
         return;
       }
 
       const photo = await camera.current.takePhoto(takePhotoOptions);
+      if (!isMountedRef.current) return;
 
       // Resize the photo to height 1000 while preserving aspect ratio
       const originalUri =
@@ -457,6 +536,7 @@ const CameraScreen = props => {
           : 'file://' + photo.path;
       originalPhotoPath = originalUri;
       const resizedUri = await resizePhoto(originalUri);
+      if (!isMountedRef.current) return;
       resizedPhotoPath = resizedUri;
 
       const photoFile = {
@@ -466,32 +546,42 @@ const CameraScreen = props => {
       };
 
       if (withAnnotation) {
-        setPhotoData(photoFile);
-        setShowAnnotationModal(true);
-        setIsInAnnotationMode(true);
+        if (isMountedRef.current) {
+          setPhotoData(photoFile);
+          setShowAnnotationModal(true);
+          setIsInAnnotationMode(true);
+        }
       } else {
-        setPhototaken(true);
+        if (isMountedRef.current) {
+          setPhototaken(true);
+        }
         const res = await uploadPhoto(photoFile).catch(err => {
-          Alert.alert(
-            t('camerascreen.notice'),
-            t('camerascreen.failedtosaveimage') + err.message,
-            [{text: t('camerascreen.ok'), onPress: () => {}}],
-            {cancelable: false},
-          );
+          if (isMountedRef.current) {
+            Alert.alert(
+              t('camerascreen.notice'),
+              t('camerascreen.failedtosaveimage') + err.message,
+              [{text: t('camerascreen.ok'), onPress: () => {}}],
+              {cancelable: false},
+            );
+          }
         });
-        if (!res.ok) {
-          Alert.alert(
-            t('camerascreen.notice'),
-            t('camerascreen.failedtosaveimage') + res.error,
-            [{text: t('camerascreen.ok'), onPress: () => {}}],
-            {cancelable: false},
-          );
+        if (!isMountedRef.current) return;
+        if (!res || !res.ok) {
+          if (isMountedRef.current) {
+            Alert.alert(
+              t('camerascreen.notice'),
+              t('camerascreen.failedtosaveimage') +
+                (res?.error || 'Unknown error'),
+              [{text: t('camerascreen.ok'), onPress: () => {}}],
+              {cancelable: false},
+            );
+          }
           return;
         }
       }
     } catch (e) {
       // Only show error for actual camera errors, not for simulator
-      if (camera && camera.current) {
+      if (camera && camera.current && isMountedRef.current) {
         Alert.alert(
           t('camerascreen.notice'),
           t('camerascreen.failedtotakephoto') + e.message,
@@ -506,47 +596,60 @@ const CameraScreen = props => {
       }
 
       // navigate to report details screen if isReviewMode is true
-      if (isReviewMode) {
+      if (isReviewMode && isMountedRef.current) {
         navigation.goBack();
       }
     }
   };
 
   const submitAnnotation = async () => {
-    if (!photoData) return;
+    if (!photoData || !isMountedRef.current) return;
 
-    setShowAnnotationModal(false);
-    setPhototaken(true);
+    if (isMountedRef.current) {
+      setShowAnnotationModal(false);
+      setPhototaken(true);
+    }
     try {
       const res = await uploadPhoto(photoData, annotationText).catch(err => {
-        Alert.alert(
-          t('camerascreen.notice'),
-          t('camerascreen.failedtosaveimage') + err.message,
-          [{text: t('camerascreen.ok'), onPress: () => {}}],
-          {cancelable: false},
-        );
+        if (isMountedRef.current) {
+          Alert.alert(
+            t('camerascreen.notice'),
+            t('camerascreen.failedtosaveimage') + err.message,
+            [{text: t('camerascreen.ok'), onPress: () => {}}],
+            {cancelable: false},
+          );
+        }
       });
 
+      if (!isMountedRef.current) return;
+
       if (!res || !res.ok) {
-        Alert.alert(
-          t('camerascreen.notice'),
-          t('camerascreen.failedtosaveimage') + (res?.error || 'Unknown error'),
-          [{text: t('camerascreen.ok'), onPress: () => {}}],
-          {cancelable: false},
-        );
+        if (isMountedRef.current) {
+          Alert.alert(
+            t('camerascreen.notice'),
+            t('camerascreen.failedtosaveimage') +
+              (res?.error || 'Unknown error'),
+            [{text: t('camerascreen.ok'), onPress: () => {}}],
+            {cancelable: false},
+          );
+        }
         return;
       }
 
-      setAnnotationText('');
-      setPhotoData(null);
-      setIsInAnnotationMode(false);
+      if (isMountedRef.current) {
+        setAnnotationText('');
+        setPhotoData(null);
+        setIsInAnnotationMode(false);
+      }
     } catch (e) {
-      Alert.alert(
-        t('camerascreen.notice'),
-        t('camerascreen.failedtosaveimage') + e.message,
-        [{text: t('camerascreen.ok'), onPress: () => {}}],
-        {cancelable: false},
-      );
+      if (isMountedRef.current) {
+        Alert.alert(
+          t('camerascreen.notice'),
+          t('camerascreen.failedtosaveimage') + e.message,
+          [{text: t('camerascreen.ok'), onPress: () => {}}],
+          {cancelable: false},
+        );
+      }
     }
   };
 
@@ -556,10 +659,12 @@ const CameraScreen = props => {
       await cleanupImageFile(photoData.uri);
     }
 
-    setShowAnnotationModal(false);
-    setAnnotationText('');
-    setPhotoData(null);
-    setIsInAnnotationMode(false);
+    if (isMountedRef.current) {
+      setShowAnnotationModal(false);
+      setAnnotationText('');
+      setPhotoData(null);
+      setIsInAnnotationMode(false);
+    }
   };
 
   const handleOverlayPress = () => {
@@ -573,6 +678,8 @@ const CameraScreen = props => {
   };
 
   const selectPhotoFromGallery = async () => {
+    if (!isMountedRef.current) return;
+
     let originalPhotoPath = null;
     let resizedPhotoPath = null;
 
@@ -580,7 +687,7 @@ const CameraScreen = props => {
       // Check photo library permission first
       if (!hasPhotoLibraryPermission) {
         const hasPermission = await checkPhotoLibraryPermission();
-        if (!hasPermission) {
+        if (!hasPermission || !isMountedRef.current) {
           return;
         }
       }
@@ -591,17 +698,21 @@ const CameraScreen = props => {
         includeBase64: false,
       });
 
+      if (!isMountedRef.current) return;
+
       if (result.didCancel) {
         return;
       }
 
       if (result.errorCode) {
-        Alert.alert(
-          t('camerascreen.notice'),
-          'Failed to select photo: ' + result.errorMessage,
-          [{text: t('camerascreen.ok'), onPress: () => {}}],
-          {cancelable: false},
-        );
+        if (isMountedRef.current) {
+          Alert.alert(
+            t('camerascreen.notice'),
+            'Failed to select photo: ' + result.errorMessage,
+            [{text: t('camerascreen.ok'), onPress: () => {}}],
+            {cancelable: false},
+          );
+        }
         return;
       }
 
@@ -611,6 +722,7 @@ const CameraScreen = props => {
 
         // Resize the selected photo to height 1000 while preserving aspect ratio
         const resizedUri = await resizePhoto(selectedPhoto.uri);
+        if (!isMountedRef.current) return;
         resizedPhotoPath = resizedUri;
 
         const photoFile = {
@@ -619,17 +731,21 @@ const CameraScreen = props => {
           name: selectedPhoto.fileName || 'photo.jpg',
         };
 
-        setPhotoData(photoFile);
-        setShowAnnotationModal(true);
-        setIsInAnnotationMode(true);
+        if (isMountedRef.current) {
+          setPhotoData(photoFile);
+          setShowAnnotationModal(true);
+          setIsInAnnotationMode(true);
+        }
       }
     } catch (error) {
-      Alert.alert(
-        t('camerascreen.notice'),
-        'Failed to open gallery: ' + error.message,
-        [{text: t('camerascreen.ok'), onPress: () => {}}],
-        {cancelable: false},
-      );
+      if (isMountedRef.current) {
+        Alert.alert(
+          t('camerascreen.notice'),
+          'Failed to open gallery: ' + error.message,
+          [{text: t('camerascreen.ok'), onPress: () => {}}],
+          {cancelable: false},
+        );
+      }
     } finally {
       // Clean up original photo file if it exists and is different from resized
       if (originalPhotoPath && originalPhotoPath !== resizedPhotoPath) {
@@ -691,10 +807,6 @@ const CameraScreen = props => {
     } catch (cleanupError) {
       console.log('Failed to clean up image file:', cleanupError);
     }
-  };
-
-  const handleOpenAIRealtime = () => {
-    console.log('handleOpenAIRealtime');
   };
 
   return (
@@ -860,17 +972,9 @@ const CameraScreen = props => {
           </View>
         </GestureDetector>
 
-        <View style={{position: 'absolute', bottom: 30, left: 20}}>
-          {/* <FloatingActionButton
-            onPress={handleOpenAIRealtime}
-            icon={<MicrophoneIcon width={24} height={24} />}
-            position="center-center"
-            size="large"
-            color="#007AFF"
-          /> */}
-
+        {/* <View style={{position: 'absolute', bottom: 30, left: 20}}>
           <OpenAIRealtime />
-        </View>
+        </View> */}
       </GestureHandlerRootView>
 
       {/* Annotation Modal */}
