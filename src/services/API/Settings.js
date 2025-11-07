@@ -9,6 +9,7 @@ export const settings = {
     mapUrl: 'https://embed.cleanapp.io',
     liveUrl: 'https://live.cleanapp.io',
     voiceUrl: 'https://voice.cleanapp.io',
+    processingUrl: 'https://processing.cleanapp.io',
   },
   dev: {
     // Cleanapp Google Cloud Dev
@@ -17,6 +18,7 @@ export const settings = {
     mapUrl: 'https://devembed.cleanapp.io',
     liveUrl: 'https://devlive.cleanapp.io',
     voiceUrl: 'https://devvoice.cleanapp.io',
+    processingUrl: 'https://devprocessing.cleanapp.io',
   },
   local: {
     // Cleanapp Local
@@ -26,6 +28,7 @@ export const settings = {
     mapUrl: 'https://devembed.cleanapp.io',
     liveUrl: 'https://devlive.cleanapp.io',
     voiceUrl: 'https://devvoice.cleanapp.io',
+    processingUrl: 'https://devprocessing.cleanapp.io',
   },
   v2api: {
     updateOrCreateUser: 'update_or_create_user',

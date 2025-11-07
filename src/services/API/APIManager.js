@@ -525,7 +525,7 @@ export const matchReports = async (
       body: JSON.stringify(data),
     };
     const response = await fetch(
-      `https://processing.cleanapp.io/api/v3/match_report`,
+      `${getUrls().processingUrl}/api/v3/match_report`,
       config,
     );
     const apiDuration = Date.now() - apiStartTime;
