@@ -6,7 +6,6 @@ export interface ProcessStartParams {
   latitude: number;
   longitude: number;
   imageSize: number;
-  annotation: string;
 }
 
 export interface ProcessSuccessResult {

@@ -361,16 +361,28 @@ const CameraScreen = props => {
       var path = file.uri;
       const imageData = await RNFS.readFile(path, 'base64');
       const walletAddress = await getWalletAddress();
+      let res = null;
 
-      const res = await matchReports(
-        walletAddress,
-        userLocation.latitude,
-        userLocation.longitude,
-        imageData,
-        annotation,
-      );
+      if (isReviewMode) {
+        res = await matchReports(
+          walletAddress,
+          userLocation.latitude,
+          userLocation.longitude,
+          imageData,
+        );
 
-      showMatchReportsResult(res);
+        showMatchReportsResult(res);
+      } else {
+        res = await report(
+          walletAddress,
+          userLocation.latitude,
+          userLocation.longitude,
+          /*tapX=*/ 0.5,
+          /*tapY=*/ 0.5,
+          imageData,
+          annotation,
+        );
+      }
 
       // Clean up the image file after upload
       await cleanupImageFile(path);

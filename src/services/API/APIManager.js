@@ -460,7 +460,6 @@ export const matchReports = async (
   latitude,
   longitude,
   image,
-  annotation = '',
 ) => {
   const startTime = Date.now();
   const processId = `match_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -473,7 +472,6 @@ export const matchReports = async (
       latitude,
       longitude,
       imageSize: image ? image.length : 0,
-      annotation,
     });
 
     // Validate input data
@@ -492,7 +490,6 @@ export const matchReports = async (
         latitude,
         longitude,
         image,
-        annotation,
       },
       validationErrors,
     );
@@ -510,7 +507,6 @@ export const matchReports = async (
       x: 0.5,
       y: 0.5,
       image: image,
-      annotation: annotation,
     };
 
     // Log API request
@@ -589,7 +585,6 @@ export const matchReports = async (
         latitude,
         longitude,
         imageSize: image ? image.length : 0,
-        annotation,
       },
       totalDuration,
     );
