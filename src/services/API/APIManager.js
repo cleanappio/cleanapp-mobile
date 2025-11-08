@@ -422,18 +422,18 @@ export const getReportsByLatLon = async (lat, lon) => {
   }
 };
 
-export const getReportsById = async (userId) => {
+export const getReportsById = async userId => {
   try {
     const url = `${getUrls().liveUrl}/api/v3/reports/by-id?id=${userId}`;
-    
+
     const response = await fetch(url);
-    
+
     const ret = {
       ok: response.ok,
       reports: undefined,
       error: undefined,
     };
-    
+
     if (response.ok) {
       ret.reports = await response.json().then(data => data);
     } else {
@@ -521,7 +521,7 @@ export const matchReports = async (
       body: JSON.stringify(data),
     };
     const response = await fetch(
-      `https://processing.cleanapp.io/api/v3/match_report`,
+      `${getUrls().processingUrl}/api/v3/match_report`,
       config,
     );
     const apiDuration = Date.now() - apiStartTime;
