@@ -33,7 +33,6 @@ import {useStateValue} from './services/State/State';
 import {useNotifiedReports} from './hooks/useReadReports';
 import {ReportsProvider} from './contexts/ReportsContext';
 import {ToastifyManager} from './components/ToastifyToast';
-import GlobalFAB from './components/GlobalFAB';
 
 enableScreens();
 
@@ -103,7 +102,6 @@ const BottomTabs = ({navigation}) => {
   return (
     <>
       <ToastifyManager />
-      {/* <GlobalFAB /> */}
 
       <Tab.Navigator
         initialRouteName="Camera"

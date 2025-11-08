@@ -46,7 +46,6 @@ const MyReportDetails = ({
       break;
     }
   }
-  const isPhysical = englishAnalysis?.classification === 'physical';
 
   const {
     address,
@@ -157,49 +156,47 @@ const MyReportDetails = ({
           </View>
 
           {/* Location Information */}
-          {isPhysical && (
-            <Pressable onPress={openGoogleMaps} style={styles.locationButton}>
-              <View style={styles.locationButtonContent}>
-                <View style={styles.locationContainer}>
-                  {addressLoading ? (
-                    <View style={styles.loadingContainer}>
-                      <ActivityIndicator
-                        size="small"
-                        color={theme.COLORS.BTN_BG_BLUE}
-                      />
-                      <Text style={[styles.value, styles.loadingText]}>
-                        Getting address...
-                      </Text>
-                    </View>
-                  ) : addressError ? (
-                    <View style={styles.errorContainer}>
-                      <Text style={[styles.value, styles.errorText]}>
-                        {addressError}
-                      </Text>
-                      <Pressable
-                        onPress={refetchAddress}
-                        style={styles.retryButton}>
-                        <Text style={styles.retryText}>Retry</Text>
-                      </Pressable>
-                    </View>
-                  ) : address ? (
-                    <Text style={[styles.value, styles.locationText]}>
-                      {address}
+          <Pressable onPress={openGoogleMaps} style={styles.locationButton}>
+            <View style={styles.locationButtonContent}>
+              <View style={styles.locationContainer}>
+                {addressLoading ? (
+                  <View style={styles.loadingContainer}>
+                    <ActivityIndicator
+                      size="small"
+                      color={theme.COLORS.BTN_BG_BLUE}
+                    />
+                    <Text style={[styles.value, styles.loadingText]}>
+                      Getting address...
                     </Text>
-                  ) : (
-                    <Text
-                      numberOfLines={3}
-                      style={[styles.value, styles.locationText]}>
-                      {report.location || 'Address not available'}
+                  </View>
+                ) : addressError ? (
+                  <View style={styles.errorContainer}>
+                    <Text style={[styles.value, styles.errorText]}>
+                      {addressError}
                     </Text>
-                  )}
-                </View>
-                <View style={styles.navigationIconContainer}>
-                  <NavigationIcon color={theme.COLORS.BTN_BG_BLUE} />
-                </View>
+                    <Pressable
+                      onPress={refetchAddress}
+                      style={styles.retryButton}>
+                      <Text style={styles.retryText}>Retry</Text>
+                    </Pressable>
+                  </View>
+                ) : address ? (
+                  <Text style={[styles.value, styles.locationText]}>
+                    {address}
+                  </Text>
+                ) : (
+                  <Text
+                    numberOfLines={3}
+                    style={[styles.value, styles.locationText]}>
+                    {report.location || 'Address not available'}
+                  </Text>
+                )}
               </View>
-            </Pressable>
-          )}
+              <View style={styles.navigationIconContainer}>
+                <NavigationIcon color={theme.COLORS.BTN_BG_BLUE} />
+              </View>
+            </View>
+          </Pressable>
         </View>
       </ScrollView>
     </SafeAreaView>

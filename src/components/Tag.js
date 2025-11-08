@@ -1,5 +1,6 @@
 import React from 'react';
 import {View, Text, StyleSheet, TouchableWithoutFeedback} from 'react-native';
+import IonIcon from 'react-native-vector-icons/Ionicons';
 import {fontFamilies} from '../utils/fontFamilies';
 
 const Tag = ({
@@ -13,9 +14,12 @@ const Tag = ({
     <TouchableWithoutFeedback onPress={onRemove}>
       <View style={[styles.container, {backgroundColor: backgroundColor}]}>
         {onRemove ? (
-          <Text style={{fontSize: 12, color: iconColor}} onPress={onRemove}>
-            ✕
-          </Text>
+          <IonIcon
+            size={12}
+            color={iconColor}
+            onPress={onRemove}
+            name="close-circle-outline"
+          />
         ) : null}
         <Text style={[styles.tagText, {color: textColor}]}>{title}</Text>
       </View>

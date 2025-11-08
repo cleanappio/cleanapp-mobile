@@ -2,6 +2,7 @@ import React from 'react';
 import {Text, View, ToastAndroid} from 'react-native';
 import Ripple from '../components/Ripple';
 import Clipboard from '@react-native-clipboard/clipboard';
+import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import {fontFamilies} from '../utils/fontFamilies';
 
 const CopyTextBox = ({item}) => {
@@ -48,7 +49,7 @@ const CopyTextBox = ({item}) => {
           onPress={onCopy}
           outerStyle={{borderRadius: 10, flex: 1, alignItems: 'flex-end'}}
           innerStyle={{padding: 10}}>
-          <Text style={{fontSize: 20, color: '#6c6c6c'}}>📋</Text>
+          <MaterialIcon size={20} name="content-copy" color="#6c6c6c" />
         </Ripple>
       </View>
     </View>

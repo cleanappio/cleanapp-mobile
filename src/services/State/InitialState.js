@@ -54,7 +54,7 @@ export const initialState = {
   players: [],
   guilds: [],
   reports: [],
-  fabShow: true,
+  fabShow: false,
   isFetchingLocation: true,
   isFetchingReports: false,
 };

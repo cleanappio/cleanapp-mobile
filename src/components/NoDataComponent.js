@@ -1,6 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, {useState, useEffect} from 'react';
 import {View, Text, Animated} from 'react-native';
+import AntIcon from 'react-native-vector-icons/AntDesign';
 
 const NoDataComponent = () => {
   useEffect(() => {
@@ -29,7 +30,7 @@ const NoDataComponent = () => {
           justifyContent: 'center',
           transform: [{scale: springValue}],
         }}>
-        <Text style={{fontSize: 40, color: '#000'}}>📄</Text>
+        <AntIcon name="filetext1" size={40} color="#000" />
         <Text>No Data Found</Text>
       </Animated.View>
     </View>
