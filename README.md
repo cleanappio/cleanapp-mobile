@@ -2,11 +2,11 @@
 
 CleanApp.app's mobile app to use the platform on mobile phones.
 
-The software is developed using React Native, so if you encounter any issues because of React Native you can search with that additional information.
+The software is developed using React Native, so if you encounter any issues because of React Native you can search additional information on public Reactive Native knowledge bases.
 
 # Installing and Running the app
 
-The full setup is currently available on MacOS only. The Android only build can be done on Linus as well. In that case you can skip iOS related steps in this README.
+The full setup is currently available on MacOS only. The Android only build can be done on Linux as well. In that case you can skip iOS related steps in this README.
 
 ## Pre-requisites
 
@@ -348,3 +348,4 @@ The Android build script (`scripts/build-android.sh`) provides:
 # Show help and usage
 ./scripts/build-android.sh --help
 ```
+
