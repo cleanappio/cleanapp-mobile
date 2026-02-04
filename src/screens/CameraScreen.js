@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, {useEffect, useMemo, useRef, useState} from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
   Animated,
@@ -17,7 +17,7 @@ import {
   Keyboard,
   Linking,
 } from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   Gesture,
   GestureDetector,
@@ -36,29 +36,23 @@ import {
   useCameraPermission,
 } from 'react-native-vision-camera';
 import RNFS from 'react-native-fs';
-import {useIsFocused, useNavigation} from '@react-navigation/native';
-import {launchImageLibrary} from 'react-native-image-picker';
-import {check, request, PERMISSIONS, RESULTS} from 'react-native-permissions';
+import { useIsFocused, useNavigation, useRoute } from '@react-navigation/native';
+import { launchImageLibrary } from 'react-native-image-picker';
+import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import ImageResizer from '@bam.tech/react-native-image-resizer';
 
-import {theme} from '../services/Common/theme';
-import {fontFamilies} from '../utils/fontFamilies';
+import { theme } from '../services/Common/theme';
+import { fontFamilies } from '../utils/fontFamilies';
 import CheckBigIcon from '../assets/ico_check_big.svg';
-import CameraShootIcon from '../assets/ico_camera_shoot.svg';
 import TargetIcon from '../assets/ico_target.svg';
-import {BlurView} from '@react-native-community/blur';
-import {useTranslation} from 'react-i18next';
-import {report, matchReports} from '../services/API/APIManager';
-import {getLocation} from '../functions/geolocation';
-import {getWalletAddress} from '../services/DataManager';
-import {ToastService} from '../components/ToastifyToast';
+import { BlurView } from '@react-native-community/blur';
+import { useTranslation } from 'react-i18next';
+import { report, matchReports } from '../services/API/APIManager';
+import { getLocation } from '../functions/geolocation';
+import { getWalletAddress } from '../services/DataManager';
+import { ToastService } from '../components/ToastifyToast';
 
-import Svg, {
-  Ellipse,
-  Defs,
-  RadialGradient as SvgRadialGradient,
-  Stop,
-} from 'react-native-svg';
+// SVG imports removed - no longer needed for new ShutterFlash effect
 
 const tapSpotDiameter = 450;
 
@@ -67,59 +61,306 @@ Reanimated.addWhitelistedNativeProps({
 });
 const ReanimatedCamera = Reanimated.createAnimatedComponent(Camera);
 
-const GreenFlash = ({flashDiameterX, flashDiameterY, x, y, scaleX, scaleY}) => {
-  const left = x - flashDiameterX / 2;
-  const top = y - flashDiameterY / 2;
+// Premium shutter flash - radiates from bullseye center
+const ShutterFlash = ({ isActive }) => {
+  const { width, height } = Dimensions.get('window');
+
+  // Bullseye center is offset 50px above screen center
+  const bullseyeCenterY = height / 2 - 50;
+  const bullseyeCenterX = width / 2;
+
+  // Core animation values
+  const flashOpacity = useRef(new Animated.Value(0)).current;
+  const flashScale = useRef(new Animated.Value(0.1)).current;
+  const ringScale = useRef(new Animated.Value(0.2)).current;
+  const ringOpacity = useRef(new Animated.Value(0)).current;
+  const glowIntensity = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (isActive) {
+      // Reset
+      flashOpacity.setValue(0);
+      flashScale.setValue(0.1);
+      ringScale.setValue(0.2);
+      ringOpacity.setValue(0);
+      glowIntensity.setValue(0);
+
+      // STAGE 1: Flash BURSTS from bullseye center
+      Animated.parallel([
+        // Flash appears
+        Animated.sequence([
+          Animated.timing(flashOpacity, {
+            toValue: 1,
+            duration: 50,
+            useNativeDriver: true,
+          }),
+          Animated.delay(100),
+          Animated.timing(flashOpacity, {
+            toValue: 0,
+            duration: 350,
+            useNativeDriver: true,
+          }),
+        ]),
+        // Flash expands from bullseye
+        Animated.timing(flashScale, {
+          toValue: 3,
+          duration: 500,
+          useNativeDriver: true,
+        }),
+      ]).start();
+
+      // STAGE 2: Bold ring expands from bullseye
+      setTimeout(() => {
+        Animated.parallel([
+          Animated.timing(ringOpacity, {
+            toValue: 1,
+            duration: 80,
+            useNativeDriver: true,
+          }),
+          Animated.timing(ringScale, {
+            toValue: 4,
+            duration: 600,
+            useNativeDriver: true,
+          }),
+        ]).start();
+
+        // Ring fades as it expands
+        setTimeout(() => {
+          Animated.timing(ringOpacity, {
+            toValue: 0,
+            duration: 350,
+            useNativeDriver: true,
+          }).start();
+        }, 250);
+      }, 80);
+
+      // STAGE 3: Edge glow pulse
+      Animated.sequence([
+        Animated.timing(glowIntensity, {
+          toValue: 1,
+          duration: 120,
+          useNativeDriver: true,
+        }),
+        Animated.timing(glowIntensity, {
+          toValue: 0.4,
+          duration: 150,
+          useNativeDriver: true,
+        }),
+        Animated.timing(glowIntensity, {
+          toValue: 0.8,
+          duration: 120,
+          useNativeDriver: true,
+        }),
+        Animated.timing(glowIntensity, {
+          toValue: 0,
+          duration: 550,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+  }, [isActive]);
+
+  if (!isActive) return null;
+
+  // Ring size - starts smaller for more dramatic expansion
+  const ringSize = width * 0.6;
+
+  return (
+    <View style={StyleSheet.absoluteFill} pointerEvents="none">
+      {/* FLASH - circular, radiates from bullseye */}
+      <Animated.View
+        style={{
+          position: 'absolute',
+          top: bullseyeCenterY - width,
+          left: bullseyeCenterX - width,
+          width: width * 2,
+          height: width * 2,
+          borderRadius: width,
+          backgroundColor: '#59E480',
+          opacity: flashOpacity,
+          transform: [{ scale: flashScale }],
+        }}
+      />
+
+      {/* RING - expands from bullseye */}
+      <Animated.View
+        style={{
+          position: 'absolute',
+          top: bullseyeCenterY - ringSize / 2,
+          left: bullseyeCenterX - ringSize / 2,
+          width: ringSize,
+          height: ringSize,
+          borderRadius: ringSize / 2,
+          borderWidth: 5,
+          borderColor: '#FFFFFF',
+          opacity: ringOpacity,
+          transform: [{ scale: ringScale }],
+          shadowColor: '#59E480',
+          shadowOffset: { width: 0, height: 0 },
+          shadowOpacity: 1,
+          shadowRadius: 25,
+        }}
+      />
+
+      {/* Edge glow frame */}
+      <Animated.View
+        style={{
+          ...StyleSheet.absoluteFillObject,
+          borderWidth: 6,
+          borderColor: '#59E480',
+          opacity: glowIntensity,
+          shadowColor: '#59E480',
+          shadowOffset: { width: 0, height: 0 },
+          shadowOpacity: 1,
+          shadowRadius: 40,
+        }}
+      />
+    </View>
+  );
+};
+
+// Animated reward circle - lightweight animations using native driver
+// These run on the native UI thread, not JS, so zero performance impact on older phones
+const RewardCircle = ({ t }) => {
+  const { width, height } = Dimensions.get('screen');
+
+  // Animation values - all use native driver for performance
+  const circleScale = useRef(new Animated.Value(0.8)).current;
+  const circleOpacity = useRef(new Animated.Value(0)).current;
+  const checkmarkScale = useRef(new Animated.Value(0.5)).current;
+  const textOpacity = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    // Circle fades in and starts pulsating
+    Animated.timing(circleOpacity, {
+      toValue: 1,
+      duration: 150,
+      useNativeDriver: true,
+    }).start();
+
+    // Gentle pulsate animation - loops continuously
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(circleScale, {
+          toValue: 1.05,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(circleScale, {
+          toValue: 0.95,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+
+    // Checkmark pops in, then grows bigger before disappearing
+    Animated.sequence([
+      // Pop in
+      Animated.spring(checkmarkScale, {
+        toValue: 1,
+        friction: 4,
+        tension: 100,
+        useNativeDriver: true,
+      }),
+      // Hold briefly
+      Animated.delay(400),
+      // Grow big
+      Animated.timing(checkmarkScale, {
+        toValue: 1.4,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
+    // Text fades in after checkmark pops
+    setTimeout(() => {
+      Animated.timing(textOpacity, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    }, 200);
+  }, []);
+
+  // Bullseye center position
+  const centerY = height / 2 - 50 - 100;
+  const centerX = width / 2 - 100;
+
   return (
     <Animated.View
       style={{
         position: 'absolute',
-        width: flashDiameterX,
-        height: flashDiameterY,
+        top: centerY,
+        left: centerX,
+        width: 200,
+        height: 200,
+        borderRadius: 100,
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
         justifyContent: 'center',
         alignItems: 'center',
-        top: top,
-        left: left,
+        opacity: circleOpacity,
+        transform: [{ scale: circleScale }],
       }}>
-      <Svg
-        height={flashDiameterY * scaleY[0]}
-        width={flashDiameterX * scaleX[0]}
-        viewBox={`0 0 ${flashDiameterX} ${flashDiameterY}`}>
-        <Defs>
-          <SvgRadialGradient
-            id="grad"
-            fx={flashDiameterX / 2}
-            fy={flashDiameterY / 2}
-            rx={(flashDiameterX / 2) * scaleX[0]}
-            ry={(flashDiameterY / 2) * scaleY[0]}
-            gradientUnits="userSpaceOnUse">
-            <Stop
-              offset="0"
-              stopColor={theme.COLORS.CAMERA_GRADIENT[0]}
-              stopOpacity="1"
-            />
-            <Stop
-              offset="1"
-              stopColor={theme.COLORS.CAMERA_GRADIENT[0]}
-              stopOpacity="0"
-            />
-          </SvgRadialGradient>
-        </Defs>
-        <Ellipse
-          cx={flashDiameterX / 2}
-          cy={flashDiameterY / 2}
-          rx={(flashDiameterX / 2) * scaleX[0]}
-          ry={(flashDiameterY / 2) * scaleY[0]}
-          fill="url(#grad)"
-        />
-      </Svg>
+      <Animated.Text
+        style={{
+          fontSize: 56,
+          transform: [{ scale: checkmarkScale }],
+        }}>
+        ✅
+      </Animated.Text>
+      <Animated.Text
+        style={{
+          fontSize: 24,
+          fontWeight: 'bold',
+          marginTop: 12,
+          color: '#59E480',
+          opacity: textOpacity,
+        }}>
+        {t('camerascreen.newreward')}
+      </Animated.Text>
     </Animated.View>
   );
 };
 
+// Rotating carousel of fun prompts with emojis
+const CLEANAPP_PROMPTS = [
+  'CleanApp 🕳️ potholes',
+  'CleanApp 🐛 bugs',
+  'CleanApp 🎨 graffiti',
+  'CleanApp ⚠️ hazards',
+  'CleanApp 🚧 sidewalk cracks',
+  'CleanApp 🔧 defects',
+  'CleanApp 💧 spills',
+  'CleanApp 🗑️ litter',
+  'CleanApp 💡 broken lights',
+  'CleanApp 🚰 leaks',
+  'CleanApp 🌳 fallen trees',
+  'CleanApp 🛤️ broken rails',
+  'CleanApp 🚗 abandoned cars',
+  'CleanApp 🧱 crumbling walls',
+  'CleanApp 🚏 damaged signs',
+  'CleanApp 🪑 broken benches',
+  'CleanApp 🚿 clogged drains',
+  'CleanApp 🔌 exposed wires',
+  'CleanApp 🦟 pest issues',
+  'CleanApp 🌊 flooding',
+  'CleanApp 🧊 ice patches',
+  'CleanApp 🔥 fire hazards',
+  'CleanApp 🚪 broken doors',
+  'CleanApp 🪟 cracked windows',
+  'CleanApp 🧹 dirty areas',
+  'CleanApp 📦 dumped items',
+  'CleanApp 🚴 bike lane issues',
+  'CleanApp ♿ accessibility',
+  'CleanApp 🅿️ parking problems',
+  'CleanApp 🌿 overgrown plants',
+];
+
 const CameraScreen = props => {
-  const {reportId} = props;
+  const { reportId } = props;
   const navigation = useNavigation();
+  const route = useRoute();
   const isReviewMode = useMemo(() => {
     return reportId !== undefined;
   }, [reportId]);
@@ -136,13 +377,12 @@ const CameraScreen = props => {
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const [hasPhotoLibraryPermission, setHasPhotoLibraryPermission] =
     useState(false);
-  const flashAnimatedValue = useRef(new Animated.Value(0));
+  const [currentPromptIndex, setCurrentPromptIndex] = useState(0);
+  const promptOpacity = useRef(new Animated.Value(1)).current;
   const tapAnimatedValue = useRef(new Animated.Value(0.2));
-  const flashScale = useState(0);
-  const flashScaleStatic = useState(1);
   const tapScale = useState(0);
-  const {t} = useTranslation();
-  const {hasPermission, requestPermission} = useCameraPermission();
+  const { t } = useTranslation();
+  const { hasPermission, requestPermission } = useCameraPermission();
 
   const isFocused = useIsFocused();
 
@@ -155,6 +395,30 @@ const CameraScreen = props => {
   useEffect(() => {
     setIsCameraFocused(isFocused);
   }, [isFocused]);
+
+  // Rotate prompts every 3 seconds with fade animation
+  useEffect(() => {
+    const rotatePrompt = () => {
+      // Fade out
+      Animated.timing(promptOpacity, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start(() => {
+        // Change prompt
+        setCurrentPromptIndex(prev => (prev + 1) % CLEANAPP_PROMPTS.length);
+        // Fade in
+        Animated.timing(promptOpacity, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }).start();
+      });
+    };
+
+    const interval = setInterval(rotatePrompt, 3000);
+    return () => clearInterval(interval);
+  }, [promptOpacity]);
 
   useEffect(() => {
     const appStateSubscription = AppState.addEventListener(
@@ -191,10 +455,6 @@ const CameraScreen = props => {
 
   tapAnimatedValue.current.addListener(state => {
     tapScale[1](state.value);
-  });
-
-  flashAnimatedValue.current.addListener(state => {
-    flashScale[1](state.value);
   });
 
   const device = useCameraDevice('back');
@@ -250,43 +510,32 @@ const CameraScreen = props => {
   const zoomOffset = useSharedValue(minZoom);
   const currZoomOffset = useSharedValue(minZoom);
 
-  const cameraShootButtonPosition = React.useMemo(() => {
-    const left =
-      Dimensions.get('screen').width / 2 - styles.cameraShootButton.width / 2;
-    const bottom = 30;
-    const right = left + styles.cameraShootButton.width;
-    const top = bottom - styles.cameraShootButton.height;
-    return {
-      left: left,
-      top: top,
-      right: right,
-      bottom: bottom,
-    };
-  }, []);
-
   useEffect(() => {
     if (phototaken) {
-      Animated.timing(flashAnimatedValue.current, {
-        toValue: 1,
-        duration: 50,
-        useNativeDriver: false,
-      }).start();
-
+      // The ShutterFlash component handles its own animations now
+      // Reset the state after the 1 second effect completes
       setTimeout(() => {
         setPhototaken(false);
-      }, 3000);
-    } else {
-      Animated.timing(flashAnimatedValue.current, {
-        toValue: 0,
-        duration: 0,
-        useNativeDriver: false,
-      }).start();
+      }, 1000);
     }
-  }, [phototaken, flashAnimatedValue]);
+  }, [phototaken]);
 
   useEffect(() => {
     requestPermission();
   }, []);
+
+  // Listen for tab button actions
+  useEffect(() => {
+    if (route.params?.takePhoto) {
+      takePhoto(false);
+    }
+  }, [route.params?.takePhoto]);
+
+  useEffect(() => {
+    if (route.params?.takePhotoWithAnnotation) {
+      takePhoto(true);
+    }
+  }, [route.params?.takePhotoWithAnnotation]);
 
   const checkPhotoLibraryPermission = async () => {
     try {
@@ -321,13 +570,13 @@ const CameraScreen = props => {
             t('camerascreen.notice'),
             t('camerascreen.photolibraryaccesspermissionnotgranted'),
             [
-              {text: t('camerascreen.no'), style: 'cancel'},
+              { text: t('camerascreen.no'), style: 'cancel' },
               {
                 text: t('camerascreen.yes'),
                 onPress: () => Linking.openSettings(),
               },
             ],
-            {cancelable: false},
+            { cancelable: false },
           );
           setHasPhotoLibraryPermission(false);
           return false;
@@ -352,8 +601,8 @@ const CameraScreen = props => {
         Alert.alert(
           t('camerascreen.notice'),
           t('camerascreen.invalidlocation'),
-          [{text: t('camerascreen.ok'), onPress: () => {}}],
-          {cancelable: false},
+          [{ text: t('camerascreen.ok'), onPress: () => { } }],
+          { cancelable: false },
         );
         return null;
       }
@@ -392,8 +641,8 @@ const CameraScreen = props => {
       Alert.alert(
         t('camerascreen.notice'),
         t('camerascreen.invalidlocation'),
-        [{text: t('camerascreen.ok'), onPress: () => {}}],
-        {cancelable: false},
+        [{ text: t('camerascreen.ok'), onPress: () => { } }],
+        { cancelable: false },
       );
       return null;
     }
@@ -410,7 +659,7 @@ const CameraScreen = props => {
           const isResolved = res.results.find(
             result => result.resolved === true,
           );
-          
+
           ToastService.show({
             text1: isResolved ? 'Congratulations!' : 'Great job!',
             text2: isResolved ? resolvedMessage : reportMessage,
@@ -455,8 +704,8 @@ const CameraScreen = props => {
         Alert.alert(
           t('camerascreen.notice'),
           'Camera not available',
-          [{text: t('camerascreen.ok'), onPress: () => {}}],
-          {cancelable: false},
+          [{ text: t('camerascreen.ok'), onPress: () => { } }],
+          { cancelable: false },
         );
         return;
       }
@@ -488,16 +737,16 @@ const CameraScreen = props => {
           Alert.alert(
             t('camerascreen.notice'),
             t('camerascreen.failedtosaveimage') + err.message,
-            [{text: t('camerascreen.ok'), onPress: () => {}}],
-            {cancelable: false},
+            [{ text: t('camerascreen.ok'), onPress: () => { } }],
+            { cancelable: false },
           );
         });
         if (!res.ok) {
           Alert.alert(
             t('camerascreen.notice'),
             t('camerascreen.failedtosaveimage') + res.error,
-            [{text: t('camerascreen.ok'), onPress: () => {}}],
-            {cancelable: false},
+            [{ text: t('camerascreen.ok'), onPress: () => { } }],
+            { cancelable: false },
           );
           return;
         }
@@ -508,8 +757,8 @@ const CameraScreen = props => {
         Alert.alert(
           t('camerascreen.notice'),
           t('camerascreen.failedtotakephoto') + e.message,
-          [{text: t('camerascreen.ok'), onPress: () => {}}],
-          {cancelable: false},
+          [{ text: t('camerascreen.ok'), onPress: () => { } }],
+          { cancelable: false },
         );
       }
     } finally {
@@ -535,8 +784,8 @@ const CameraScreen = props => {
         Alert.alert(
           t('camerascreen.notice'),
           t('camerascreen.failedtosaveimage') + err.message,
-          [{text: t('camerascreen.ok'), onPress: () => {}}],
-          {cancelable: false},
+          [{ text: t('camerascreen.ok'), onPress: () => { } }],
+          { cancelable: false },
         );
       });
 
@@ -544,8 +793,8 @@ const CameraScreen = props => {
         Alert.alert(
           t('camerascreen.notice'),
           t('camerascreen.failedtosaveimage') + (res?.error || 'Unknown error'),
-          [{text: t('camerascreen.ok'), onPress: () => {}}],
-          {cancelable: false},
+          [{ text: t('camerascreen.ok'), onPress: () => { } }],
+          { cancelable: false },
         );
         return;
       }
@@ -557,8 +806,8 @@ const CameraScreen = props => {
       Alert.alert(
         t('camerascreen.notice'),
         t('camerascreen.failedtosaveimage') + e.message,
-        [{text: t('camerascreen.ok'), onPress: () => {}}],
-        {cancelable: false},
+        [{ text: t('camerascreen.ok'), onPress: () => { } }],
+        { cancelable: false },
       );
     }
   };
@@ -612,8 +861,8 @@ const CameraScreen = props => {
         Alert.alert(
           t('camerascreen.notice'),
           'Failed to select photo: ' + result.errorMessage,
-          [{text: t('camerascreen.ok'), onPress: () => {}}],
-          {cancelable: false},
+          [{ text: t('camerascreen.ok'), onPress: () => { } }],
+          { cancelable: false },
         );
         return;
       }
@@ -640,8 +889,8 @@ const CameraScreen = props => {
       Alert.alert(
         t('camerascreen.notice'),
         'Failed to open gallery: ' + error.message,
-        [{text: t('camerascreen.ok'), onPress: () => {}}],
-        {cancelable: false},
+        [{ text: t('camerascreen.ok'), onPress: () => { } }],
+        { cancelable: false },
       );
     } finally {
       // Clean up original photo file if it exists and is different from resized
@@ -671,7 +920,7 @@ const CameraScreen = props => {
 
   const allGestures = Gesture.Race(pinchGesture);
 
-  const animatedProps = useAnimatedProps(() => ({zoom: zoom.value}), [zoom]);
+  const animatedProps = useAnimatedProps(() => ({ zoom: zoom.value }), [zoom]);
 
   // Function to resize photo to height 1000 while preserving aspect ratio
   const resizePhoto = async photoUri => {
@@ -686,7 +935,7 @@ const CameraScreen = props => {
         0, // rotation
         undefined, // outputPath
         false, // keepMetadata
-        {mode: 'contain', onlyScaleDown: false},
+        { mode: 'contain', onlyScaleDown: false },
       );
 
       // The resized image will maintain aspect ratio with height 1000
@@ -728,94 +977,42 @@ const CameraScreen = props => {
                   Alert.alert(
                     t('camerascreen.notice'),
                     'Camera configuration error: ' + error.message,
-                    [{text: t('camerascreen.ok'), onPress: () => {}}],
-                    {cancelable: false},
+                    [{ text: t('camerascreen.ok'), onPress: () => { } }],
+                    { cancelable: false },
                   );
                 }}
               />
             )}
             {isInAnnotationMode && photoData && (
               <Image
-                source={{uri: photoData.uri}}
+                source={{ uri: photoData.uri }}
                 style={StyleSheet.absoluteFill}
                 resizeMode="cover"
               />
             )}
             <View style={styles.gradientContainer} pointerEvents="box-none">
-              {/* Top */}
-              <GreenFlash
-                x={Dimensions.get('window').width / 2}
-                y={0}
-                flashDiameterX={Dimensions.get('window').width}
-                flashDiameterY={200}
-                scaleX={flashScaleStatic}
-                scaleY={flashScale}
-              />
-              {/* Bottom */}
-              <GreenFlash
-                x={Dimensions.get('screen').width / 2}
-                y={
-                  Dimensions.get('screen').height -
-                  (Platform.OS === 'ios' ? 150 : 100)
-                }
-                flashDiameterX={Dimensions.get('screen').width}
-                flashDiameterY={200}
-                scaleX={flashScaleStatic}
-                scaleY={flashScale}
-              />
-              {/* Left */}
-              <GreenFlash
-                x={0}
-                y={Dimensions.get('screen').height / 2 - 70}
-                flashDiameterX={200}
-                flashDiameterY={Dimensions.get('screen').height}
-                scaleX={flashScale}
-                scaleY={flashScaleStatic}
-              />
-              {/* Right */}
-              <GreenFlash
-                x={Dimensions.get('screen').width}
-                y={Dimensions.get('screen').height / 2 - 70}
-                flashDiameterX={200}
-                flashDiameterY={Dimensions.get('screen').height}
-                scaleX={flashScale}
-                scaleY={flashScaleStatic}
-              />
+              {/* Premium shutter flash effect */}
+              <ShutterFlash isActive={phototaken} />
               {!phototaken && hasPermission && !isInAnnotationMode && (
                 <>
-                  <View
+                  <Animated.View
                     style={{
                       ...styles.blurview2,
                       position: 'absolute',
                       top: 40,
                       left: 40,
                       width: Dimensions.get('screen').width - 80,
+                      opacity: promptOpacity,
                     }}>
                     <Text style={styles.centerText}>
-                      {t('camerascreen.prompt')}
+                      {CLEANAPP_PROMPTS[currentPromptIndex]}{"\n"}
+                      <Text style={styles.subPromptText}>Long press to add details</Text>
                     </Text>
-                  </View>
+                  </Animated.View>
                 </>
               )}
               {phototaken && (
-                <View
-                  style={{
-                    ...styles.blurview2,
-                    width: 221,
-                    height: 191,
-                  }}>
-                  <CheckBigIcon
-                    style={{
-                      width: 72,
-                      height: 72,
-                    }}
-                    width={72}
-                    height={72}
-                  />
-                  <Text style={styles.bottomText}>
-                    {t('camerascreen.newreward')}
-                  </Text>
-                </View>
+                <RewardCircle t={t} />
               )}
             </View>
             {!phototaken && !isInAnnotationMode && (
@@ -835,26 +1032,6 @@ const CameraScreen = props => {
                   }}>
                   <TargetIcon />
                 </View>
-                <GestureDetector
-                  gesture={Gesture.Race(
-                    Gesture.Tap().onEnd(() => {
-                      runOnJS(takePhoto)(false);
-                    }),
-                    Gesture.LongPress()
-                      .minDuration(500)
-                      .onStart(() => {
-                        runOnJS(takePhoto)(true);
-                      }),
-                  )}>
-                  <View
-                    style={{
-                      ...styles.cameraShootButton,
-                      left: cameraShootButtonPosition.left,
-                      bottom: cameraShootButtonPosition.bottom,
-                    }}>
-                    <CameraShootIcon />
-                  </View>
-                </GestureDetector>
 
                 {/* Upload Button */}
                 <TouchableOpacity
@@ -956,13 +1133,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  cameraShootButton: {
-    position: 'absolute',
-    width: 70,
-    height: 70,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   target: {
     position: 'absolute',
     justifyContent: 'center',
@@ -998,6 +1168,12 @@ const styles = StyleSheet.create({
     fontFamily: fontFamilies.Default,
     color: theme.COLORS.TEXT_GREY,
     textAlign: 'center',
+  },
+  subPromptText: {
+    fontSize: 13,
+    fontFamily: fontFamilies.Default,
+    color: theme.COLORS.TEXT_GREY,
+    opacity: 0.7,
   },
   flashOverlay: {
     flex: 1,
