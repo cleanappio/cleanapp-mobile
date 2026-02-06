@@ -22,6 +22,27 @@ DerivedData
 *.xcuserstate
 **/.xcode.env.local
 
+# Secrets
+*.p8
+*.p12
+*.pfx
+*.pem
+*.key
+*.der
+*.crt
+*.cer
+*.csr
+*.certSigningRequest
+*.p7b
+*.p7s
+*.mobileprovision
+*.jks
+*.keystore
+.env.*
+.secrets
+**/fastlane/*.log
+fastlane_release.log
+
 # Android/IntelliJ
 #
 build/
@@ -31,7 +52,6 @@ local.properties
 *.iml
 *.hprof
 .cxx/
-*.keystore
 !debug.keystore
 .kotlin/
 
@@ -55,6 +75,9 @@ yarn-error.log
 
 # Bundle artifact
 *.jsbundle
+*.dSYM
+*.dSYM.zip
+*.xcarchive
 
 # Ruby / CocoaPods
 **/Pods/

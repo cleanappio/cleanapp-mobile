@@ -1,15 +1,15 @@
 /* eslint-disable react-native/no-inline-styles */
 import 'react-native-gesture-handler';
 import 'react-native-screens';
-import {enableScreens} from 'react-native-screens';
-import React, {useEffect, useState} from 'react';
-import {NavigationContainer, DefaultTheme} from '@react-navigation/native';
-import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import { enableScreens } from 'react-native-screens';
+import React, { useEffect, useState } from 'react';
+import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import TabComponent from './components/Tab';
-import {onboard} from './functions/onboarding';
-import {theme} from './services/Common/theme';
-import {Leaderboard} from './screens/Leaderboard';
+import { onboard } from './functions/onboarding';
+import { theme } from './services/Common/theme';
+import { Leaderboard } from './screens/Leaderboard';
 import MyReportDetails from './screens/MyReportDetails';
 import CameraScreen from './screens/CameraScreen';
 import CacheScreen from './screens/CacheScreen';
@@ -28,11 +28,11 @@ import {
   updateOrCreateUser,
   updatePrivacyAndTOC,
 } from './services/API/APIManager';
-import {createStackNavigator} from '@react-navigation/stack';
-import {useStateValue} from './services/State/State';
-import {useNotifiedReports} from './hooks/useReadReports';
-import {ReportsProvider} from './contexts/ReportsContext';
-import {ToastifyManager} from './components/ToastifyToast';
+import { createStackNavigator } from '@react-navigation/stack';
+import { useStateValue } from './services/State/State';
+import { useNotifiedReports } from './hooks/useReadReports';
+import { ReportsProvider } from './contexts/ReportsContext';
+import { ToastifyManager } from './components/ToastifyToast';
 
 enableScreens();
 
@@ -80,9 +80,9 @@ const LeaderboardStack = () => {
 const MemoizedReportsStack = React.memo(ReportsStack);
 const MemoizedLeaderboardStack = React.memo(LeaderboardStack);
 
-const BottomTabs = ({navigation}) => {
+const BottomTabs = ({ navigation }) => {
   const insets = useSafeAreaInsets();
-  const [{reports}] = useStateValue();
+  const [{ reports }] = useStateValue();
   const {
     notifiedReports,
     openedReports,
@@ -109,10 +109,8 @@ const BottomTabs = ({navigation}) => {
         screenOptions={{
           tabBarStyle: {
             alignItems: 'center',
-            justifyContent: 'space-evenly',
             height: 60 + insets.bottom,
-            headerShown: false,
-            paddingHorizontal: 30,
+            paddingHorizontal: 0,
             paddingBottom: insets.bottom,
             backgroundColor: theme.APP_COLOR_1,
             borderTopWidth: 0,
@@ -120,6 +118,9 @@ const BottomTabs = ({navigation}) => {
             shadowOpacity: 0,
           },
           headerShown: false,
+          tabBarItemStyle: {
+            flex: 1,
+          },
         }}>
         <Tab.Screen
           name="Cache"
@@ -139,6 +140,9 @@ const BottomTabs = ({navigation}) => {
           name="Leaderboard"
           options={{
             tabBarLabel: 'Leaderboard',
+            tabBarItemStyle: {
+              marginRight: 15,
+            },
             tabBarButton: props => (
               <TabComponent
                 label="Leaderboard"
@@ -152,21 +156,44 @@ const BottomTabs = ({navigation}) => {
         <Tab.Screen
           name="Camera"
           component={CameraScreen}
-          options={{
+          options={({ navigation }) => ({
             tabBarLabel: 'Camera',
+            tabBarItemStyle: {
+              flex: 1.5,
+            },
             tabBarButton: props => (
               <TabComponent
                 label="Camera"
                 {...props}
+                onPress={() => {
+                  // Navigate to camera if not already there, or trigger photo
+                  if (navigation.isFocused()) {
+                    // Already on camera - trigger photo via navigation params
+                    navigation.setParams({ takePhoto: Date.now() });
+                  } else {
+                    navigation.navigate('Camera');
+                  }
+                }}
+                onLongPress={() => {
+                  // Navigate to camera if not already there, or trigger photo with annotation
+                  if (navigation.isFocused()) {
+                    navigation.setParams({ takePhotoWithAnnotation: Date.now() });
+                  } else {
+                    navigation.navigate('Camera', { takePhotoWithAnnotation: Date.now() });
+                  }
+                }}
                 openedReports={openedReports}
               />
             ),
-          }}
+          })}
         />
         <Tab.Screen
           name="Reports"
           options={{
             tabBarLabel: 'Reports',
+            tabBarItemStyle: {
+              marginLeft: 15,
+            },
             tabBarButton: props => (
               <TabComponent
                 label="Reports"
@@ -233,7 +260,7 @@ const CreateRootNavigator = () => {
   return (
     <NavigationContainer
       theme={{
-        colors: {background: theme.COLORS.BG},
+        colors: { background: theme.COLORS.BG },
         fonts: DefaultTheme.fonts,
       }}>
       <RootScreen />

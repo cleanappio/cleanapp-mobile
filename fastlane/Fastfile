@@ -1,0 +1,82 @@
+default_platform(:ios)
+
+platform :ios do
+  desc "Push a new release build to the App Store"
+  lane :release do
+    # 0. Set Version Info (User requested 3.2.22)
+    increment_version_number(
+      version_number: "3.2.22",
+      xcodeproj: "ios/CleanApp.xcodeproj"
+    )
+    increment_build_number(
+      build_number: "42",
+      xcodeproj: "ios/CleanApp.xcodeproj"
+    )
+
+    # Load the App Store Connect API Key
+    # Robustly resolve the absolute path to the key file relative to this Fastfile
+    key_file = File.absolute_path("api_key.p8", __dir__)
+    
+    if File.exist?(key_file)
+      api_key = app_store_connect_api_key(
+        key_id: ENV["APP_STORE_CONNECT_KEY_ID"],
+        issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
+        key_filepath: key_file,
+        duration: 1200,
+        in_house: false
+      )
+    else
+      # Fallback for CI environments where file might not exist
+      api_key = app_store_connect_api_key(
+        key_id: ENV["APP_STORE_CONNECT_KEY_ID"],
+        issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
+        key_content: ENV["APP_STORE_CONNECT_KEY_CONTENT"],
+        duration: 1200,
+        in_house: false
+      )
+    end
+
+    # 1. Ensure Automatic Signing is ON (Since you are now logged in)
+    update_code_signing_settings(
+      use_automatic_signing: true,
+      path: "ios/CleanApp.xcodeproj",
+      targets: ["CleanApp"]
+    )
+
+    # 2. Build the App (Let Xcode handle the profiles)
+    # Path relative to project root (where fastlane is run)
+    root_dir = ENV["CLEANAPP_ROOT"] || File.expand_path("..", __dir__)
+    build_app(
+      workspace: File.join(root_dir, "ios/CleanApp.xcworkspace"), 
+      scheme: "CleanApp",
+      xcargs: "-allowProvisioningUpdates",
+      export_xcargs: "-allowProvisioningUpdates"
+    )
+
+    # 3. Upload to App Store
+    upload_to_app_store(
+      skip_metadata: false, 
+      skip_screenshots: true,
+      force: true, 
+      api_key: api_key,
+      metadata_path: "fastlane/metadata",
+      submit_for_review: true,
+      automatic_release: true,
+      # API Key limitation: Cannot check IAP yet
+      precheck_include_in_app_purchases: false
+    )
+  end
+  
+  desc "Build only (for testing setup)"
+  lane :build_only do
+    api_key = app_store_connect_api_key(
+      key_id: ENV["APP_STORE_CONNECT_KEY_ID"],
+      issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
+      key_filepath: "api_key.p8"
+    )
+
+    get_certificates(development: false, api_key: api_key)
+    get_provisioning_profile(readonly: true, api_key: api_key)
+    build_app(workspace: "../ios/CleanApp.xcworkspace", scheme: "CleanApp")
+  end
+end
