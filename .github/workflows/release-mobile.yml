@@ -83,4 +83,6 @@ jobs:
         run: bundle exec pod install --project-directory=ios
 
       - name: Fastlane iOS Release
+        env:
+          APP_STORE_CONNECT_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_KEY_BASE64 }}
         run: bundle exec fastlane ios release
