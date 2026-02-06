@@ -198,7 +198,7 @@ export default {
       todaysReports: 'Litterbox (today\'s) reports',
       todaysReferrals: 'Litterbox (today\'s) referrals',
       todaysLitterbox: 'Litterbox (today\'s)',
-      blockchainLink: 'My KITN on blockchain',
+      blockchainLink: 'My KITNs onchain',
       avatar: 'Avatar',
       avatarnotset: 'You didn\'t create an avatar yet',
       chooseavatar: 'Enter your avatar',

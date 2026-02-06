@@ -123,21 +123,6 @@ const StoryCrosshair = ({ currentPrompt, isActive, rotationKey }) => {
     inputRange: [0, 1],
     outputRange: ['0deg', '360deg'],
   });
-  useEffect(() => {
-    if (!isActive) {
-      setShowMotifSequence(false);
-      return undefined;
-    }
-    let cycles = 0;
-    const intervalId = setInterval(() => {
-      cycles += 1;
-      setShowMotifSequence(cycles % MOTIF_ROTATIONS_INTERVAL === 1);
-    }, ROTATION_DURATION_MS);
-    return () => {
-      clearInterval(intervalId);
-    };
-  }, [isActive]);
-
   const topPillText = showMotifSequence ? '1. REPORT' : currentPrompt;
   const rightPillText = showMotifSequence ? '2. REVIEW' : 'AI analysis';
   const leftPillText =
