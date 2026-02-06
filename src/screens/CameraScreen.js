@@ -16,6 +16,7 @@ import {
   Image,
   Keyboard,
   Linking,
+  Easing,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
@@ -52,7 +53,268 @@ import { getLocation } from '../functions/geolocation';
 import { getWalletAddress } from '../services/DataManager';
 import { ToastService } from '../components/ToastifyToast';
 
-// SVG imports removed - no longer needed for new ShutterFlash effect
+import Svg, { Circle } from 'react-native-svg';
+
+const ROTATION_DURATION_MS = 3800;
+const CLEANAPP_DARK_GREEN = '#2F7A45';
+
+// StoryCrosshair: Animated dial that tells the CleanApp story
+const StoryCrosshair = ({ currentPrompt, isActive, rotationKey }) => {
+  const MOTIF_ROTATIONS_INTERVAL = 4;
+  const { width } = Dimensions.get('window');
+  // Dimensions for the crosshair container
+  // The original target View was width / 1.5
+  const containerSize = width / 1.5;
+  const radius = containerSize / 2;
+  const ringStrokeWidth = (2 * containerSize) / 256;
+  const arcStrokeWidth = ringStrokeWidth * 10;
+  const center = containerSize / 2;
+  const arcRadius = radius - arcStrokeWidth / 2 - 2; // sits just outside the crosshair ring
+  const circumference = 2 * Math.PI * arcRadius;
+  const arcDegrees = 144;
+  const arcFraction = arcDegrees / 360;
+  const arcLength = circumference * arcFraction;
+  const tailDashOffset = circumference - arcLength;
+  const sliceCount = 32;
+  const sliceLength = arcLength / sliceCount;
+
+  const [showMotifSequence, setShowMotifSequence] = useState(false);
+  const rotationCountRef = useRef(0);
+  const lastRotationKeyRef = useRef(rotationKey);
+
+  // Animation Loop (3.8s) using RN Animated for reliable SVG rotation
+  const progress = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (!isActive) {
+      progress.stopAnimation();
+      return undefined;
+    }
+    // Restart the rotation whenever the top CTA changes so everything syncs.
+    progress.setValue(0);
+    const loop = Animated.loop(
+      Animated.timing(progress, {
+        toValue: 1,
+        duration: ROTATION_DURATION_MS,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      })
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [isActive, rotationKey, progress]);
+
+  useEffect(() => {
+    if (!isActive) {
+      setShowMotifSequence(false);
+      return;
+    }
+    if (lastRotationKeyRef.current !== rotationKey) {
+      rotationCountRef.current += 1;
+      lastRotationKeyRef.current = rotationKey;
+    }
+    setShowMotifSequence(
+      rotationCountRef.current > 0 &&
+        rotationCountRef.current % MOTIF_ROTATIONS_INTERVAL === 0
+    );
+  }, [isActive, rotationKey]);
+
+  const spin = progress.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
+  useEffect(() => {
+    if (!isActive) {
+      setShowMotifSequence(false);
+      return undefined;
+    }
+    let cycles = 0;
+    const intervalId = setInterval(() => {
+      cycles += 1;
+      setShowMotifSequence(cycles % MOTIF_ROTATIONS_INTERVAL === 1);
+    }, ROTATION_DURATION_MS);
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [isActive]);
+
+  const topPillText = showMotifSequence ? '1. REPORT' : currentPrompt;
+  const rightPillText = showMotifSequence ? '2. REVIEW' : 'AI analysis';
+  const leftPillText =
+    showMotifSequence ? '3. RESPOND' : 'Sent for action';
+
+  // Opacity for labels based on progress
+  // 0-33%: 12 o'clock
+  // 33-66%: 4 o'clock
+  // 66-100%: 8 o'clock
+  const label1Opacity = progress.interpolate({
+    inputRange: [0, 0.06, 0.82, 0.94],
+    outputRange: [0, 1, 1, 0],
+    extrapolate: 'clamp',
+  });
+  const label1Scale = progress.interpolate({
+    inputRange: [0, 0.08, 0.2],
+    outputRange: [0.98, 1, 1],
+    extrapolate: 'clamp',
+  });
+  const label1TranslateY = progress.interpolate({
+    inputRange: [0, 0.08, 0.2],
+    outputRange: [6, 0, 0],
+    extrapolate: 'clamp',
+  });
+
+  const label2Opacity = progress.interpolate({
+    // Centered around 4 o'clock (~0.33)
+    inputRange: [0.28, 0.34, 0.82, 0.94],
+    outputRange: [0, 1, 1, 0],
+    extrapolate: 'clamp',
+  });
+  const label2Scale = progress.interpolate({
+    inputRange: [0.28, 0.36, 0.48],
+    outputRange: [0.98, 1, 1],
+    extrapolate: 'clamp',
+  });
+  const label2TranslateY = progress.interpolate({
+    inputRange: [0.28, 0.36, 0.48],
+    outputRange: [8, 0, 0],
+    extrapolate: 'clamp',
+  });
+
+  const label3Opacity = progress.interpolate({
+    // Centered around 8 o'clock (~0.66)
+    inputRange: [0.58, 0.64, 0.82, 0.94],
+    outputRange: [0, 1, 1, 0],
+    extrapolate: 'clamp',
+  });
+  const label3Scale = progress.interpolate({
+    inputRange: [0.58, 0.66, 0.78],
+    outputRange: [0.98, 1, 1],
+    extrapolate: 'clamp',
+  });
+  const label3TranslateY = progress.interpolate({
+    inputRange: [0.58, 0.66, 0.78],
+    outputRange: [8, 0, 0],
+    extrapolate: 'clamp',
+  });
+
+  return (
+    <View style={{ width: containerSize, height: containerSize, justifyContent: 'center', alignItems: 'center' }}>
+      {/* 1. Underlying Crosshair Icon */}
+      <View style={[StyleSheet.absoluteFillObject, { justifyContent: 'center', alignItems: 'center' }]}>
+        <TargetIcon width={containerSize} height={containerSize} />
+      </View>
+
+      {/* Normal CTA + Explainers */}
+      <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
+        {/* Animated Dial Sweep */}
+        <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
+          <Animated.View
+            style={[
+              StyleSheet.absoluteFillObject,
+              {
+                transform: [{ rotate: '180deg' }, { rotate: spin }],
+              },
+            ]}
+          >
+            <Svg width={containerSize} height={containerSize}>
+              {Array.from({ length: sliceCount }).map((_, index) => {
+                const alpha = (1 - index / (sliceCount - 1)) * 0.6;
+                const dashOffset = tailDashOffset + index * sliceLength;
+                return (
+                  <Circle
+                    key={`sweep-slice-${index}`}
+                    cx={center}
+                    cy={center}
+                    r={arcRadius}
+                    stroke="#59E480"
+                    strokeOpacity={alpha}
+                    strokeWidth={arcStrokeWidth}
+                    strokeDasharray={`${sliceLength} ${circumference}`}
+                    strokeDashoffset={dashOffset}
+                    strokeLinecap="butt"
+                    fill="none"
+                    rotation="-90" // Start at 12 o'clock
+                    origin={`${center}, ${center}`}
+                  />
+                );
+              })}
+            </Svg>
+          </Animated.View>
+        </View>
+
+        {/* 12 o'clock: You Report (Carousel) */}
+        <Animated.View
+          style={[
+            styles.storyLabelContainer,
+            {
+            top: -82,
+            left: 0,
+            right: 0,
+            alignItems: 'center',
+            opacity: label1Opacity,
+              transform: [{ scale: label1Scale }, { translateY: label1TranslateY }],
+            },
+          ]}
+        >
+          <View
+            style={[
+              styles.blurviewStory,
+              styles.topStoryPill,
+              showMotifSequence ? styles.motifGreenPill : styles.normalPillDim,
+            ]}
+          >
+            <Text style={styles.storyText}>{topPillText}</Text>
+          </View>
+        </Animated.View>
+
+        {/* 4 o'clock: AI Analyzes */}
+        <Animated.View
+          style={[
+            styles.storyLabelContainer,
+            {
+              bottom: -26,
+              right: -56,
+              opacity: label2Opacity,
+              transform: [{ scale: label2Scale }, { translateY: label2TranslateY }],
+            },
+          ]}
+        >
+          <View
+            style={[
+              styles.blurviewStory,
+              showMotifSequence ? styles.motifGreenPill : styles.normalPillDim,
+            ]}
+          >
+            <Text style={styles.storyText}>{rightPillText}</Text>
+          </View>
+        </Animated.View>
+
+        {/* 8 o'clock: Report Sent */}
+        <Animated.View
+          style={[
+            styles.storyLabelContainer,
+            {
+              bottom: -26,
+              left: -56,
+              opacity: label3Opacity,
+              transform: [{ scale: label3Scale }, { translateY: label3TranslateY }],
+            },
+          ]}
+        >
+          <View
+            style={[
+              styles.blurviewStory,
+              showMotifSequence ? styles.motifGreenPill : styles.normalPillDim,
+            ]}
+          >
+            <Text style={styles.storyText}>{leftPillText}</Text>
+          </View>
+        </Animated.View>
+      </View>
+
+    </View>
+  );
+};
 
 const tapSpotDiameter = 450;
 
@@ -325,37 +587,91 @@ const RewardCircle = ({ t }) => {
 
 // Rotating carousel of fun prompts with emojis
 const CLEANAPP_PROMPTS = [
-  'CleanApp 🕳️ potholes',
-  'CleanApp 🐛 bugs',
-  'CleanApp 🎨 graffiti',
-  'CleanApp ⚠️ hazards',
-  'CleanApp 🚧 sidewalk cracks',
-  'CleanApp 🔧 defects',
-  'CleanApp 💧 spills',
-  'CleanApp 🗑️ litter',
-  'CleanApp 💡 broken lights',
-  'CleanApp 🚰 leaks',
-  'CleanApp 🌳 fallen trees',
-  'CleanApp 🛤️ broken rails',
-  'CleanApp 🚗 abandoned cars',
-  'CleanApp 🧱 crumbling walls',
-  'CleanApp 🚏 damaged signs',
-  'CleanApp 🪑 broken benches',
-  'CleanApp 🚿 clogged drains',
-  'CleanApp 🔌 exposed wires',
-  'CleanApp 🦟 pest issues',
-  'CleanApp 🌊 flooding',
-  'CleanApp 🧊 ice patches',
-  'CleanApp 🔥 fire hazards',
-  'CleanApp 🚪 broken doors',
-  'CleanApp 🪟 cracked windows',
-  'CleanApp 🧹 dirty areas',
-  'CleanApp 📦 dumped items',
-  'CleanApp 🚴 bike lane issues',
-  'CleanApp ♿ accessibility',
-  'CleanApp 🅿️ parking problems',
-  'CleanApp 🌿 overgrown plants',
+  // Core civic & physical world (CleanApp as a verb)
+  'CleanApp trash overflow 🗑️',
+  'CleanApp hazards ⚠️',
+  'CleanApp potholes 🕳️',
+  'CleanApp broken sidewalks 🚧',
+  'CleanApp streetlights out 💡',
+  'CleanApp blocked bike lanes 🚴',
+  'CleanApp flooding 🌊',
+  'CleanApp fallen trees 🌳',
+  'CleanApp graffiti 🎨',
+  'CleanApp damaged signs 🚏',
+
+  'CleanApp broken benches 🪑',
+  'CleanApp cracked windows 🪟',
+  'CleanApp broken doors 🚪',
+  'CleanApp leaks 🚰',
+  'CleanApp exposed wires ⚡',
+  'CleanApp fire hazards 🔥',
+  'CleanApp sinkholes 🕳️',
+  'CleanApp trip hazards 🚶',
+  'CleanApp accessibility issues ♿',
+  'CleanApp overgrown plants 🌿',
+
+  'CleanApp sidewalk obstructions',
+  'CleanApp illegal dumping 📦',
+  'CleanApp unsafe crossings 🚦',
+  'CleanApp damaged railings',
+  'CleanApp ice patches 🧊',
+
+  // Digital & service issues (Report for clarity)
+  'Report app crashes 💥',
+  'Report login issues 🔑',
+  'Report payment issues 💳',
+  'Report billing errors 🧾',
+  'Report upload failures ⬆️',
+  'Report slow performance 🐢',
+  'Report sync issues 🔄',
+  'Report camera issues 📷',
+  'Report map errors 🗺️',
+  'Report GPS issues 📍',
+  'Report AI slop 🤖',
+  'CleanApp buggy apps 🐛',
+  'CleanApp bad websites 🌐',
+  'Report broken websites',
+  'CleanApp spam sites 🗑️',
+  'Report scam pages 🚨',
+  'CleanApp fake content',
+  'Report rogue AI agents',
+  'CleanApp junk apps',
+  'Report misleading links',
+  'CleanApp low-quality AI',
+  'Report bot spam',
+  'CleanApp clickbait',
+  'Report deceptive ads',
+  'CleanApp broken forms',
+  'Report shady behavior',
+  'CleanApp bad UX',
+  'Report things that feel off',
+  'CleanApp digital trash',
+  'Report online nonsense',
+
+  // Trust, safety, integrity (Report only)
+  'Report scams 🛒',
+  'Report phishing 🕵️',
+  'Report fake profiles 👤',
+  'Report suspicious logins 🔐',
+  'Report account issues 🔒',
+  'Report data exposure 🗂️',
+  'Report security issues 🛡️',
+
+  // Catch-alls (psychologically critical)
+  'CleanApp anything broken',
+  'CleanApp anything wrong',
+  'Report a problem',
+  'Report an issue',
 ];
+
+const shuffleArray = input => {
+  const array = [...input];
+  for (let i = array.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+};
 
 const CameraScreen = props => {
   const { reportId } = props;
@@ -378,7 +694,11 @@ const CameraScreen = props => {
   const [hasPhotoLibraryPermission, setHasPhotoLibraryPermission] =
     useState(false);
   const [currentPromptIndex, setCurrentPromptIndex] = useState(0);
-  const promptOpacity = useRef(new Animated.Value(1)).current;
+  const shuffledPrompts = useMemo(
+    () => shuffleArray(CLEANAPP_PROMPTS),
+    [],
+  );
+  // promptOpacity removed as it is handled in StoryCrosshair now (or simpler rotation)
   const tapAnimatedValue = useRef(new Animated.Value(0.2));
   const tapScale = useState(0);
   const { t } = useTranslation();
@@ -396,29 +716,13 @@ const CameraScreen = props => {
     setIsCameraFocused(isFocused);
   }, [isFocused]);
 
-  // Rotate prompts every 3 seconds with fade animation
+  // Rotate prompts once per dial rotation so labels melt together before switching
   useEffect(() => {
-    const rotatePrompt = () => {
-      // Fade out
-      Animated.timing(promptOpacity, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-      }).start(() => {
-        // Change prompt
-        setCurrentPromptIndex(prev => (prev + 1) % CLEANAPP_PROMPTS.length);
-        // Fade in
-        Animated.timing(promptOpacity, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }).start();
-      });
-    };
-
-    const interval = setInterval(rotatePrompt, 3000);
+    const interval = setInterval(() => {
+      setCurrentPromptIndex(prev => (prev + 1) % shuffledPrompts.length);
+    }, ROTATION_DURATION_MS);
     return () => clearInterval(interval);
-  }, [promptOpacity]);
+  }, [shuffledPrompts.length]);
 
   useEffect(() => {
     const appStateSubscription = AppState.addEventListener(
@@ -433,25 +737,7 @@ const CameraScreen = props => {
     };
   }, []);
 
-  useEffect(() => {
-    const keyboardDidShowListener = Keyboard.addListener(
-      'keyboardDidShow',
-      () => {
-        setIsKeyboardVisible(true);
-      },
-    );
-    const keyboardDidHideListener = Keyboard.addListener(
-      'keyboardDidHide',
-      () => {
-        setIsKeyboardVisible(false);
-      },
-    );
-
-    return () => {
-      keyboardDidShowListener.remove();
-      keyboardDidHideListener.remove();
-    };
-  }, []);
+  // ... (rest of standard hooks)
 
   tapAnimatedValue.current.addListener(state => {
     tapScale[1](state.value);
@@ -993,46 +1279,33 @@ const CameraScreen = props => {
             <View style={styles.gradientContainer} pointerEvents="box-none">
               {/* Premium shutter flash effect */}
               <ShutterFlash isActive={phototaken} />
-              {!phototaken && hasPermission && !isInAnnotationMode && (
-                <>
-                  <Animated.View
-                    style={{
-                      ...styles.blurview2,
-                      position: 'absolute',
-                      top: 40,
-                      left: 40,
-                      width: Dimensions.get('screen').width - 80,
-                      opacity: promptOpacity,
-                    }}>
-                    <Text style={styles.centerText}>
-                      {CLEANAPP_PROMPTS[currentPromptIndex]}{"\n"}
-                      <Text style={styles.subPromptText}>Long press to add details</Text>
-                    </Text>
-                  </Animated.View>
-                </>
+
+              {/* Story Crosshair - Replaces TargetIcon and Prompt Carousel */}
+              {!phototaken && !isInAnnotationMode && (
+                <View
+                  style={{
+                    ...StyleSheet.absoluteFillObject,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    marginTop: -130, // Higher to use top space
+                  }}
+                  pointerEvents="box-none"
+                >
+                  <StoryCrosshair
+                    currentPrompt={shuffledPrompts[currentPromptIndex]}
+                    isActive={isFocused}
+                    rotationKey={currentPromptIndex}
+                  />
+                </View>
               )}
+
               {phototaken && (
                 <RewardCircle t={t} />
               )}
             </View>
+
             {!phototaken && !isInAnnotationMode && (
               <>
-                <View
-                  style={{
-                    ...styles.target,
-                    left:
-                      Dimensions.get('screen').width / 2 -
-                      Dimensions.get('screen').width / 1.5 / 2,
-                    top:
-                      Dimensions.get('screen').height / 2 -
-                      Dimensions.get('screen').width / 1.5 / 2 -
-                      50,
-                    width: Dimensions.get('screen').width / 1.5,
-                    height: Dimensions.get('screen').width / 1.5,
-                  }}>
-                  <TargetIcon />
-                </View>
-
                 {/* Upload Button */}
                 <TouchableOpacity
                   style={styles.uploadButton}
@@ -1248,20 +1521,65 @@ const styles = StyleSheet.create({
   },
   uploadButton: {
     position: 'absolute',
-    bottom: 30,
-    right: 30,
-    width: 100,
-    height: 50,
+    bottom: 20,
+    right: 20,
+    width: 70,
+    height: 35,
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 25,
-    backgroundColor: theme.COLORS.BTN_BG_BLUE,
+    borderRadius: 18,
+    backgroundColor: CLEANAPP_DARK_GREEN,
+    shadowColor: '#FFFFFF',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
   },
   uploadButtonText: {
     color: theme.COLORS.TEXT_WHITE,
     fontWeight: 'bold',
     fontFamily: fontFamilies.Default,
-    fontSize: 16,
+    fontSize: 15,
+  },
+  storyLabelContainer: {
+    position: 'absolute',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  blurviewStory: {
+    borderRadius: 18,
+    backgroundColor: 'rgba(10, 12, 14, 0.6)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+    paddingHorizontal: 18,
+    paddingVertical: 9,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+  },
+  topStoryPill: {
+    maxWidth: 220,
+    paddingHorizontal: 16,
+  },
+  normalPillDim: {
+    backgroundColor: 'rgba(10, 12, 14, 0.72)',
+  },
+  motifGreenPill: {
+    backgroundColor: CLEANAPP_DARK_GREEN,
+    shadowColor: '#FFFFFF',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.18,
+    shadowRadius: 10,
+  },
+  storyText: {
+    fontFamily: fontFamilies.Default,
+    color: theme.COLORS.TEXT_WHITE,
+    fontSize: 15,
+    fontWeight: '600',
+    letterSpacing: 0.2,
+    textAlign: 'center',
   },
 });
 
