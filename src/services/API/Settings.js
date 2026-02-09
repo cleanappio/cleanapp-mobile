@@ -3,7 +3,7 @@ import { getBlockchainLink } from './APIManager';
 
 export const settings = {
   prod: {  // Cleanapp Google Cloud Prod
-    apiUrl: 'http://api.cleanapp.io:8080',
+    apiUrl: 'https://api.cleanapp.io',
     webUrl: 'https://cleanapp.io',
     mapUrl: 'https://embed.cleanapp.io',
     liveUrl: 'https://live.cleanapp.io',
