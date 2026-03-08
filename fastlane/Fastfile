@@ -3,13 +3,13 @@ default_platform(:ios)
 platform :ios do
   desc "Push a new release build to the App Store"
   lane :release do
-    # 0. Set Version Info (User requested 3.2.22)
+    # 0. Set Version Info
     increment_version_number(
-      version_number: "3.2.22",
+      version_number: "3.2.23",
       xcodeproj: "ios/CleanApp.xcodeproj"
     )
     increment_build_number(
-      build_number: "44",
+      build_number: "1",
       xcodeproj: "ios/CleanApp.xcodeproj"
     )
 
@@ -55,14 +55,11 @@ platform :ios do
 
     # 3. Upload to App Store
     upload_to_app_store(
-      skip_metadata: false, 
+      skip_metadata: true,
       skip_screenshots: true,
+      skip_app_version_update: true,
       force: true, 
       api_key: api_key,
-      metadata_path: "fastlane/metadata",
-      submit_for_review: true,
-      automatic_release: true,
-      # API Key limitation: Cannot check IAP yet
       precheck_include_in_app_purchases: false
     )
   end
