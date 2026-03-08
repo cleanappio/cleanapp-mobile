@@ -9,7 +9,7 @@ platform :ios do
       xcodeproj: "ios/CleanApp.xcodeproj"
     )
     increment_build_number(
-      build_number: "42",
+      build_number: "43",
       xcodeproj: "ios/CleanApp.xcodeproj"
     )
 

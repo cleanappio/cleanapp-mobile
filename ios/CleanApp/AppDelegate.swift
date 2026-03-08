@@ -22,9 +22,18 @@ class AppDelegate: RCTAppDelegate {
 
   override func bundleURL() -> URL? {
 #if DEBUG
-    RCTBundleURLProvider.sharedSettings().jsBundleURL(forBundleRoot: "index")
+    let provider = RCTBundleURLProvider.sharedSettings()
+    // Ensure we always have a packager host; avoids "No script URL provided"
+    if provider.jsLocation == nil || provider.jsLocation?.isEmpty == true {
+      provider.jsLocation = "localhost:8081"
+    }
+    if let url = provider.jsBundleURL(forBundleRoot: "index") {
+      return url
+    }
+    // Hard fallback if provider still returns nil
+    return URL(string: "http://localhost:8081/index.bundle?platform=ios&dev=true&minify=false")
 #else
-    Bundle.main.url(forResource: "main", withExtension: "jsbundle")
+    return Bundle.main.url(forResource: "main", withExtension: "jsbundle")
 #endif
   }
 }

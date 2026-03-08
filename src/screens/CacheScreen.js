@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import { Linking, Modal, Pressable, ScrollView, StyleSheet, View, Text, TextInput, ToastAndroid, Alert, Platform } from 'react-native';
+import { Linking, Modal, Pressable, ScrollView, StyleSheet, View, Text, TextInput, ToastAndroid, Alert, Platform, InteractionManager, Share } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { fontFamilies } from '../utils/fontFamilies';
 import { theme } from '../services/Common/theme';
@@ -16,7 +16,6 @@ import { BlurView } from '@react-native-community/blur';
 import { Row } from '../components/Row';
 import Clipboard from '@react-native-clipboard/clipboard';
 import QRCode from 'react-native-qrcode-svg';
-import Share from 'react-native-share';
 import {
   getPrivacySetting,
   getUserName,
@@ -246,16 +245,52 @@ const CacheScreen = props => {
   const ReferralScreenModal = ({isVisible = false, onClose = () => {}}) => {
     const {t} = useTranslation();
     const [refUrl, setRefUrl] = useState('No refurl');
+    const [isSharing, setIsSharing] = useState(false);
+    const shareInFlightRef = useRef(false);
+    const qrCode = React.useMemo(() => {
+      return (
+        <QRCode
+          size={200}
+          value={refUrl}
+          color={theme.COLORS.BLACK}
+          backgroundColor={theme.COLORS.WHITE}
+          quietZone={5}
+        />
+      );
+    }, [refUrl]);
 
-    const onShare = () => {
-      let shareImage = {
-        message: refUrl,
-        subject: t('cachescreen.Sharingmyreferralcode'),
-        title: t('cachescreen.Sharingmyreferralcode'),
-      };
-      Share.open(shareImage)
-        .then(res => {})
-        .catch(err => {});
+    const onShare = async () => {
+      if (shareInFlightRef.current || isSharing) {
+        return;
+      }
+      shareInFlightRef.current = true;
+      setIsSharing(true);
+      let fallbackTimer;
+      try {
+        // Close the modal before presenting the native share sheet to avoid UI lockups.
+        if (onClose) {
+          onClose();
+        }
+        await new Promise(resolve => InteractionManager.runAfterInteractions(resolve));
+        await new Promise(resolve => setTimeout(resolve, 200));
+        // Safety: if the share sheet never resolves, release the lock after a short timeout.
+        fallbackTimer = setTimeout(() => {
+          shareInFlightRef.current = false;
+          setIsSharing(false);
+        }, 8000);
+        await Share.share({
+          message: refUrl,
+          title: t('cachescreen.Sharingmyreferralcode'),
+        });
+      } catch (err) {
+        // Swallow errors (including cancel) to avoid locking the UI.
+      } finally {
+        if (fallbackTimer) {
+          clearTimeout(fallbackTimer);
+        }
+        shareInFlightRef.current = false;
+        setIsSharing(false);
+      }
     };
 
     React.useEffect(() => {
@@ -272,23 +307,50 @@ const CacheScreen = props => {
       <Modal animationType="slide" transparent={true} visible={isVisible}>
         <View style={styles.modalContainer}>
           <View style={styles.referralModalContent}>
-            <Text style={styles.avatarHeader}>{t('referral.title')}</Text>
             <Text style={styles.referralContent}>{t('referral.content')}</Text>
 
-            <View style={styles.qrContainer}>
-              <QRCode
-                size={200}
-                value={refUrl}
-                color={theme.COLORS.BLACK}
-                backgroundColor={theme.COLORS.WHITE}
-                quietZone={5}
-              />
+            <View style={styles.referralExplainerRow}>
+              <View style={styles.referralExplainerCol}>
+                <Text style={styles.referralExplainerIcon}>👤</Text>
+                <Text style={styles.referralExplainerTitle}>
+                  {t('referral.explainerInviteTitle')}
+                </Text>
+                <Text style={styles.referralExplainerDesc}>
+                  {t('referral.explainerInviteDesc')}
+                </Text>
+              </View>
+              <View style={styles.referralExplainerDivider} />
+              <View style={styles.referralExplainerCol}>
+                <Text style={styles.referralExplainerIcon}>🔁</Text>
+                <Text style={styles.referralExplainerTitle}>
+                  {t('referral.explainerEarnTitle')}
+                </Text>
+                <Text style={styles.referralExplainerDesc}>
+                  {t('referral.explainerEarnDesc')}
+                </Text>
+              </View>
+              <View style={styles.referralExplainerDivider} />
+              <View style={styles.referralExplainerCol}>
+                <Text style={styles.referralExplainerIcon}>🌱</Text>
+                <Text style={styles.referralExplainerTitle}>
+                  {t('referral.explainerGrowTitle')}
+                </Text>
+                <Text style={styles.referralExplainerDesc}>
+                  {t('referral.explainerGrowDesc')}
+                </Text>
+              </View>
             </View>
+
+            <View style={styles.qrContainer}>{qrCode}</View>
 
             <Text style={styles.referralUrl}>{refUrl}</Text>
 
             <View style={{...styles.row, gap: 16}}>
-              <Pressable style={styles.smallBtn} onPress={onShare}>
+              <Pressable
+                style={[styles.smallBtn, isSharing && styles.smallBtnDisabled]}
+                onPress={onShare}
+                disabled={isSharing}
+              >
                 <Text style={styles.txt16bold}>{t('referral.share')}</Text>
               </Pressable>
 
@@ -732,6 +794,9 @@ const styles = StyleSheet.create({
     paddingVertical: 11,
     alignItems: 'center',
   },
+  smallBtnDisabled: {
+    opacity: 0.6,
+  },
   bigBtn: {
     width: '80%',
     backgroundColor: theme.COLORS.BTN_BG_BLUE,
@@ -860,6 +925,41 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 20,
     fontFamily: fontFamilies.Default,
+  },
+  referralExplainerRow: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'stretch',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  referralExplainerCol: {
+    flex: 1,
+    alignItems: 'center',
+    paddingHorizontal: 6,
+  },
+  referralExplainerIcon: {
+    fontSize: 18,
+    marginBottom: 6,
+  },
+  referralExplainerTitle: {
+    color: 'white',
+    fontSize: 14,
+    fontFamily: fontFamilies.Default,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  referralExplainerDesc: {
+    color: 'white',
+    fontSize: 12,
+    fontFamily: fontFamilies.Default,
+    opacity: 0.7,
+    textAlign: 'center',
+  },
+  referralExplainerDivider: {
+    width: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    marginVertical: 6,
   },
   qrContainer: {
     marginVertical: 20,
