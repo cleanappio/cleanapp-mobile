@@ -1,6 +1,6 @@
-import {getJSONData, postJSONData} from './CoreAPICalls';
-import {settings as s, getUrls} from './Settings';
-import {getMapLocation} from '../DataManager';
+import { getJSONData, postJSONData } from './CoreAPICalls';
+import { settings as s, getUrls } from './Settings';
+import { getMapLocation } from '../DataManager';
 import MatchReportsLogger from '../../utils/MatchReportsLogger';
 
 // === API v.2
@@ -95,6 +95,14 @@ export const report = async (
       ok: response.ok,
     };
     if (response.ok) {
+      try {
+        const respJson = await response.json();
+        if (respJson && respJson.seq != null) {
+          ret.seq = respJson.seq;
+        }
+      } catch (_) {
+        // JSON parse may fail if backend returns empty body; that's ok
+      }
     } else {
       if (response.error) {
         ret.error = response.error;
@@ -567,7 +575,7 @@ export const matchReports = async (
       const totalDuration = Date.now() - startTime;
       MatchReportsLogger.logProcessError(
         new Error(ret.error || 'API call failed'),
-        {processId, response},
+        { processId, response },
         totalDuration,
       );
     }
@@ -594,5 +602,42 @@ export const matchReports = async (
       error: err.message || 'Unknown error occurred',
       processId,
     };
+  }
+};
+
+/**
+ * Read the email delivery status for a specific report.
+ * POST /read_report_email_status
+ *
+ * @param {string} userId - The current user's wallet address/ID (report owner)
+ * @param {number} seq - The report sequence number returned from report submission
+ * @returns {{
+ *   seq: number,
+ *   status: 'pending'|'pending_retry'|'processed_no_delivery'|'sent',
+ *   last_email_sent_at?: string,
+ *   next_attempt_at?: string,
+ *   retry_reason?: string,
+ *   recipient_count: number,
+ *   recipients?: Array<{ email: string, delivery_source: string, delivery_status: string, sent_at: string }>
+ * }|null}
+ */
+export const readReportEmailStatus = async (userId, seq) => {
+  try {
+    const data = {
+      version: '2.0',
+      id: userId,
+      seq: seq,
+    };
+    const response = await postJSONData('read_report_email_status', data);
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const result = await response.json();
+    return result;
+  } catch (err) {
+    console.warn('readReportEmailStatus error:', err.message);
+    return null;
   }
 };

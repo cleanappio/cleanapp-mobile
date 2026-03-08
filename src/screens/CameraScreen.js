@@ -48,10 +48,11 @@ import CheckBigIcon from '../assets/ico_check_big.svg';
 import TargetIcon from '../assets/ico_target.svg';
 import { BlurView } from '@react-native-community/blur';
 import { useTranslation } from 'react-i18next';
-import { report, matchReports } from '../services/API/APIManager';
+import { report, matchReports, readReportEmailStatus } from '../services/API/APIManager';
 import { getLocation } from '../functions/geolocation';
 import { getWalletAddress } from '../services/DataManager';
 import { ToastService } from '../components/ToastifyToast';
+import EmailNotificationModal from '../components/EmailNotificationModal';
 
 import Svg, { Circle } from 'react-native-svg';
 
@@ -115,7 +116,7 @@ const StoryCrosshair = ({ currentPrompt, isActive, rotationKey }) => {
     }
     setShowMotifSequence(
       rotationCountRef.current > 0 &&
-        rotationCountRef.current % MOTIF_ROTATIONS_INTERVAL === 0
+      rotationCountRef.current % MOTIF_ROTATIONS_INTERVAL === 0
     );
   }, [isActive, rotationKey]);
 
@@ -232,11 +233,11 @@ const StoryCrosshair = ({ currentPrompt, isActive, rotationKey }) => {
           style={[
             styles.storyLabelContainer,
             {
-            top: -82,
-            left: 0,
-            right: 0,
-            alignItems: 'center',
-            opacity: label1Opacity,
+              top: -82,
+              left: 0,
+              right: 0,
+              alignItems: 'center',
+              opacity: label1Opacity,
               transform: [{ scale: label1Scale }, { translateY: label1TranslateY }],
             },
           ]}
@@ -679,6 +680,20 @@ const CameraScreen = props => {
   const [hasPhotoLibraryPermission, setHasPhotoLibraryPermission] =
     useState(false);
   const [currentPromptIndex, setCurrentPromptIndex] = useState(0);
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [emailNotificationData, setEmailNotificationData] = useState(null);
+  const pollingRef = useRef(null);
+
+  // Cleanup polling on unmount
+  useEffect(() => {
+    return () => {
+      if (pollingRef.current) {
+        clearTimeout(pollingRef.current);
+        pollingRef.current = null;
+      }
+    };
+  }, []);
+
   const shuffledPrompts = useMemo(
     () => shuffleArray(CLEANAPP_PROMPTS),
     [],
@@ -968,6 +983,12 @@ const CameraScreen = props => {
       if (!camera || !camera.current) {
         // Gracefully handle null camera (e.g., iOS simulator)
         setPhototaken(true);
+
+        // DEBUG: Simulator fallback — no actual report, skip polling
+        // To test the modal, uncomment the lines below with mock data:
+        // setEmailNotificationData({ status: 'sent', recipients: [{ email: 'test@example.com', delivery_source: 'area_contact', delivery_status: 'sent', sent_at: new Date().toISOString() }], recipient_count: 1 });
+        // setShowEmailModal(true);
+
         return;
       }
 
@@ -1021,6 +1042,11 @@ const CameraScreen = props => {
           );
           return;
         }
+
+        // --- Email Notification Polling ---
+        if (res && res.seq != null) {
+          pollEmailStatus(res.seq);
+        }
       }
     } catch (e) {
       // Only show error for actual camera errors, not for simulator
@@ -1043,6 +1069,54 @@ const CameraScreen = props => {
         navigation.goBack();
       }
     }
+  };
+
+  const pollEmailStatus = async (seq) => {
+    // Clear any existing polling
+    if (pollingRef.current) clearTimeout(pollingRef.current);
+
+    const walletAddress = await getWalletAddress();
+    if (!walletAddress || seq == null) return;
+
+    // Adaptive polling schedule:
+    // - every 3s for first 30s (10 polls)
+    // - then every 10s until 2 min (9 polls)
+    // Total: ~19 polls over ~2 min
+    const schedule = [
+      ...Array(10).fill(3000),   // 10 × 3s = 30s
+      ...Array(9).fill(10000),   // 9 × 10s = 90s
+    ];
+    let pollIndex = 0;
+
+    const doPoll = async () => {
+      if (pollIndex >= schedule.length) return; // stop after 2 min
+
+      const res = await readReportEmailStatus(walletAddress, seq);
+
+      if (res) {
+        // Pass the full response to the modal — it handles all statuses
+        setEmailNotificationData(res);
+        setShowEmailModal(true);
+
+        if (res.status === 'sent') {
+          // Terminal state — stop polling
+          return;
+        }
+
+        if (res.status === 'processed_no_delivery') {
+          // Terminal state — stop polling
+          return;
+        }
+      }
+
+      // Schedule next poll
+      const delay = schedule[pollIndex];
+      pollIndex++;
+      pollingRef.current = setTimeout(doPoll, delay);
+    };
+
+    // Start first poll after initial delay
+    pollingRef.current = setTimeout(doPoll, schedule[0]);
   };
 
   const submitAnnotation = async () => {
@@ -1068,6 +1142,11 @@ const CameraScreen = props => {
           { cancelable: false },
         );
         return;
+      }
+
+      // --- Email Notification Polling ---
+      if (res && res.seq != null) {
+        pollEmailStatus(res.seq);
       }
 
       setAnnotationText('');
@@ -1365,6 +1444,21 @@ const CameraScreen = props => {
           </View>
         </TouchableOpacity>
       </Modal>
+
+      {/* Email Notification Modal */}
+      <EmailNotificationModal
+        visible={showEmailModal}
+        onDismiss={() => {
+          setShowEmailModal(false);
+          setEmailNotificationData(null);
+          // Stop any ongoing polling when user dismisses
+          if (pollingRef.current) {
+            clearTimeout(pollingRef.current);
+            pollingRef.current = null;
+          }
+        }}
+        data={emailNotificationData}
+      />
     </SafeAreaView>
   );
 };
