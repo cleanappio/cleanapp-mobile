@@ -30,6 +30,7 @@ const MODAL_WIDTH = SCREEN_WIDTH * 0.85;
  *       status: 'pending' | 'pending_retry' | 'processed_no_delivery' | 'sent',
  *       recipient_count: number,
  *       recipients?: [{ email, delivery_source, delivery_status, sent_at }],
+ *       cases?: [{ case_id, title, status, severity_score, delivery_count }],
  *       last_email_sent_at?: string,
  *       next_attempt_at?: string,
  *       retry_reason?: string,
@@ -81,6 +82,7 @@ const EmailNotificationModal = ({ visible, onDismiss, data }) => {
     const status = data.status;
     const recipients = data.recipients || [];
     const recipientCount = data.recipient_count || 0;
+    const relatedCases = data.cases || [];
 
     const getStatusConfig = () => {
         switch (status) {
@@ -267,6 +269,27 @@ const EmailNotificationModal = ({ visible, onDismiss, data }) => {
                     {/* Divider */}
                     <View style={styles.divider} />
 
+                    {relatedCases.length > 0 && (
+                        <>
+                            <Text style={styles.detailLabel}>Related cases</Text>
+                            <View style={styles.relatedCasesList}>
+                                {relatedCases.slice(0, 3).map(caseItem => (
+                                    <View key={caseItem.case_id} style={styles.relatedCaseCard}>
+                                        <Text style={styles.relatedCaseTitle}>{caseItem.title}</Text>
+                                        <Text style={styles.relatedCaseMeta}>
+                                            {caseItem.status} · severity {Math.round((caseItem.severity_score || 0) * 100)}%
+                                        </Text>
+                                        <Text style={styles.relatedCaseMeta}>
+                                            {caseItem.delivery_count || 0} tracked deliveries
+                                        </Text>
+                                    </View>
+                                ))}
+                            </View>
+
+                            <View style={styles.divider} />
+                        </>
+                    )}
+
                     {/* Footer */}
                     <Text style={styles.footerText}>
                         Thank you for helping keep your community clean! 🌱
@@ -408,6 +431,28 @@ const styles = StyleSheet.create({
     },
     recipientsList: {
         maxHeight: 220,
+    },
+    relatedCasesList: {
+        gap: 10,
+    },
+    relatedCaseCard: {
+        borderWidth: 1,
+        borderColor: 'rgba(89, 228, 128, 0.18)',
+        borderRadius: 14,
+        backgroundColor: 'rgba(89, 228, 128, 0.06)',
+        padding: 12,
+    },
+    relatedCaseTitle: {
+        fontFamily: fontFamilies.Default,
+        fontSize: 14,
+        fontWeight: '700',
+        color: '#FFFFFF',
+    },
+    relatedCaseMeta: {
+        fontFamily: fontFamilies.Default,
+        fontSize: 12,
+        color: 'rgba(255, 255, 255, 0.65)',
+        marginTop: 4,
     },
     recipientCard: {
         flexDirection: 'row',

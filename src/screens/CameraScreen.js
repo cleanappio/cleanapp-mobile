@@ -48,7 +48,12 @@ import CheckBigIcon from '../assets/ico_check_big.svg';
 import TargetIcon from '../assets/ico_target.svg';
 import { BlurView } from '@react-native-community/blur';
 import { useTranslation } from 'react-i18next';
-import { report, matchReports, readReportEmailStatus } from '../services/API/APIManager';
+import {
+  report,
+  matchReports,
+  readReportEmailStatus,
+  readReportCases,
+} from '../services/API/APIManager';
 import { getLocation } from '../functions/geolocation';
 import { getWalletAddress } from '../services/DataManager';
 import { ToastService } from '../components/ToastifyToast';
@@ -1091,11 +1096,17 @@ const CameraScreen = props => {
     const doPoll = async () => {
       if (pollIndex >= schedule.length) return; // stop after 2 min
 
-      const res = await readReportEmailStatus(walletAddress, seq);
+      const [res, caseRes] = await Promise.all([
+        readReportEmailStatus(walletAddress, seq),
+        readReportCases(seq),
+      ]);
 
       if (res) {
         // Pass the full response to the modal — it handles all statuses
-        setEmailNotificationData(res);
+        setEmailNotificationData({
+          ...res,
+          cases: caseRes?.cases || [],
+        });
         setShowEmailModal(true);
 
         if (res.status === 'sent') {
