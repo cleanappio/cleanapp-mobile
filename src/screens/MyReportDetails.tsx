@@ -41,7 +41,7 @@ const MyReportDetails = ({
   const {t} = useTranslation();
   const {report: reportItem} = route.params;
   const report = reportItem.report;
-  const [relatedCases, setRelatedCases] = useState([]);
+  const [relatedCases, setRelatedCases] = useState<any[]>([]);
   var englishAnalysis = reportItem.analysis[0];
   for (const analysisItem of reportItem.analysis) {
     if (analysisItem.language === 'en') {

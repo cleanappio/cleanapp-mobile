@@ -49,7 +49,7 @@ const ReportDetails = ({
   const navigation = useNavigation<ReportDetailsNavigationProp>();
   const {t} = useTranslation();
   const {report} = route.params;
-  const [relatedCases, setRelatedCases] = useState([]);
+  const [relatedCases, setRelatedCases] = useState<any[]>([]);
 
   // Reverse geocoding hook to get human-readable address
   const {
