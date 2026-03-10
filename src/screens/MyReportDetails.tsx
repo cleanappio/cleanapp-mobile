@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {RouteProp, useNavigation} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {
@@ -19,6 +19,8 @@ import {useTranslation} from 'react-i18next';
 import ResponsiveImage from '../components/ResponsiveImage';
 import ChevronLeft from '../components/ChevronLeft';
 import NavigationIcon from '../components/NavigationIcon';
+import {readReportCases} from '../services/API/APIManager';
+import CaseAwarenessCard from '../components/CaseAwarenessCard';
 
 type MyReportsStackParamList = {
   Leaderboard: undefined;
@@ -39,6 +41,7 @@ const MyReportDetails = ({
   const {t} = useTranslation();
   const {report: reportItem} = route.params;
   const report = reportItem.report;
+  const [relatedCases, setRelatedCases] = useState([]);
   var englishAnalysis = reportItem.analysis[0];
   for (const analysisItem of reportItem.analysis) {
     if (analysisItem.language === 'en') {
@@ -62,6 +65,23 @@ const MyReportDetails = ({
   // Extract title and description from analysis field with language='en'
   const title = englishAnalysis.title || 'Untitled Report';
   const description = englishAnalysis.description || report.description || '';
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadCases = async () => {
+      if (!report?.seq) {
+        return;
+      }
+      const response = await readReportCases(report.seq);
+      if (!cancelled && response?.cases) {
+        setRelatedCases(response.cases);
+      }
+    };
+    loadCases();
+    return () => {
+      cancelled = true;
+    };
+  }, [report?.seq]);
 
   const formatTime = (timeString: string) => {
     try {
@@ -197,6 +217,8 @@ const MyReportDetails = ({
               </View>
             </View>
           </Pressable>
+
+          <CaseAwarenessCard cases={relatedCases} />
         </View>
       </ScrollView>
     </SafeAreaView>

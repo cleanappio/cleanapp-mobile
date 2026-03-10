@@ -641,3 +641,23 @@ export const readReportEmailStatus = async (userId, seq) => {
     return null;
   }
 };
+
+/**
+ * Read case summaries linked to a report.
+ * GET /api/v3/reports/cases?seq=<seq>
+ */
+export const readReportCases = async seq => {
+  try {
+    const url = `${getUrls().liveUrl}/api/v3/reports/cases?${new URLSearchParams({
+      seq: String(seq),
+    })}`;
+    const response = await fetch(url);
+    if (!response.ok) {
+      return null;
+    }
+    return await response.json();
+  } catch (err) {
+    console.warn('readReportCases error:', err.message);
+    return null;
+  }
+};

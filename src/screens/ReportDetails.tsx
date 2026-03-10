@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {RouteProp, useNavigation} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {
@@ -23,6 +23,8 @@ import NavigationIcon from '../components/NavigationIcon';
 import {getLocation} from '../functions/geolocation';
 import {calculateDistance} from '../utils/calculateDistance';
 import {useReverseGeocoding} from '../hooks/useReverseGeocoding';
+import {readReportCases} from '../services/API/APIManager';
+import CaseAwarenessCard from '../components/CaseAwarenessCard';
 // import {useReportsContext} from '../contexts/ReportsContext';
 
 type ReportsStackParamList = {
@@ -47,6 +49,7 @@ const ReportDetails = ({
   const navigation = useNavigation<ReportDetailsNavigationProp>();
   const {t} = useTranslation();
   const {report} = route.params;
+  const [relatedCases, setRelatedCases] = useState([]);
 
   // Reverse geocoding hook to get human-readable address
   const {
@@ -115,6 +118,23 @@ const ReportDetails = ({
     });
   };
 
+  useEffect(() => {
+    let cancelled = false;
+    const loadCases = async () => {
+      if (!report?.seq) {
+        return;
+      }
+      const response = await readReportCases(report.seq);
+      if (!cancelled && response?.cases) {
+        setRelatedCases(response.cases);
+      }
+    };
+    loadCases();
+    return () => {
+      cancelled = true;
+    };
+  }, [report?.seq]);
+
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
@@ -162,6 +182,8 @@ const ReportDetails = ({
               </View>
             </View>
           </View>
+
+          <CaseAwarenessCard cases={relatedCases} />
         </View>
       </ScrollView>
 
