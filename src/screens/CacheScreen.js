@@ -10,9 +10,6 @@ import WalletSettingsIcon from '../assets/ico_cache_settings.svg';
 import BottomSheetDialog from '../components/BotomSheetDialog';
 
 import CopySmallIcon from '../assets/ico_copy_small.svg';
-import EyeSmallIcon from '../assets/ico_eye_small.svg';
-import EyeOffIcon from '../assets/ico_eye_off.svg';
-import { BlurView } from '@react-native-community/blur';
 import { Row } from '../components/Row';
 import Clipboard from '@react-native-clipboard/clipboard';
 import QRCode from 'react-native-qrcode-svg';
@@ -20,7 +17,6 @@ import {
   getPrivacySetting,
   getUserName,
   getWalletAddress,
-  getWalletData,
   setCacheVault,
   setPrivacySetting,
   setUserName,
@@ -44,7 +40,6 @@ const CacheScreen = props => {
   const [privacyOpened, setPrivacyOpened] = useState(false);
   const [cacheSettingOpened, setCacheSettingOpened] = useState(false);
   const [walletAddress, setWalletAddress] = useState('');
-  const [walletInfo, setWalletInfo] = useState(null);
 
   const [avatarName, setAvatarName] = useState('');
   const [shareDataStatus, setShareDataStatus] = useState(0);
@@ -76,15 +71,9 @@ const CacheScreen = props => {
     setCacheSettingOpened(true);
   };
 
-  const initWallet = async () => {
-    const walletData = await getWalletData();
-    setWalletInfo(walletData);
-  };
-
   useFocusEffect(
     React.useCallback(() => {
       const internalFunc = async () => {
-        await initWallet();
         getUserName().then((resp) => {
           if (resp) {
             setAvatarName(resp.userName);
@@ -365,17 +354,6 @@ const CacheScreen = props => {
   };
 
   const CacheSettingSheet = ({isVisible = false, onClose = () => {}}) => {
-    const [isShowPrivateKey, setIsShowPrivateKey] = useState(true);
-    const [isShowMnemonics, setIsShowMnemonics] = useState(true);
-
-    const showMnemonics = () => {
-      setIsShowMnemonics(!isShowMnemonics);
-    };
-
-    const showPrivateKey = () => {
-      setIsShowPrivateKey(!isShowPrivateKey);
-    };
-
     const onCopyWalletAddress = (address) => {
       Clipboard.setString(address);
       if (Platform.OS === 'ios') {
@@ -414,38 +392,14 @@ const CacheScreen = props => {
               paddingHorizontal: 8,
             }}>
             <View style={styles.row}>
-              <View style={{ width: '70%' }}>
+              <View style={{ width: '100%' }}>
                 <Text style={styles.txt12bold}>
                   {t('cachescreen.privatekey')}
                 </Text>
-                <View>
-                  <Text style={{ ...styles.txt12, ...styles.txtBlur }}>
-                    {walletInfo.privateKey}
-                  </Text>
-                  {isShowPrivateKey && (
-                    <BlurView
-                      blurAmount={1}
-                      blurRadius={1}
-                      blurType="light"
-                      overlayColor={'transparent'}
-                      style={{
-                        position: 'absolute',
-                        width: '100%',
-                        height: '100%',
-                      }}
-                    />
-                  )}
-                </View>
-              </View>
-              <View style={styles.row}>
-                <Text style={{ ...styles.txt9, color: theme.COLORS.BTN_BG_BLUE }}>
-                  {isShowPrivateKey
-                    ? t('cachescreen.taptoreveal')
-                    : t('cachescreen.taptohide')}
+                <Text style={styles.txt12}>
+                  Private key display is disabled in the app. Use a dedicated
+                  export flow if recovery material is ever needed.
                 </Text>
-                <Ripple onPress={showPrivateKey}>
-                  {isShowPrivateKey ? <EyeSmallIcon /> : <EyeOffIcon />}
-                </Ripple>
               </View>
             </View>
           </View>
@@ -457,42 +411,14 @@ const CacheScreen = props => {
           </View>
           <View style={{ ...styles.blueBorderCard, marginTop: 24 }}>
             <View style={styles.row}>
-              <View style={{ width: '70%' }}>
+              <View style={{ width: '100%' }}>
                 <Text style={styles.txt12bold}>
                   {t('cachescreen.mnemonicphrase')}
                 </Text>
-                <View>
-                  <Text
-                    style={{
-                      ...styles.txt12,
-                      ...styles.txtBlur,
-                    }}>
-                    {walletInfo.seedPhrase}
-                  </Text>
-                  {isShowMnemonics && (
-                    <BlurView
-                      blurAmount={1}
-                      blurRadius={1}
-                      blurType="light"
-                      overlayColor={'transparent'}
-                      style={{
-                        position: 'absolute',
-                        width: '100%',
-                        height: '100%',
-                      }}
-                    />
-                  )}
-                </View>
-              </View>
-              <View style={styles.row}>
-                <Text style={{ ...styles.txt9, color: theme.COLORS.BTN_BG_BLUE }}>
-                  {isShowMnemonics
-                    ? t('cachescreen.taptoreveal')
-                    : t('cachescreen.taptohide')}
+                <Text style={styles.txt12}>
+                  Recovery phrase display is disabled in the app. Keep recovery
+                  material outside the device UI.
                 </Text>
-                <Ripple onPress={showMnemonics}>
-                  {isShowMnemonics ? <EyeSmallIcon /> : <EyeOffIcon />}
-                </Ripple>
               </View>
             </View>
           </View>

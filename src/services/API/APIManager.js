@@ -77,7 +77,8 @@ export const report = async (
   try {
     const data = {
       version: '2.0',
-      id: publicAddress,
+      channel: 'mobile',
+      reporter_id: publicAddress,
       latitude: latitude,
       longitude: longitude,
       x: relX,
@@ -90,25 +91,28 @@ export const report = async (
       data.annotation = annotation.trim();
     }
 
-    const response = await postJSONData(s.v2api.report, data);
+    const response = await fetch(`${getUrls().liveUrl}/api/v1/human-reports/submit`, {
+      method: 'post',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
     const ret = {
       ok: response.ok,
     };
     if (response.ok) {
       try {
         const respJson = await response.json();
-        if (respJson && respJson.seq != null) {
-          ret.seq = respJson.seq;
+        if (respJson && respJson.report_id != null) {
+          ret.seq = respJson.report_id;
+          ret.public_id = respJson.public_id;
         }
       } catch (_) {
-        // JSON parse may fail if backend returns empty body; that's ok
+        // Ignore malformed success bodies and let the caller handle missing ids.
       }
     } else {
-      if (response.error) {
-        ret.error = response.error;
-      } else if (response.status) {
-        ret.error = response.statusText;
-      }
+      ret.error = response.statusText;
     }
     return ret;
   } catch (err) {
