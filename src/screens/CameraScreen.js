@@ -51,13 +51,11 @@ import { useTranslation } from 'react-i18next';
 import {
   report,
   matchReports,
-  readReportEmailStatus,
-  readReportCases,
 } from '../services/API/APIManager';
 import { getLocation } from '../functions/geolocation';
 import { getWalletAddress } from '../services/DataManager';
 import { ToastService } from '../components/ToastifyToast';
-import EmailNotificationModal from '../components/EmailNotificationModal';
+import ReportDeliveryNotificationService from '../services/ReportDeliveryNotificationService';
 
 import Svg, { Circle } from 'react-native-svg';
 
@@ -685,19 +683,6 @@ const CameraScreen = props => {
   const [hasPhotoLibraryPermission, setHasPhotoLibraryPermission] =
     useState(false);
   const [currentPromptIndex, setCurrentPromptIndex] = useState(0);
-  const [showEmailModal, setShowEmailModal] = useState(false);
-  const [emailNotificationData, setEmailNotificationData] = useState(null);
-  const pollingRef = useRef(null);
-
-  // Cleanup polling on unmount
-  useEffect(() => {
-    return () => {
-      if (pollingRef.current) {
-        clearTimeout(pollingRef.current);
-        pollingRef.current = null;
-      }
-    };
-  }, []);
 
   const shuffledPrompts = useMemo(
     () => shuffleArray(CLEANAPP_PROMPTS),
@@ -1048,9 +1033,18 @@ const CameraScreen = props => {
           return;
         }
 
-        // --- Email Notification Polling ---
         if (res && res.seq != null) {
-          pollEmailStatus(res.seq);
+          const walletAddress = await getWalletAddress();
+          await ReportDeliveryNotificationService.trackSubmission({
+            seq: res.seq,
+            publicId: res.public_id,
+            walletAddress,
+          });
+          ToastService.info(
+            'Report submitted. We’ll notify you when processing finishes.',
+            'top',
+            4000,
+          );
         }
       }
     } catch (e) {
@@ -1074,60 +1068,6 @@ const CameraScreen = props => {
         navigation.goBack();
       }
     }
-  };
-
-  const pollEmailStatus = async (seq) => {
-    // Clear any existing polling
-    if (pollingRef.current) clearTimeout(pollingRef.current);
-
-    const walletAddress = await getWalletAddress();
-    if (!walletAddress || seq == null) return;
-
-    // Adaptive polling schedule:
-    // - every 3s for first 30s (10 polls)
-    // - then every 10s until 2 min (9 polls)
-    // Total: ~19 polls over ~2 min
-    const schedule = [
-      ...Array(10).fill(3000),   // 10 × 3s = 30s
-      ...Array(9).fill(10000),   // 9 × 10s = 90s
-    ];
-    let pollIndex = 0;
-
-    const doPoll = async () => {
-      if (pollIndex >= schedule.length) return; // stop after 2 min
-
-      const [res, caseRes] = await Promise.all([
-        readReportEmailStatus(walletAddress, seq),
-        readReportCases(seq),
-      ]);
-
-      if (res) {
-        // Pass the full response to the modal — it handles all statuses
-        setEmailNotificationData({
-          ...res,
-          cases: caseRes?.cases || [],
-        });
-        setShowEmailModal(true);
-
-        if (res.status === 'sent') {
-          // Terminal state — stop polling
-          return;
-        }
-
-        if (res.status === 'processed_no_delivery') {
-          // Terminal state — stop polling
-          return;
-        }
-      }
-
-      // Schedule next poll
-      const delay = schedule[pollIndex];
-      pollIndex++;
-      pollingRef.current = setTimeout(doPoll, delay);
-    };
-
-    // Start first poll after initial delay
-    pollingRef.current = setTimeout(doPoll, schedule[0]);
   };
 
   const submitAnnotation = async () => {
@@ -1155,9 +1095,18 @@ const CameraScreen = props => {
         return;
       }
 
-      // --- Email Notification Polling ---
       if (res && res.seq != null) {
-        pollEmailStatus(res.seq);
+        const walletAddress = await getWalletAddress();
+        await ReportDeliveryNotificationService.trackSubmission({
+          seq: res.seq,
+          publicId: res.public_id,
+          walletAddress,
+        });
+        ToastService.info(
+          'Report submitted. We’ll notify you when processing finishes.',
+          'top',
+          4000,
+        );
       }
 
       setAnnotationText('');
@@ -1455,21 +1404,6 @@ const CameraScreen = props => {
           </View>
         </TouchableOpacity>
       </Modal>
-
-      {/* Email Notification Modal */}
-      <EmailNotificationModal
-        visible={showEmailModal}
-        onDismiss={() => {
-          setShowEmailModal(false);
-          setEmailNotificationData(null);
-          // Stop any ongoing polling when user dismisses
-          if (pollingRef.current) {
-            clearTimeout(pollingRef.current);
-            pollingRef.current = null;
-          }
-        }}
-        data={emailNotificationData}
-      />
     </SafeAreaView>
   );
 };

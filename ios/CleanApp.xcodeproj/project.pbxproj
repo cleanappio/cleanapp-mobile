@@ -17,6 +17,8 @@
 		7230E6386659459D88BBB30B /* FontAwesome6_Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D226ED2344EA4A34861491C9 /* FontAwesome6_Regular.ttf */; };
 		74362766AC734D889B797CDC /* Feather.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C437B5B1606F4F6081077C71 /* Feather.ttf */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
+		7A19F24E6D4D4F0AA12C9001 /* CleanAppNotificationModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A19F24E6D4D4F0AA12C9000 /* CleanAppNotificationModule.swift */; };
+		7A19F24E6D4D4F0AA12C9003 /* CleanAppNotificationModuleBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 7A19F24E6D4D4F0AA12C9002 /* CleanAppNotificationModuleBridge.m */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		85FF3F35466547948447695A /* Zocial.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 103247C34AE34DF3A8FB6A94 /* Zocial.ttf */; };
 		A5D5F9CA05C843C5A55C90CA /* FontAwesome5_Solid.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C8A56BEA6AEE4119B235657B /* FontAwesome5_Solid.ttf */; };
@@ -47,6 +49,8 @@
 		639D896FA06C4709B6DE82EB /* MaterialIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = MaterialIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/MaterialIcons.ttf"; sourceTree = "<group>"; };
 		65393DC811ED44D0B5F43391 /* FontAwesome5_Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome5_Regular.ttf; path = "../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Regular.ttf"; sourceTree = "<group>"; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = CleanApp/AppDelegate.swift; sourceTree = "<group>"; };
+		7A19F24E6D4D4F0AA12C9000 /* CleanAppNotificationModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CleanAppNotificationModule.swift; path = CleanApp/CleanAppNotificationModule.swift; sourceTree = "<group>"; };
+		7A19F24E6D4D4F0AA12C9002 /* CleanAppNotificationModuleBridge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = CleanAppNotificationModuleBridge.m; path = CleanApp/CleanAppNotificationModuleBridge.m; sourceTree = "<group>"; };
 		8147B036588757A37DEDE632 /* libPods-CleanApp.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-CleanApp.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = CleanApp/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		822A247E0F2B4ECFAA7B57B6 /* FontAwesome6_Brands.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome6_Brands.ttf; path = "../node_modules/react-native-vector-icons/Fonts/FontAwesome6_Brands.ttf"; sourceTree = "<group>"; };
@@ -82,6 +86,8 @@
 			children = (
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				761780EC2CA45674006654EE /* AppDelegate.swift */,
+				7A19F24E6D4D4F0AA12C9000 /* CleanAppNotificationModule.swift */,
+				7A19F24E6D4D4F0AA12C9002 /* CleanAppNotificationModuleBridge.m */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
 				13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */,
@@ -331,6 +337,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				761780ED2CA45674006654EE /* AppDelegate.swift in Sources */,
+				7A19F24E6D4D4F0AA12C9001 /* CleanAppNotificationModule.swift in Sources */,
+				7A19F24E6D4D4F0AA12C9003 /* CleanAppNotificationModuleBridge.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -12,6 +12,7 @@ import {reducer, actions} from './src/services/State/Reducer.js';
 import {useStateValue} from './src/services/State/State.js';
 import {theme} from './src/services/Common/theme.js';
 import PollingService from './src/services/PollingService';
+import ReportDeliveryNotificationService from './src/services/ReportDeliveryNotificationService';
 import {
   getLanguage,
   getUserInfo,
@@ -52,10 +53,12 @@ const RootNavigator = () => {
   useEffect(() => {
     PollingService.setDispatch(dispatch);
     PollingService.startPolling();
+    ReportDeliveryNotificationService.start();
 
     // Cleanup when component unmounts
     return () => {
       PollingService.stopPolling();
+      ReportDeliveryNotificationService.stop();
     };
   }, [dispatch]);
   const {show = false} = progressSettings || {};

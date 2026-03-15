@@ -27,6 +27,8 @@ const KEYS = {
   TEAM: 'TEAM',
   NOTIFIED_REPORTS: 'NOTIFIED_REPORTS',
   OPENED_REPORTS: 'OPENED_REPORTS',
+  PENDING_REPORT_DELIVERY_TRACKING: 'PENDING_REPORT_DELIVERY_TRACKING',
+  DELIVERED_REPORT_NOTIFICATION_KEYS: 'DELIVERED_REPORT_NOTIFICATION_KEYS',
 };
 
 export const setUserInfo = async userDetails => {
@@ -518,6 +520,48 @@ export const setOpenedReports = async openedReports => {
     await AsyncStorage.setItem(
       KEYS.OPENED_REPORTS,
       JSON.stringify(openedReports),
+    );
+  } catch (err) {}
+};
+
+export const getPendingReportDeliveryTracking = async () => {
+  try {
+    const response = await AsyncStorage.getItem(
+      KEYS.PENDING_REPORT_DELIVERY_TRACKING,
+    );
+    if (response) {
+      return JSON.parse(response);
+    }
+  } catch (err) {}
+  return [];
+};
+
+export const setPendingReportDeliveryTracking = async pendingReports => {
+  try {
+    await AsyncStorage.setItem(
+      KEYS.PENDING_REPORT_DELIVERY_TRACKING,
+      JSON.stringify(pendingReports),
+    );
+  } catch (err) {}
+};
+
+export const getDeliveredReportNotificationKeys = async () => {
+  try {
+    const response = await AsyncStorage.getItem(
+      KEYS.DELIVERED_REPORT_NOTIFICATION_KEYS,
+    );
+    if (response) {
+      return JSON.parse(response);
+    }
+  } catch (err) {}
+  return [];
+};
+
+export const setDeliveredReportNotificationKeys = async deliveryKeys => {
+  try {
+    await AsyncStorage.setItem(
+      KEYS.DELIVERED_REPORT_NOTIFICATION_KEYS,
+      JSON.stringify(deliveryKeys),
     );
   } catch (err) {}
 };
