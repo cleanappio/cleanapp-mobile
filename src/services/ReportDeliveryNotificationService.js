@@ -1,4 +1,4 @@
-import {AppState, NativeModules, Platform} from 'react-native';
+import {AppState, NativeModules} from 'react-native';
 import {
   checkNotifications,
   requestNotifications,
@@ -195,10 +195,6 @@ class ReportDeliveryNotificationService {
   };
 
   ensureNotificationPermissions = async () => {
-    if (Platform.OS !== 'ios') {
-      return;
-    }
-
     try {
       const currentStatus = await checkNotifications();
       if (currentStatus.status === RESULTS.DENIED) {
