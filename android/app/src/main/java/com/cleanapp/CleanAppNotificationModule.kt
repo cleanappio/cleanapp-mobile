@@ -29,7 +29,6 @@ class CleanAppNotificationModule(
     private const val CHANNEL_NAME = "Report delivery updates"
     private const val CHANNEL_DESCRIPTION =
       "Notifications when CleanApp finishes processing your reports."
-    private const val FIREBASE_APP_NAME = "cleanappPush"
   }
 
   override fun getName(): String = "CleanAppNotificationModule"
@@ -231,7 +230,7 @@ class CleanAppNotificationModule(
   }
 
   private fun getOrInitializeFirebaseApp(config: ReadableMap?): FirebaseApp? {
-    FirebaseApp.getApps(reactContext).firstOrNull { it.name == FIREBASE_APP_NAME }?.let {
+    FirebaseApp.getApps(reactContext).firstOrNull { it.name == FirebaseApp.DEFAULT_APP_NAME }?.let {
       return it
     }
 
@@ -265,11 +264,7 @@ class CleanAppNotificationModule(
       optionsBuilder.setStorageBucket(storageBucket)
     }
 
-    return FirebaseApp.initializeApp(
-      reactContext,
-      optionsBuilder.build(),
-      FIREBASE_APP_NAME,
-    )
+    return FirebaseApp.initializeApp(reactContext, optionsBuilder.build())
   }
 
   private fun ReadableMap?.getNullableString(key: String): String? {

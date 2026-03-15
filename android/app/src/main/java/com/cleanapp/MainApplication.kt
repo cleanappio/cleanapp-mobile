@@ -11,6 +11,8 @@ import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
 import com.facebook.react.defaults.DefaultReactNativeHost
 import com.facebook.react.soloader.OpenSourceMergedSoMapping
 import com.facebook.soloader.SoLoader
+import com.google.firebase.FirebaseApp
+import com.google.firebase.FirebaseOptions
 
 class MainApplication : Application(), ReactApplication {
 
@@ -34,10 +36,45 @@ class MainApplication : Application(), ReactApplication {
 
   override fun onCreate() {
     super.onCreate()
+    ensureDefaultFirebaseApp()
     SoLoader.init(this, OpenSourceMergedSoMapping)
     if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
       // If you opted-in for the New Architecture, we load the native entry point for this app.
       load()
     }
+  }
+
+  private fun ensureDefaultFirebaseApp() {
+    if (FirebaseApp.getApps(this).isNotEmpty()) {
+      return
+    }
+
+    val applicationId = BuildConfig.FCM_APPLICATION_ID.trim()
+    val apiKey = BuildConfig.FCM_API_KEY.trim()
+    val projectId = BuildConfig.FCM_PROJECT_ID.trim()
+    val gcmSenderId = BuildConfig.FCM_GCM_SENDER_ID.trim()
+
+    if (
+      applicationId.isBlank() ||
+        apiKey.isBlank() ||
+        projectId.isBlank() ||
+        gcmSenderId.isBlank()
+    ) {
+      return
+    }
+
+    val optionsBuilder =
+      FirebaseOptions.Builder()
+        .setApplicationId(applicationId)
+        .setApiKey(apiKey)
+        .setProjectId(projectId)
+        .setGcmSenderId(gcmSenderId)
+
+    val storageBucket = BuildConfig.FCM_STORAGE_BUCKET.trim()
+    if (storageBucket.isNotBlank()) {
+      optionsBuilder.setStorageBucket(storageBucket)
+    }
+
+    FirebaseApp.initializeApp(this, optionsBuilder.build())
   }
 }
