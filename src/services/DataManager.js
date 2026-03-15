@@ -29,6 +29,8 @@ const KEYS = {
   OPENED_REPORTS: 'OPENED_REPORTS',
   PENDING_REPORT_DELIVERY_TRACKING: 'PENDING_REPORT_DELIVERY_TRACKING',
   DELIVERED_REPORT_NOTIFICATION_KEYS: 'DELIVERED_REPORT_NOTIFICATION_KEYS',
+  PUSH_INSTALL_ID: 'PUSH_INSTALL_ID',
+  PUSH_DEVICE_REGISTRATION: 'PUSH_DEVICE_REGISTRATION',
 };
 
 export const setUserInfo = async userDetails => {
@@ -564,6 +566,69 @@ export const setDeliveredReportNotificationKeys = async deliveryKeys => {
       JSON.stringify(deliveryKeys),
     );
   } catch (err) {}
+};
+
+const generatePushInstallID = () => {
+  const randomChunk = () => Math.random().toString(36).slice(2, 10);
+  return `cleanapp-${Date.now().toString(36)}-${randomChunk()}${randomChunk()}`;
+};
+
+export const getPushInstallID = async () => {
+  try {
+    return await AsyncStorage.getItem(KEYS.PUSH_INSTALL_ID);
+  } catch (err) {
+    return null;
+  }
+};
+
+export const setPushInstallID = async installId => {
+  try {
+    await AsyncStorage.setItem(KEYS.PUSH_INSTALL_ID, String(installId));
+    return true;
+  } catch (err) {
+    return false;
+  }
+};
+
+export const getOrCreatePushInstallID = async () => {
+  const existing = await getPushInstallID();
+  if (existing) {
+    return existing;
+  }
+  const nextInstallID = generatePushInstallID();
+  await setPushInstallID(nextInstallID);
+  return nextInstallID;
+};
+
+export const getPushDeviceRegistration = async () => {
+  try {
+    const response = await AsyncStorage.getItem(KEYS.PUSH_DEVICE_REGISTRATION);
+    if (response) {
+      return JSON.parse(response);
+    }
+  } catch (err) {}
+  return null;
+};
+
+export const setPushDeviceRegistration = async registration => {
+  try {
+    await AsyncStorage.setItem(
+      KEYS.PUSH_DEVICE_REGISTRATION,
+      JSON.stringify(registration),
+    );
+    return true;
+  } catch (err) {
+    return false;
+  }
+};
+
+export const clearPushDeviceRegistration = async () => {
+  try {
+    await AsyncStorage.removeItem(KEYS.PUSH_DEVICE_REGISTRATION);
+    return true;
+  } catch (err) {
+    return false;
+  }
 };
 
 export const removeOpenedReports = async () => {

@@ -349,8 +349,10 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 942ADF7569452C8FAA8EBB58 /* Pods-CleanApp.debug.xcconfig */;
 			buildSettings = {
+				APS_ENVIRONMENT = development;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = CleanApp/CleanApp.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = UW5SVT28YL;
@@ -379,8 +381,10 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 86FE184291A1A65ACEDDACFB /* Pods-CleanApp.release.xcconfig */;
 			buildSettings = {
+				APS_ENVIRONMENT = production;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = CleanApp/CleanApp.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = UW5SVT28YL;

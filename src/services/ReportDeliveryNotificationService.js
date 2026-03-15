@@ -1,17 +1,27 @@
-import {AppState, NativeModules} from 'react-native';
+import {AppState, NativeModules, Platform} from 'react-native';
+import Config from 'react-native-config';
 import {
   checkNotifications,
   requestNotifications,
   RESULTS,
 } from 'react-native-permissions';
 
-import {readReportEmailStatus} from './API/APIManager';
 import {
+  readReportEmailStatus,
+  registerMobilePushDevice,
+  unregisterMobilePushDevice,
+} from './API/APIManager';
+import AppVersionService from './AppVersionService';
+import {
+  clearPushDeviceRegistration,
   getDeliveredReportNotificationKeys,
   getPendingReportDeliveryTracking,
+  getOrCreatePushInstallID,
+  getPushDeviceRegistration,
   getWalletAddress,
   setDeliveredReportNotificationKeys,
   setPendingReportDeliveryTracking,
+  setPushDeviceRegistration,
 } from './DataManager';
 import {ToastService} from '../components/ToastifyToast';
 
@@ -24,6 +34,7 @@ class ReportDeliveryNotificationService {
     this.interval = null;
     this.started = false;
     this.pollInFlight = false;
+    this.remoteRegistrationInFlight = false;
     this.appState = AppState.currentState;
     this.subscription = null;
   }
@@ -39,6 +50,8 @@ class ReportDeliveryNotificationService {
       this.handleAppStateChange,
     );
 
+    await this.ensureNotificationPermissions();
+    await this.ensureRemotePushRegistration();
     await this.pollNow();
     this.startIntervalIfNeeded();
   };
@@ -90,12 +103,14 @@ class ReportDeliveryNotificationService {
     this.appState = nextAppState;
 
     if (wasBackgrounded && nextAppState === 'active') {
+      await this.ensureRemotePushRegistration();
       await this.pollNow();
       this.startIntervalIfNeeded();
       return;
     }
 
     if (nextAppState === 'active') {
+      this.ensureRemotePushRegistration();
       this.startIntervalIfNeeded();
       return;
     }
@@ -197,14 +212,150 @@ class ReportDeliveryNotificationService {
   ensureNotificationPermissions = async () => {
     try {
       const currentStatus = await checkNotifications();
-      if (currentStatus.status === RESULTS.DENIED) {
-        await requestNotifications(['alert', 'badge', 'sound']);
+      if (
+        currentStatus.status === RESULTS.GRANTED ||
+        currentStatus.status === RESULTS.LIMITED
+      ) {
+        return currentStatus.status;
       }
+      if (currentStatus.status === RESULTS.DENIED) {
+        const requestResult = await requestNotifications([
+          'alert',
+          'badge',
+          'sound',
+        ]);
+        return requestResult.status;
+      }
+      return currentStatus.status;
     } catch (error) {
       console.warn(
         'ReportDeliveryNotificationService.ensureNotificationPermissions error:',
         error?.message || error,
       );
+      return RESULTS.UNAVAILABLE;
+    }
+  };
+
+  buildRemotePushConfig = () => {
+    if (Platform.OS !== 'android') {
+      return {};
+    }
+
+    return {
+      applicationId: Config.FCM_APPLICATION_ID || '',
+      apiKey: Config.FCM_API_KEY || '',
+      projectId: Config.FCM_PROJECT_ID || '',
+      gcmSenderId: Config.FCM_GCM_SENDER_ID || '',
+      storageBucket: Config.FCM_STORAGE_BUCKET || '',
+    };
+  };
+
+  isNotificationStatusEnabled = status => {
+    return status === RESULTS.GRANTED || status === RESULTS.LIMITED;
+  };
+
+  unregisterRemotePushDevice = async installId => {
+    const existingRegistration = await getPushDeviceRegistration();
+    const notificationModule = NativeModules.CleanAppNotificationModule;
+
+    try {
+      if (notificationModule?.unregisterRemoteNotifications) {
+        await notificationModule.unregisterRemoteNotifications(
+          this.buildRemotePushConfig(),
+        );
+      }
+    } catch (error) {
+      console.warn(
+        'ReportDeliveryNotificationService.unregisterRemoteNotifications error:',
+        error?.message || error,
+      );
+    }
+
+    if (
+      existingRegistration?.installId &&
+      existingRegistration?.provider &&
+      existingRegistration.installId === installId
+    ) {
+      await unregisterMobilePushDevice({
+        installId: existingRegistration.installId,
+        provider: existingRegistration.provider,
+      });
+    }
+
+    await clearPushDeviceRegistration();
+  };
+
+  ensureRemotePushRegistration = async () => {
+    if (this.remoteRegistrationInFlight) {
+      return;
+    }
+
+    this.remoteRegistrationInFlight = true;
+
+    try {
+      const installId = await getOrCreatePushInstallID();
+      const permissionStatus = await this.ensureNotificationPermissions();
+
+      if (!this.isNotificationStatusEnabled(permissionStatus)) {
+        await this.unregisterRemotePushDevice(installId);
+        return;
+      }
+
+      const notificationModule = NativeModules.CleanAppNotificationModule;
+      if (!notificationModule?.registerForRemoteNotifications) {
+        return;
+      }
+
+      const nativeRegistration = await notificationModule.registerForRemoteNotifications(
+        this.buildRemotePushConfig(),
+      );
+
+      if (!nativeRegistration || !nativeRegistration.token) {
+        return;
+      }
+
+      const provider = nativeRegistration.provider || (Platform.OS === 'ios' ? 'apns' : 'fcm');
+      const appVersion = await AppVersionService.getFullVersionString();
+      const existingRegistration = await getPushDeviceRegistration();
+
+      const isSameRegistration =
+        existingRegistration &&
+        existingRegistration.installId === installId &&
+        existingRegistration.provider === provider &&
+        existingRegistration.pushToken === nativeRegistration.token &&
+        existingRegistration.notificationsEnabled === true;
+
+      if (!isSameRegistration) {
+        const registrationResponse = await registerMobilePushDevice({
+          installId,
+          platform: Platform.OS,
+          provider,
+          pushToken: nativeRegistration.token,
+          appVersion,
+          notificationsEnabled: true,
+        });
+
+        if (!registrationResponse?.ok) {
+          return;
+        }
+      }
+
+      await setPushDeviceRegistration({
+        installId,
+        platform: Platform.OS,
+        provider,
+        pushToken: nativeRegistration.token,
+        appVersion,
+        notificationsEnabled: true,
+        registeredAt: new Date().toISOString(),
+      });
+    } catch (error) {
+      console.warn(
+        'ReportDeliveryNotificationService.ensureRemotePushRegistration error:',
+        error?.message || error,
+      );
+    } finally {
+      this.remoteRegistrationInFlight = false;
     }
   };
 

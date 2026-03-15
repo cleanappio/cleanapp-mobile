@@ -10,11 +10,15 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.ReadableMap
+import com.google.firebase.FirebaseApp
+import com.google.firebase.FirebaseOptions
+import com.google.firebase.messaging.FirebaseMessaging
 
 class CleanAppNotificationModule(
   private val reactContext: ReactApplicationContext,
@@ -25,9 +29,101 @@ class CleanAppNotificationModule(
     private const val CHANNEL_NAME = "Report delivery updates"
     private const val CHANNEL_DESCRIPTION =
       "Notifications when CleanApp finishes processing your reports."
+    private const val FIREBASE_APP_NAME = "cleanappPush"
   }
 
   override fun getName(): String = "CleanAppNotificationModule"
+
+  @ReactMethod
+  fun registerForRemoteNotifications(
+    config: ReadableMap?,
+    promise: Promise,
+  ) {
+    try {
+      ensureNotificationChannel()
+
+      if (
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+          ContextCompat.checkSelfPermission(
+            reactContext,
+            Manifest.permission.POST_NOTIFICATIONS,
+          ) != PackageManager.PERMISSION_GRANTED
+      ) {
+        promise.resolve(
+          Arguments.createMap().apply {
+            putString("provider", "fcm")
+            putBoolean("notificationsEnabled", false)
+            putString("reason", "permission_denied")
+          },
+        )
+        return
+      }
+
+      val firebaseApp = getOrInitializeFirebaseApp(config)
+      if (firebaseApp == null) {
+        promise.resolve(
+          Arguments.createMap().apply {
+            putString("provider", "fcm")
+            putBoolean("notificationsEnabled", false)
+            putString("reason", "missing_fcm_config")
+          },
+        )
+        return
+      }
+
+      FirebaseMessaging.getInstance(firebaseApp).token
+        .addOnCompleteListener { task ->
+          if (!task.isSuccessful) {
+            promise.reject(
+              "remote_notification_error",
+              task.exception?.message ?: "Failed to get FCM token",
+              task.exception,
+            )
+            return@addOnCompleteListener
+          }
+
+          promise.resolve(
+            Arguments.createMap().apply {
+              putString("provider", "fcm")
+              putString("token", task.result ?: "")
+              putBoolean("notificationsEnabled", true)
+            },
+          )
+        }
+    } catch (error: Exception) {
+      promise.reject("notification_error", error.message, error)
+    }
+  }
+
+  @ReactMethod
+  fun unregisterRemoteNotifications(
+    config: ReadableMap?,
+    promise: Promise,
+  ) {
+    try {
+      val firebaseApp = getOrInitializeFirebaseApp(config)
+      if (firebaseApp == null) {
+        promise.resolve(true)
+        return
+      }
+
+      FirebaseMessaging.getInstance(firebaseApp).deleteToken()
+        .addOnCompleteListener { task ->
+          if (!task.isSuccessful) {
+            promise.reject(
+              "remote_notification_error",
+              task.exception?.message ?: "Failed to delete FCM token",
+              task.exception,
+            )
+            return@addOnCompleteListener
+          }
+
+          promise.resolve(true)
+        }
+    } catch (error: Exception) {
+      promise.reject("notification_error", error.message, error)
+    }
+  }
 
   @ReactMethod
   fun presentLocalNotification(
@@ -132,5 +228,54 @@ class CleanAppNotificationModule(
       }
 
     manager.createNotificationChannel(channel)
+  }
+
+  private fun getOrInitializeFirebaseApp(config: ReadableMap?): FirebaseApp? {
+    FirebaseApp.getApps(reactContext).firstOrNull { it.name == FIREBASE_APP_NAME }?.let {
+      return it
+    }
+
+    FirebaseApp.getApps(reactContext).firstOrNull()?.let {
+      return it
+    }
+
+    val applicationId = config?.getNullableString("applicationId").orEmpty()
+    val apiKey = config?.getNullableString("apiKey").orEmpty()
+    val projectId = config?.getNullableString("projectId").orEmpty()
+    val gcmSenderId = config?.getNullableString("gcmSenderId").orEmpty()
+
+    if (
+      applicationId.isBlank() ||
+        apiKey.isBlank() ||
+        projectId.isBlank() ||
+        gcmSenderId.isBlank()
+    ) {
+      return null
+    }
+
+    val optionsBuilder =
+      FirebaseOptions.Builder()
+        .setApplicationId(applicationId)
+        .setApiKey(apiKey)
+        .setProjectId(projectId)
+        .setGcmSenderId(gcmSenderId)
+
+    val storageBucket = config.getNullableString("storageBucket").orEmpty()
+    if (storageBucket.isNotBlank()) {
+      optionsBuilder.setStorageBucket(storageBucket)
+    }
+
+    return FirebaseApp.initializeApp(
+      reactContext,
+      optionsBuilder.build(),
+      FIREBASE_APP_NAME,
+    )
+  }
+
+  private fun ReadableMap?.getNullableString(key: String): String? {
+    if (this == null || !this.hasKey(key) || this.isNull(key)) {
+      return null
+    }
+    return this.getString(key)
   }
 }

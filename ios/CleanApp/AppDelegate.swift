@@ -38,6 +38,20 @@ class AppDelegate: RCTAppDelegate, UNUserNotificationCenterDelegate {
     completionHandler()
   }
 
+  override func application(
+    _ application: UIApplication,
+    didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
+  ) {
+    CleanAppNotificationModule.handleRemoteRegistrationSuccess(deviceToken)
+  }
+
+  override func application(
+    _ application: UIApplication,
+    didFailToRegisterForRemoteNotificationsWithError error: Error
+  ) {
+    CleanAppNotificationModule.handleRemoteRegistrationFailure(error)
+  }
+
   override func sourceURL(for bridge: RCTBridge) -> URL? {
     self.bundleURL()
   }

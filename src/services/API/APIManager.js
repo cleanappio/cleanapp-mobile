@@ -1,7 +1,11 @@
 import { getJSONData, postJSONData } from './CoreAPICalls';
 import { settings as s, getUrls } from './Settings';
-import { getMapLocation } from '../DataManager';
+import {
+  getMapLocation,
+  getOrCreatePushInstallID,
+} from '../DataManager';
 import MatchReportsLogger from '../../utils/MatchReportsLogger';
+import AppVersionService from '../AppVersionService';
 
 // === API v.2
 
@@ -75,9 +79,13 @@ export const report = async (
   annotation = '',
 ) => {
   try {
+    const installId = await getOrCreatePushInstallID();
+    const appVersion = await AppVersionService.getFullVersionString();
     const data = {
       version: '2.0',
       channel: 'mobile',
+      app_version: appVersion,
+      device_id: installId,
       reporter_id: publicAddress,
       latitude: latitude,
       longitude: longitude,
@@ -642,6 +650,65 @@ export const readReportEmailStatus = async (userId, seq) => {
     return result;
   } catch (err) {
     console.warn('readReportEmailStatus error:', err.message);
+    return null;
+  }
+};
+
+export const registerMobilePushDevice = async ({
+  installId,
+  platform,
+  provider,
+  pushToken,
+  appVersion,
+  notificationsEnabled,
+}) => {
+  try {
+    const response = await fetch(`${getUrls().liveUrl}/api/v3/mobile/push/register`, {
+      method: 'post',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        install_id: installId,
+        platform: platform,
+        provider: provider,
+        push_token: pushToken,
+        app_version: appVersion,
+        notifications_enabled: Boolean(notificationsEnabled),
+      }),
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    return await response.json();
+  } catch (err) {
+    console.warn('registerMobilePushDevice error:', err.message);
+    return null;
+  }
+};
+
+export const unregisterMobilePushDevice = async ({installId, provider}) => {
+  try {
+    const response = await fetch(`${getUrls().liveUrl}/api/v3/mobile/push/unregister`, {
+      method: 'post',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        install_id: installId,
+        provider: provider,
+      }),
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    return await response.json();
+  } catch (err) {
+    console.warn('unregisterMobilePushDevice error:', err.message);
     return null;
   }
 };
