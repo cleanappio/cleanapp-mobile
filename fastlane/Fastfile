@@ -1,15 +1,25 @@
 default_platform(:ios)
 
+require 'json'
+
+def cleanapp_version_config
+  root_dir = ENV["CLEANAPP_ROOT"] || File.expand_path("..", __dir__)
+  version_path = File.join(root_dir, "version.json")
+  JSON.parse(File.read(version_path))
+end
+
 platform :ios do
   desc "Push a new release build to the App Store"
   lane :release do
+    version_config = cleanapp_version_config
+
     # 0. Set Version Info
     increment_version_number(
-      version_number: "3.2.23",
+      version_number: version_config["version"],
       xcodeproj: "ios/CleanApp.xcodeproj"
     )
     increment_build_number(
-      build_number: "1",
+      build_number: version_config["buildNumber"].to_s,
       xcodeproj: "ios/CleanApp.xcodeproj"
     )
 

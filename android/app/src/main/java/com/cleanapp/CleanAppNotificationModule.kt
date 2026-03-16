@@ -70,7 +70,7 @@ class CleanAppNotificationModule(
         return
       }
 
-      FirebaseMessaging.getInstance(firebaseApp).token
+      FirebaseMessaging.getInstance().token
         .addOnCompleteListener { task ->
           if (!task.isSuccessful) {
             promise.reject(
@@ -106,7 +106,7 @@ class CleanAppNotificationModule(
         return
       }
 
-      FirebaseMessaging.getInstance(firebaseApp).deleteToken()
+      FirebaseMessaging.getInstance().deleteToken()
         .addOnCompleteListener { task ->
           if (!task.isSuccessful) {
             promise.reject(
