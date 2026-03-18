@@ -442,9 +442,12 @@ export const getReportsByLatLon = async (lat, lon) => {
   }
 };
 
-export const getReportsById = async userId => {
+export const getReportsById = async (userId, limit = 100) => {
   try {
-    const url = `${getUrls().liveUrl}/api/v3/reports/by-id?id=${userId}`;
+    const boundedLimit = Math.max(1, Math.min(Number(limit) || 100, 250));
+    const url = `${getUrls().liveUrl}/api/v3/reports/by-id?id=${encodeURIComponent(
+      userId,
+    )}&n=${boundedLimit}`;
 
     const response = await fetch(url);
 

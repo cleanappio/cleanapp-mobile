@@ -22,6 +22,9 @@ const KEYS = {
   REPORTS: 'REPORTS',
   PLAYERS: 'PLAYERS',
   GUILDS: 'GUILDS',
+  LEADERBOARD_TEAMS_SNAPSHOT: 'LEADERBOARD_TEAMS_SNAPSHOT',
+  LEADERBOARD_PLAYERS_SNAPSHOT: 'LEADERBOARD_PLAYERS_SNAPSHOT',
+  MY_REPORTS_SNAPSHOT: 'MY_REPORTS_SNAPSHOT',
   REFERRAL_KEY: 'REFERRAL_KEY',
   REFERRAL: 'REFERRAL',
   TEAM: 'TEAM',
@@ -423,6 +426,65 @@ export const getPlayers = async () => {
 export const setPlayers = async players => {
   try {
     await AsyncStorage.setItem(KEYS.PLAYERS, JSON.stringify(players));
+  } catch (err) {}
+};
+
+export const getLeaderboardTeamsSnapshot = async () => {
+  try {
+    const response = await AsyncStorage.getItem(KEYS.LEADERBOARD_TEAMS_SNAPSHOT);
+    if (response) {
+      return JSON.parse(response);
+    }
+  } catch (err) {}
+  return null;
+};
+
+export const setLeaderboardTeamsSnapshot = async snapshot => {
+  try {
+    await AsyncStorage.setItem(
+      KEYS.LEADERBOARD_TEAMS_SNAPSHOT,
+      JSON.stringify(snapshot),
+    );
+  } catch (err) {}
+};
+
+export const getLeaderboardPlayersSnapshot = async () => {
+  try {
+    const response = await AsyncStorage.getItem(
+      KEYS.LEADERBOARD_PLAYERS_SNAPSHOT,
+    );
+    if (response) {
+      return JSON.parse(response);
+    }
+  } catch (err) {}
+  return null;
+};
+
+export const setLeaderboardPlayersSnapshot = async snapshot => {
+  try {
+    await AsyncStorage.setItem(
+      KEYS.LEADERBOARD_PLAYERS_SNAPSHOT,
+      JSON.stringify(snapshot),
+    );
+  } catch (err) {}
+};
+
+export const getMyReportsSnapshot = async () => {
+  try {
+    const response = await AsyncStorage.getItem(KEYS.MY_REPORTS_SNAPSHOT);
+    if (response) {
+      return JSON.parse(response);
+    }
+  } catch (err) {}
+  return null;
+};
+
+export const setMyReportsSnapshot = async snapshot => {
+  try {
+    await AsyncStorage.setItem(
+      KEYS.MY_REPORTS_SNAPSHOT,
+      JSON.stringify(snapshot),
+    );
   } catch (err) {}
 };
 

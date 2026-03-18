@@ -20,7 +20,17 @@ import { FlatList, GestureHandlerRootView } from 'react-native-gesture-handler';
 import { theme } from '../services/Common/theme';
 import { fontFamilies } from '../utils/fontFamilies';
 import Ripple from '../components/Ripple';
-import { getTeam, getUserName, getWalletAddress } from '../services/DataManager';
+import {
+  getLeaderboardPlayersSnapshot,
+  getLeaderboardTeamsSnapshot,
+  getMyReportsSnapshot,
+  getTeam,
+  getUserName,
+  getWalletAddress,
+  setLeaderboardPlayersSnapshot,
+  setLeaderboardTeamsSnapshot,
+  setMyReportsSnapshot,
+} from '../services/DataManager';
 import {
   getTeams,
   getTopScores,
@@ -161,43 +171,99 @@ export const Leaderboard = (props) => {
   const [isLoadingReports, setIsLoadingReports] = useState(false);
   const [reportsError, setReportsError] = useState(null);
   const [refreshingReports, setRefreshingReports] = useState(false);
+  const isFetchingDataRef = useRef(false);
+  const isFetchingReportsRef = useRef(false);
 
-  const fetchData = async () => {
+  const fetchData = async ({ force = false, paintCache = true } = {}) => {
     const wallet = await getWalletAddress();
     if (wallet) {
       setWalletAddress(wallet);
     }
 
-    publicAddress = await getWalletAddress();
+    if (paintCache && wallet) {
+      const [cachedPlayersSnapshot, cachedTeamsSnapshot] = await Promise.all([
+        getLeaderboardPlayersSnapshot(),
+        getLeaderboardTeamsSnapshot(),
+      ]);
 
-    getTopScores(publicAddress).then((userrankResponse) => {
+      if (
+        cachedPlayersSnapshot?.wallet === wallet &&
+        Array.isArray(cachedPlayersSnapshot.records) &&
+        cachedPlayersSnapshot.records.length > 0
+      ) {
+        setLeaderboardPlayers(cachedPlayersSnapshot.records);
+        const cachedIndex = cachedPlayersSnapshot.records.findIndex(
+          record => record.is_you,
+        );
+        if (cachedIndex !== -1) {
+          setUserIndex(cachedIndex);
+        }
+      }
+
+      if (cachedTeamsSnapshot?.wallet === wallet) {
+        if (typeof cachedTeamsSnapshot.blue === 'number') {
+          setBlueStat(cachedTeamsSnapshot.blue);
+        }
+        if (typeof cachedTeamsSnapshot.green === 'number') {
+          setGreenStat(cachedTeamsSnapshot.green);
+        }
+      }
+    }
+
+    const team = await getTeam();
+    setUserTeam(team);
+
+    const data = await getUserName();
+    setName(data.userName);
+    setNewName(data.userName);
+
+    if (isFetchingDataRef.current && !force) {
+      return;
+    }
+    isFetchingDataRef.current = true;
+
+    try {
+      const publicAddress = wallet;
+      const [userrankResponse, teamResponse] = await Promise.all([
+        getTopScores(publicAddress),
+        getTeams(publicAddress),
+      ]);
+
       if (userrankResponse && userrankResponse.ok) {
         setLeaderboardPlayers(userrankResponse.records);
         const _index = userrankResponse.records.findIndex(
-          (record) => record.is_you,
+          record => record.is_you,
         );
         if (_index !== -1) {
           setUserIndex(_index);
         }
+        if (wallet) {
+          await setLeaderboardPlayersSnapshot({
+            wallet,
+            fetchedAt: new Date().toISOString(),
+            records: userrankResponse.records,
+          });
+        }
       }
-    });
 
-    getTeams(publicAddress).then(async (teamResponse) => {
       if (teamResponse && teamResponse.ok) {
         setBlueStat(teamResponse.blue);
         setGreenStat(teamResponse.green);
-        const team = await getTeam();
-        setUserTeam(team);
+        if (wallet) {
+          await setLeaderboardTeamsSnapshot({
+            wallet,
+            fetchedAt: new Date().toISOString(),
+            blue: teamResponse.blue,
+            green: teamResponse.green,
+          });
+        }
       }
-    });
-
-    getUserName().then((data) => {
-      setName(data.userName);
-      setNewName(data.userName);
-    });
+    } finally {
+      isFetchingDataRef.current = false;
+    }
   };
 
-  const fetchMyReports = async () => {
+  const fetchMyReports = async ({ force = false, paintCache = true } = {}) => {
     console.log('Fetching my reports...');
     const wallet = await getWalletAddress();
 
@@ -206,34 +272,61 @@ export const Leaderboard = (props) => {
       return;
     }
 
-    setIsLoadingReports(true);
+    let hasCachedReports = false;
+    if (paintCache) {
+      const cachedReportsSnapshot = await getMyReportsSnapshot();
+      if (
+        cachedReportsSnapshot?.wallet === wallet &&
+        Array.isArray(cachedReportsSnapshot.reports)
+      ) {
+        hasCachedReports = cachedReportsSnapshot.reports.length > 0;
+        setMyReports(cachedReportsSnapshot.reports);
+      }
+    }
+
+    if (isFetchingReportsRef.current && !force) {
+      return;
+    }
+
+    setIsLoadingReports(!hasCachedReports);
     setReportsError(null);
+    isFetchingReportsRef.current = true;
 
     try {
-      const response = await getReportsById(wallet);
+      const response = await getReportsById(wallet, 100);
       
       if (response && response.ok) {
         // Handle different possible response structures
         let reportsData = response.reports.reports;
         setMyReports(reportsData);
+        await setMyReportsSnapshot({
+          wallet,
+          fetchedAt: new Date().toISOString(),
+          reports: reportsData,
+        });
         
         // Images will be loaded by ResponsiveImage components
       } else {
         setReportsError(response?.error || 'Failed to fetch reports');
-        setMyReports([]);
+        if (!hasCachedReports) {
+          setMyReports([]);
+        }
       }
     } catch (error) {
       console.error('Error fetching my reports:', error);
       setReportsError('Failed to fetch reports');
-      setMyReports([]);
+      if (!hasCachedReports) {
+        setMyReports([]);
+      }
     } finally {
       setIsLoadingReports(false);
+      isFetchingReportsRef.current = false;
     }
   };
 
   const handleRefreshReports = async () => {
     setRefreshingReports(true);
-    await fetchMyReports();
+    await fetchMyReports({ force: true, paintCache: true });
     setRefreshingReports(false);
   };
 
@@ -246,9 +339,16 @@ export const Leaderboard = (props) => {
 
   useFocusEffect(
     React.useCallback(() => {
-      fetchData();
-      fetchMyReports();
+      fetchData({ paintCache: true });
     }, []),
+  );
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (selectedIndex === 1) {
+        fetchMyReports({ paintCache: true });
+      }
+    }, [selectedIndex]),
   );
 
   const LeaderboardPlayers = React.memo(() => {
@@ -362,8 +462,6 @@ export const Leaderboard = (props) => {
             isSelected={selectedIndex === 1}
             setTab={() => {
               setSelectedIndex(1);
-              // Fetch reports when My Reports tab is activated
-              fetchMyReports();
             }}
           />
         </View>
@@ -420,7 +518,11 @@ export const Leaderboard = (props) => {
                           }
                         }
                         const title = englishAnalysis.title || 'Untitled Report';
-                        const description = englishAnalysis.description || '';
+                        const description =
+                          englishAnalysis.description ||
+                          englishAnalysis.summary ||
+                          report.report.description ||
+                          '';
                         
                         return (
                           <Pressable 
