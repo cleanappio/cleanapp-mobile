@@ -1,5 +1,6 @@
 package com.cleanapp
 
+import android.content.Intent
 import android.os.Bundle
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
@@ -11,6 +12,13 @@ class MainActivity : ReactActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     SplashScreen.show(this)
     super.onCreate(null)
+    CleanAppNotificationModule.handleNotificationOpen(intent)
+  }
+
+  override fun onNewIntent(intent: Intent?) {
+    super.onNewIntent(intent)
+    setIntent(intent)
+    CleanAppNotificationModule.handleNotificationOpen(intent)
   }
 
   /**

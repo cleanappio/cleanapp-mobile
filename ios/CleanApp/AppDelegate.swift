@@ -15,6 +15,10 @@ class AppDelegate: RCTAppDelegate, UNUserNotificationCenterDelegate {
     self.initialProps = [:]
     UNUserNotificationCenter.current().delegate = self
 
+    if let remoteNotification = launchOptions?[.remoteNotification] as? [AnyHashable: Any] {
+      CleanAppNotificationModule.handleNotificationOpen(remoteNotification)
+    }
+
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 
@@ -35,6 +39,7 @@ class AppDelegate: RCTAppDelegate, UNUserNotificationCenterDelegate {
     didReceive response: UNNotificationResponse,
     withCompletionHandler completionHandler: @escaping () -> Void
   ) {
+    CleanAppNotificationModule.handleNotificationOpen(response.notification.request.content.userInfo)
     completionHandler()
   }
 

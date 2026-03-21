@@ -1,4 +1,4 @@
-import {AppState, NativeModules, Platform} from 'react-native';
+import {AppState, NativeEventEmitter, NativeModules, Platform} from 'react-native';
 import Config from 'react-native-config';
 import {
   checkNotifications,
@@ -8,6 +8,8 @@ import {
 
 import {
   readReportEmailStatus,
+  readDetailedReportByPublicId,
+  readDetailedReportBySeq,
   registerMobilePushDevice,
   unregisterMobilePushDevice,
 } from './API/APIManager';
@@ -24,6 +26,7 @@ import {
   setPushDeviceRegistration,
 } from './DataManager';
 import {ToastService} from '../components/ToastifyToast';
+import {runWhenNavigationReady} from './NavigationService';
 
 const POLL_INTERVAL_MS = 15000;
 const TERMINAL_STATUSES = new Set(['sent', 'processed_no_delivery']);
@@ -37,6 +40,8 @@ class ReportDeliveryNotificationService {
     this.remoteRegistrationInFlight = false;
     this.appState = AppState.currentState;
     this.subscription = null;
+    this.notificationOpenSubscription = null;
+    this.notificationEventEmitter = null;
   }
 
   start = async () => {
@@ -52,6 +57,8 @@ class ReportDeliveryNotificationService {
 
     await this.ensureNotificationPermissions();
     await this.ensureRemotePushRegistration();
+    this.subscribeToNotificationOpens();
+    await this.handleInitialNotificationOpen();
     await this.pollNow();
     this.startIntervalIfNeeded();
   };
@@ -61,6 +68,10 @@ class ReportDeliveryNotificationService {
     if (this.subscription) {
       this.subscription.remove();
       this.subscription = null;
+    }
+    if (this.notificationOpenSubscription) {
+      this.notificationOpenSubscription.remove();
+      this.notificationOpenSubscription = null;
     }
     this.started = false;
   };
@@ -361,6 +372,18 @@ class ReportDeliveryNotificationService {
 
   notifyDelivery = async (pendingReport, statusResponse) => {
     const notificationConfig = this.buildNotificationConfig(statusResponse);
+    const primaryRecipient = this.getPrimaryRecipient(statusResponse);
+    const userInfo = {
+      notification_id: `report_delivery_${pendingReport.seq}_${statusResponse.status}`,
+      seq: String(pendingReport.seq),
+      public_id: pendingReport.publicId || '',
+      status: statusResponse.status || '',
+      recipient_email: primaryRecipient?.email || '',
+      recipient_name:
+        primaryRecipient?.display_name || primaryRecipient?.organization || '',
+      sent_at: primaryRecipient?.sent_at || statusResponse.last_email_sent_at || '',
+      navigate_to: 'my_report_details',
+    };
 
     if (this.appState === 'active') {
       ToastService.show({
@@ -376,12 +399,7 @@ class ReportDeliveryNotificationService {
       await NativeModules.CleanAppNotificationModule?.presentLocalNotification(
         notificationConfig.title,
         notificationConfig.body,
-        {
-          notification_id: `report_delivery_${pendingReport.seq}_${statusResponse.status}`,
-          seq: String(pendingReport.seq),
-          public_id: pendingReport.publicId || '',
-          status: statusResponse.status || '',
-        },
+        userInfo,
       );
     } catch (error) {
       console.warn(
@@ -392,21 +410,41 @@ class ReportDeliveryNotificationService {
   };
 
   buildNotificationConfig = statusResponse => {
+    const primaryRecipient = this.getPrimaryRecipient(statusResponse);
+    const recipientLabel =
+      primaryRecipient?.display_name ||
+      primaryRecipient?.organization ||
+      '';
+    const recipientEmail = primaryRecipient?.email || '';
+    const sentAt =
+      this.formatNotificationTimestamp(
+        primaryRecipient?.sent_at || statusResponse.last_email_sent_at,
+      ) || '';
+
     if (statusResponse.status === 'sent') {
       const recipientCount = Number(statusResponse.recipient_count || 0);
-      if (recipientCount === 1) {
+
+      if (recipientLabel && recipientEmail) {
+        const extraCount = Math.max(recipientCount - 1, 0);
         return {
           type: 'success',
           title: 'Report sent',
-          body: 'Your report was sent to 1 responsible party.',
+          body:
+            extraCount > 0
+              ? `Your report was sent to ${recipientLabel} at ${recipientEmail}${sentAt ? ` on ${sentAt}` : ''} and ${extraCount} more recipient(s).`
+              : `Your report was sent to ${recipientLabel} at ${recipientEmail}${sentAt ? ` on ${sentAt}` : ''}.`,
         };
       }
 
-      if (recipientCount > 1) {
+      if (recipientEmail) {
+        const extraCount = Math.max(recipientCount - 1, 0);
         return {
           type: 'success',
           title: 'Report sent',
-          body: `Your report was sent to ${recipientCount} responsible parties.`,
+          body:
+            extraCount > 0
+              ? `Your report was sent to ${recipientEmail}${sentAt ? ` on ${sentAt}` : ''} and ${extraCount} more recipient(s).`
+              : `Your report was sent to ${recipientEmail}${sentAt ? ` on ${sentAt}` : ''}.`,
         };
       }
 
@@ -423,6 +461,108 @@ class ReportDeliveryNotificationService {
       body: 'Your report was processed. No confirmed delivery recipient was recorded yet.',
     };
   };
+
+  getPrimaryRecipient = statusResponse => {
+    if (!Array.isArray(statusResponse?.recipients)) {
+      return null;
+    }
+
+    const sentRecipient = statusResponse.recipients.find(
+      recipient => recipient?.delivery_status === 'sent',
+    );
+    return sentRecipient || statusResponse.recipients[0] || null;
+  };
+
+  formatNotificationTimestamp = rawTimestamp => {
+    if (!rawTimestamp) {
+      return '';
+    }
+
+    try {
+      return new Date(rawTimestamp).toLocaleString(undefined, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    } catch {
+      return rawTimestamp;
+    }
+  };
+
+  subscribeToNotificationOpens = () => {
+    const notificationModule = NativeModules.CleanAppNotificationModule;
+    if (!notificationModule) {
+      return;
+    }
+
+    if (!this.notificationEventEmitter) {
+      this.notificationEventEmitter = new NativeEventEmitter(notificationModule);
+    }
+
+    if (this.notificationOpenSubscription) {
+      return;
+    }
+
+    this.notificationOpenSubscription = this.notificationEventEmitter.addListener(
+      'notificationOpened',
+      payload => {
+        this.handleNotificationOpenPayload(payload);
+      },
+    );
+  };
+
+  handleInitialNotificationOpen = async () => {
+    const notificationModule = NativeModules.CleanAppNotificationModule;
+    if (!notificationModule?.getInitialNotification) {
+      return;
+    }
+
+    try {
+      const payload = await notificationModule.getInitialNotification();
+      if (payload) {
+        await this.handleNotificationOpenPayload(payload);
+      }
+    } catch (error) {
+      console.warn(
+        'ReportDeliveryNotificationService.handleInitialNotificationOpen error:',
+        error?.message || error,
+      );
+    }
+  };
+
+  handleNotificationOpenPayload = async payload => {
+    const seq = Number(payload?.seq || 0);
+    const publicId = payload?.public_id || '';
+
+    if (!seq && !publicId) {
+      return;
+    }
+
+    const reportWithAnalysis =
+      (seq ? await readDetailedReportBySeq(seq) : null) ||
+      (publicId ? await readDetailedReportByPublicId(publicId) : null);
+
+    if (!reportWithAnalysis?.report || !Array.isArray(reportWithAnalysis?.analysis)) {
+      return;
+    }
+
+    runWhenNavigationReady(() => {
+      NativeModules.CleanAppNotificationModule?.clearInitialNotification?.();
+      navigationOpenMyReportDetails(reportWithAnalysis);
+    });
+  };
 }
 
 export default new ReportDeliveryNotificationService();
+
+const navigationOpenMyReportDetails = reportWithAnalysis => {
+  const {navigationRef} = require('./NavigationService');
+  navigationRef.navigate('Leaderboard', {
+    screen: 'MyReportDetails',
+    params: {
+      report: reportWithAnalysis,
+    },
+  });
+};

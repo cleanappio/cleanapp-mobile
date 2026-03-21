@@ -735,3 +735,35 @@ export const readReportCases = async seq => {
     return null;
   }
 };
+
+export const readDetailedReportBySeq = async seq => {
+  try {
+    const url = `${getUrls().liveUrl}/api/v3/reports/by-seq?${new URLSearchParams({
+      seq: String(seq),
+    })}`;
+    const response = await fetch(url);
+    if (!response.ok) {
+      return null;
+    }
+    return await response.json();
+  } catch (err) {
+    console.warn('readDetailedReportBySeq error:', err.message);
+    return null;
+  }
+};
+
+export const readDetailedReportByPublicId = async publicId => {
+  try {
+    const url = `${getUrls().liveUrl}/api/v3/reports/by-public-id?${new URLSearchParams({
+      public_id: String(publicId),
+    })}`;
+    const response = await fetch(url);
+    if (!response.ok) {
+      return null;
+    }
+    return await response.json();
+  } catch (err) {
+    console.warn('readDetailedReportByPublicId error:', err.message);
+    return null;
+  }
+};

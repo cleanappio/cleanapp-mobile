@@ -7,6 +7,7 @@ import android.app.PendingIntent
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
+import android.os.Bundle
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
@@ -16,6 +17,7 @@ import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.ReadableMap
+import com.facebook.react.modules.core.DeviceEventManagerModule
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
 import com.google.firebase.messaging.FirebaseMessaging
@@ -29,9 +31,77 @@ class CleanAppNotificationModule(
     private const val CHANNEL_NAME = "Report delivery updates"
     private const val CHANNEL_DESCRIPTION =
       "Notifications when CleanApp finishes processing your reports."
+    private val NOTIFICATION_PAYLOAD_KEYS =
+      listOf(
+        "seq",
+        "public_id",
+        "status",
+        "recipient_email",
+        "recipient_name",
+        "sent_at",
+        "navigate_to",
+        "notification_id",
+      )
+
+    private var currentReactContext: ReactApplicationContext? = null
+    private var listenerCount = 0
+    private var initialNotificationPayload: Bundle? = null
+
+    fun handleNotificationOpen(intent: Intent?) {
+      val extras = intent?.extras ?: return
+      val payload = Bundle()
+
+      for (key in NOTIFICATION_PAYLOAD_KEYS) {
+        if (extras.containsKey(key)) {
+          payload.putString(key, extras.get(key)?.toString() ?: "")
+        }
+      }
+
+      if (payload.isEmpty) {
+        return
+      }
+
+      initialNotificationPayload = payload
+      emitNotificationOpenedIfPossible(payload)
+    }
+
+    private fun emitNotificationOpenedIfPossible(payload: Bundle) {
+      val reactContext = currentReactContext ?: return
+      if (listenerCount <= 0 || !reactContext.hasActiveReactInstance()) {
+        return
+      }
+
+      reactContext
+        .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+        .emit("notificationOpened", Arguments.fromBundle(payload))
+    }
   }
 
   override fun getName(): String = "CleanAppNotificationModule"
+
+  init {
+    currentReactContext = reactContext
+  }
+
+  @ReactMethod
+  fun addListener(eventName: String?) {
+    listenerCount += 1
+  }
+
+  @ReactMethod
+  fun removeListeners(count: Int) {
+    listenerCount = maxOf(0, listenerCount - count)
+  }
+
+  @ReactMethod
+  fun getInitialNotification(promise: Promise) {
+    promise.resolve(initialNotificationPayload?.let { Arguments.fromBundle(it) })
+  }
+
+  @ReactMethod
+  fun clearInitialNotification() {
+    initialNotificationPayload = null
+  }
 
   @ReactMethod
   fun registerForRemoteNotifications(
@@ -272,5 +342,12 @@ class CleanAppNotificationModule(
       return null
     }
     return this.getString(key)
+  }
+
+  override fun invalidate() {
+    super.invalidate()
+    if (currentReactContext === reactContext) {
+      currentReactContext = null
+    }
   }
 }

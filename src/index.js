@@ -33,6 +33,10 @@ import { useStateValue } from './services/State/State';
 import { useNotifiedReports } from './hooks/useReadReports';
 import { ReportsProvider } from './contexts/ReportsContext';
 import { ToastifyManager } from './components/ToastifyToast';
+import {
+  flushPendingNavigationActions,
+  navigationRef,
+} from './services/NavigationService';
 
 enableScreens();
 
@@ -259,6 +263,8 @@ const RootScreen = () => {
 const CreateRootNavigator = () => {
   return (
     <NavigationContainer
+      ref={navigationRef}
+      onReady={flushPendingNavigationActions}
       theme={{
         colors: { background: theme.COLORS.BG },
         fonts: DefaultTheme.fonts,
