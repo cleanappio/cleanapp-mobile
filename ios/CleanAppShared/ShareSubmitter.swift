@@ -31,7 +31,7 @@ final class ShareSubmitter {
     timeout: TimeInterval = 12,
     completion: @escaping (Result<ShareSubmissionResult, Error>) -> Void
   ) {
-    guard report.normalizedSourceURL != nil || report.normalizedSharedText != nil || report.hasImage else {
+    guard report.normalizedSourceURL != nil || report.normalizedSharedText != nil || report.hasImages else {
       completion(.failure(ShareSubmitterError.invalidPayload))
       return
     }
@@ -41,7 +41,7 @@ final class ShareSubmitter {
     request.httpMethod = "POST"
     request.timeoutInterval = timeout
 
-    if report.hasImage {
+    if report.hasImages {
       let boundary = "CleanAppShareBoundary-\(UUID().uuidString)"
       request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
       request.httpBody = buildMultipartBody(report: report, context: context, boundary: boundary)
@@ -120,12 +120,14 @@ final class ShareSubmitter {
       body.append("\(value)\r\n")
     }
 
-    if let imagePath = report.localImagePath?.trimmedNilIfEmpty,
-       let imageData = try? Data(contentsOf: URL(fileURLWithPath: imagePath)) {
+    for imagePath in report.existingLocalImagePaths.prefix(6) {
+      guard let imageData = try? Data(contentsOf: URL(fileURLWithPath: imagePath)) else {
+        continue
+      }
       let mimeType = detectMimeType(for: imagePath)
       let filename = URL(fileURLWithPath: imagePath).lastPathComponent
       body.append("--\(boundary)\r\n")
-      body.append("Content-Disposition: form-data; name=\"attachment\"; filename=\"\(filename)\"\r\n")
+      body.append("Content-Disposition: form-data; name=\"attachments\"; filename=\"\(filename)\"\r\n")
       body.append("Content-Type: \(mimeType)\r\n\r\n")
       body.append(imageData)
       body.append("\r\n")

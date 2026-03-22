@@ -11,6 +11,8 @@ enum ShareParserError: LocalizedError {
 }
 
 final class ShareParser {
+  private let maxSharedImages = 6
+
   func parse(
     from extensionContext: NSExtensionContext,
     completion: @escaping (Result<SharedIncomingReport, Error>) -> Void
@@ -22,9 +24,10 @@ final class ShareParser {
     }
 
     let group = DispatchGroup()
+    let lock = NSLock()
     var resolvedURL: String?
     var resolvedText: String?
-    var resolvedImagePath: String?
+    var resolvedImagePaths: [String] = []
 
     for item in items {
       for provider in item.attachments ?? [] {
@@ -33,9 +36,17 @@ final class ShareParser {
           provider.loadItem(forTypeIdentifier: UTType.url.identifier, options: nil) { item, _ in
             defer { group.leave() }
             if let url = item as? URL {
-              resolvedURL = url.absoluteString
+              lock.lock()
+              if resolvedURL == nil {
+                resolvedURL = url.absoluteString
+              }
+              lock.unlock()
             } else if let data = item as? Data, let url = URL(dataRepresentation: data, relativeTo: nil) {
-              resolvedURL = url.absoluteString
+              lock.lock()
+              if resolvedURL == nil {
+                resolvedURL = url.absoluteString
+              }
+              lock.unlock()
             }
           }
         }
@@ -45,18 +56,33 @@ final class ShareParser {
           provider.loadItem(forTypeIdentifier: UTType.plainText.identifier, options: nil) { item, _ in
             defer { group.leave() }
             if let text = item as? String {
-              resolvedText = text
+              lock.lock()
+              if resolvedText == nil {
+                resolvedText = text
+              }
+              lock.unlock()
             } else if let attributed = item as? NSAttributedString {
-              resolvedText = attributed.string
+              lock.lock()
+              if resolvedText == nil {
+                resolvedText = attributed.string
+              }
+              lock.unlock()
             }
           }
         }
 
-        if resolvedImagePath == nil && provider.hasItemConformingToTypeIdentifier(UTType.image.identifier) {
+        if provider.hasItemConformingToTypeIdentifier(UTType.image.identifier) {
           group.enter()
           provider.loadItem(forTypeIdentifier: UTType.image.identifier, options: nil) { item, _ in
             defer { group.leave() }
-            resolvedImagePath = self.persistTemporaryImage(item: item)
+            guard let imagePath = self.persistTemporaryImage(item: item) else {
+              return
+            }
+            lock.lock()
+            if resolvedImagePaths.count < self.maxSharedImages, !resolvedImagePaths.contains(imagePath) {
+              resolvedImagePaths.append(imagePath)
+            }
+            lock.unlock()
           }
         }
       }
@@ -67,7 +93,7 @@ final class ShareParser {
         sourceApp: nil,
         sourceURL: resolvedURL,
         sharedText: resolvedText,
-        localImagePath: resolvedImagePath,
+        localImagePaths: Array(resolvedImagePaths.prefix(self.maxSharedImages)),
         platform: "ios",
         captureMode: "share_extension"
       )

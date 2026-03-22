@@ -42,20 +42,25 @@ final class SharedDraftStore {
   func saveDraft(_ draft: SharedIncomingReport) throws {
     try ensureDirectories()
     var persisted = draft
-    if let imagePath = draft.localImagePath?.trimmedNilIfEmpty {
-      persisted.localImagePath = try persistImageIfNeeded(imagePath: imagePath, draftID: draft.id)
+    if !draft.localImagePaths.isEmpty {
+      persisted.localImagePaths = try persistImagesIfNeeded(imagePaths: draft.localImagePaths, draftID: draft.id)
     }
     let data = try encoder.encode(persisted)
     try data.write(to: jsonURL(for: draft.id), options: [.atomic])
   }
 
-  func removeDraft(id: String, imagePath: String?) throws {
+  func removeDraft(id: String, imagePaths: [String]) throws {
     let jsonURL = jsonURL(for: id)
     if FileManager.default.fileExists(atPath: jsonURL.path) {
       try FileManager.default.removeItem(at: jsonURL)
     }
-    if let imagePath = imagePath?.trimmedNilIfEmpty, imagePath.hasPrefix(imagesDirectory.path), FileManager.default.fileExists(atPath: imagePath) {
-      try FileManager.default.removeItem(atPath: imagePath)
+    for imagePath in imagePaths {
+      guard let trimmed = imagePath.trimmedNilIfEmpty,
+            trimmed.hasPrefix(imagesDirectory.path),
+            FileManager.default.fileExists(atPath: trimmed) else {
+        continue
+      }
+      try FileManager.default.removeItem(atPath: trimmed)
     }
   }
 
@@ -68,17 +73,25 @@ final class SharedDraftStore {
     try FileManager.default.createDirectory(at: imagesDirectory, withIntermediateDirectories: true)
   }
 
-  private func persistImageIfNeeded(imagePath: String, draftID: String) throws -> String {
-    let sourceURL = URL(fileURLWithPath: imagePath)
-    if sourceURL.path.hasPrefix(imagesDirectory.path) {
-      return sourceURL.path
+  private func persistImagesIfNeeded(imagePaths: [String], draftID: String) throws -> [String] {
+    var persisted: [String] = []
+    for (index, imagePath) in imagePaths.enumerated() {
+      guard let trimmed = imagePath.trimmedNilIfEmpty else {
+        continue
+      }
+      let sourceURL = URL(fileURLWithPath: trimmed)
+      if sourceURL.path.hasPrefix(imagesDirectory.path) {
+        persisted.append(sourceURL.path)
+        continue
+      }
+      let ext = sourceURL.pathExtension.isEmpty ? "jpg" : sourceURL.pathExtension
+      let destinationURL = imagesDirectory.appendingPathComponent("\(draftID)-\(index).\(ext)")
+      if FileManager.default.fileExists(atPath: destinationURL.path) {
+        try FileManager.default.removeItem(at: destinationURL)
+      }
+      try FileManager.default.copyItem(at: sourceURL, to: destinationURL)
+      persisted.append(destinationURL.path)
     }
-    let ext = sourceURL.pathExtension.isEmpty ? "jpg" : sourceURL.pathExtension
-    let destinationURL = imagesDirectory.appendingPathComponent("\(draftID).\(ext)")
-    if FileManager.default.fileExists(atPath: destinationURL.path) {
-      try FileManager.default.removeItem(at: destinationURL)
-    }
-    try FileManager.default.copyItem(at: sourceURL, to: destinationURL)
-    return destinationURL.path
+    return persisted
   }
 }

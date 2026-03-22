@@ -256,7 +256,8 @@ CleanApp supports a minimum-friction share flow on both iOS and Android:
 - No category picker
 - No confirmation screen
 - URL/text is preferred over image
-- If URL/text and image are both present, the report is created from URL/text and the image is attached as supporting evidence
+- If URL/text and image are both present, the report is created from URL/text and the images are attached as supporting evidence
+- Up to 6 shared images are supported
 - If immediate submission fails, the payload is queued locally and retried later
 
 ### Shared payload model
@@ -268,7 +269,7 @@ Both platforms normalize inbound share payloads into the same native shape:
 - `source_app`
 - `source_url`
 - `shared_text`
-- `local_image_path`
+- `local_image_paths`
 - `platform`
 - `submission_state`
 - `failure_reason`
@@ -304,7 +305,7 @@ Extension activation rules support:
 
 - one web URL
 - text
-- one image
+- up to 6 images
 
 If provisioning is managed outside Xcode, make sure the App Group capability is enabled for both the main app and the Share Extension in the Apple Developer portal/App IDs.
 
@@ -322,6 +323,7 @@ Manifest support is configured for:
 
 - `ACTION_SEND` + `text/plain`
 - `ACTION_SEND` + `image/*`
+- `ACTION_SEND_MULTIPLE` + `image/*`
 
 Retries are scheduled with WorkManager.
 
@@ -335,8 +337,9 @@ Retries are scheduled with WorkManager.
 4. Confirm a digital report is created automatically.
 5. Share a post/link from X into CleanApp and confirm automatic submission.
 6. Share a screenshot into CleanApp and confirm an image-only digital report is created.
-7. Disable network, share a URL/image, and confirm the share completes cleanly without blocking UI.
-8. Reopen CleanApp and confirm the pending draft is retried automatically.
+7. Share multiple screenshots into CleanApp and confirm they are submitted together, up to 6 images.
+8. Disable network, share a URL/image set, and confirm the share completes cleanly without blocking UI.
+9. Reopen CleanApp and confirm the pending draft is retried automatically.
 
 #### Android
 
@@ -345,16 +348,18 @@ Retries are scheduled with WorkManager.
 3. Confirm no compose screen appears.
 4. Confirm the report is submitted automatically.
 5. Share a single image into CleanApp and confirm image-only digital report creation.
-6. Disable network, share a URL/image, and confirm the draft is queued.
-7. Reopen CleanApp or wait for WorkManager retry and confirm the draft is submitted later.
+6. Share multiple images into CleanApp and confirm they are submitted together, up to 6 images.
+7. Disable network, share a URL/image set, and confirm the draft is queued.
+8. Reopen CleanApp or wait for WorkManager retry and confirm the draft is submitted later.
 
 ### Assumptions and unresolved dependencies
 
 - The backend endpoint `/api/v3/reports/digital-share` must be deployed and reachable from mobile clients.
 - The iOS App Group `group.io.cleanapp.shared` must be provisioned in Apple Developer for both app IDs.
 - iOS Share Extension runtime behavior still needs final device/TestFlight validation because simulator/workspace builds are heavy and extension behavior is best verified on-device.
-- Android single-share flow is implemented and `:app:assembleDebug` succeeds locally.
-- Multi-item share, video share, editing UI, and category selection are intentionally out of scope for this MVP.
+- Android share flow is implemented and `:app:assembleDebug` succeeds locally.
+- Video share, editing UI, and category selection are intentionally out of scope for this MVP.
+- The backend preserves all shared images, but the legacy primary report image slot still uses the first image as the canonical inline image for downstream compatibility.
 
 ### Run app on Android simulator
 

@@ -64,6 +64,11 @@
           <category android:name="android.intent.category.DEFAULT" />
           <data android:mimeType="image/*" />
         </intent-filter>
+        <intent-filter>
+          <action android:name="android.intent.action.SEND_MULTIPLE" />
+          <category android:name="android.intent.category.DEFAULT" />
+          <data android:mimeType="image/*" />
+        </intent-filter>
       </activity>
       <!-- You will only need to add this meta-data tag, but make sure it's a child of application -->
       <meta-data

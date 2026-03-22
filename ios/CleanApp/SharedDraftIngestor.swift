@@ -41,7 +41,7 @@ final class SharedDraftIngestor {
           switch result {
           case .success:
             do {
-              try self.store.removeDraft(id: draft.id, imagePath: draft.localImagePath)
+              try self.store.removeDraft(id: draft.id, imagePaths: draft.localImagePaths)
               submitted += 1
               NSLog("[ShareToCleanApp] share_retry_succeeded id=%@", draft.id)
             } catch {

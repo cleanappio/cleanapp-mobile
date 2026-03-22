@@ -18,7 +18,7 @@ class ShareSubmissionRepository {
   )
 
   fun submit(report: SharedIncomingReport, context: SharedDraftContext, timeoutMillis: Int = 12_000): SubmissionResult {
-    require(report.normalizedSourceUrl() != null || report.normalizedSharedText() != null || report.hasImage()) {
+    require(report.normalizedSourceUrl() != null || report.normalizedSharedText() != null || report.hasImages()) {
       "no usable share payload"
     }
 
@@ -32,7 +32,7 @@ class ShareSubmissionRepository {
     }
 
     try {
-      if (report.hasImage()) {
+      if (report.hasImages()) {
         val boundary = "CleanAppShareBoundary-${report.id}"
         connection.doOutput = true
         connection.setRequestProperty("Content-Type", "multipart/form-data; boundary=$boundary")
@@ -41,7 +41,9 @@ class ShareSubmissionRepository {
           payload.forEach { (key, value) ->
             writeFormField(stream, boundary, key, value)
           }
-          writeImagePart(stream, boundary, report.localImagePath!!)
+          report.existingImagePaths().take(6).forEach { imagePath ->
+            writeImagePart(stream, boundary, imagePath)
+          }
           stream.writeBytes("--$boundary--\r\n")
           stream.flush()
         }
@@ -108,7 +110,7 @@ class ShareSubmissionRepository {
     val file = File(imagePath)
     val mimeType = URLConnection.guessContentTypeFromName(file.name) ?: "image/jpeg"
     stream.writeBytes("--$boundary\r\n")
-    stream.writeBytes("Content-Disposition: form-data; name=\"attachment\"; filename=\"${file.name}\"\r\n")
+    stream.writeBytes("Content-Disposition: form-data; name=\"attachments\"; filename=\"${file.name}\"\r\n")
     stream.writeBytes("Content-Type: $mimeType\r\n\r\n")
     BufferedInputStream(file.inputStream()).use { input ->
       input.copyTo(stream)

@@ -13,7 +13,7 @@ struct SharedIncomingReport: Codable {
   var sourceApp: String?
   var sourceURL: String?
   var sharedText: String?
-  var localImagePath: String?
+  var localImagePaths: [String]
   var platform: String
   var captureMode: String
   var submissionState: SharedIncomingReportSubmissionState
@@ -25,6 +25,7 @@ struct SharedIncomingReport: Codable {
     sourceApp: String? = nil,
     sourceURL: String? = nil,
     sharedText: String? = nil,
+    localImagePaths: [String] = [],
     localImagePath: String? = nil,
     platform: String,
     captureMode: String,
@@ -36,15 +37,60 @@ struct SharedIncomingReport: Codable {
     self.sourceApp = sourceApp?.trimmedNilIfEmpty
     self.sourceURL = SharedIncomingReport.normalizeURL(sourceURL)
     self.sharedText = sharedText?.trimmedNilIfEmpty
-    self.localImagePath = localImagePath?.trimmedNilIfEmpty
+    self.localImagePaths = SharedIncomingReport.normalizeImagePaths(localImagePaths, legacyPath: localImagePath)
     self.platform = platform
     self.captureMode = captureMode
     self.submissionState = submissionState
     self.failureReason = failureReason?.trimmedNilIfEmpty
   }
 
+  enum CodingKeys: String, CodingKey {
+    case id
+    case createdAt
+    case sourceApp
+    case sourceURL
+    case sharedText
+    case localImagePaths
+    case localImagePath
+    case platform
+    case captureMode
+    case submissionState
+    case failureReason
+  }
+
+  init(from decoder: Decoder) throws {
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+    id = try container.decodeIfPresent(String.self, forKey: .id) ?? UUID().uuidString.lowercased()
+    createdAt = try container.decodeIfPresent(String.self, forKey: .createdAt) ?? ShareDate.iso8601String(from: Date())
+    sourceApp = try container.decodeIfPresent(String.self, forKey: .sourceApp)
+    sourceURL = SharedIncomingReport.normalizeURL(try container.decodeIfPresent(String.self, forKey: .sourceURL))
+    sharedText = try container.decodeIfPresent(String.self, forKey: .sharedText)?.trimmedNilIfEmpty
+    localImagePaths = SharedIncomingReport.normalizeImagePaths(
+      (try container.decodeIfPresent([String].self, forKey: .localImagePaths)) ?? [],
+      legacyPath: try container.decodeIfPresent(String.self, forKey: .localImagePath)
+    )
+    platform = try container.decodeIfPresent(String.self, forKey: .platform) ?? "ios"
+    captureMode = try container.decodeIfPresent(String.self, forKey: .captureMode) ?? "share_extension"
+    submissionState = try container.decodeIfPresent(SharedIncomingReportSubmissionState.self, forKey: .submissionState) ?? .pending
+    failureReason = try container.decodeIfPresent(String.self, forKey: .failureReason)?.trimmedNilIfEmpty
+  }
+
+  func encode(to encoder: Encoder) throws {
+    var container = encoder.container(keyedBy: CodingKeys.self)
+    try container.encode(id, forKey: .id)
+    try container.encode(createdAt, forKey: .createdAt)
+    try container.encodeIfPresent(sourceApp?.trimmedNilIfEmpty, forKey: .sourceApp)
+    try container.encodeIfPresent(SharedIncomingReport.normalizeURL(sourceURL), forKey: .sourceURL)
+    try container.encodeIfPresent(sharedText?.trimmedNilIfEmpty, forKey: .sharedText)
+    try container.encode(localImagePaths, forKey: .localImagePaths)
+    try container.encode(platform, forKey: .platform)
+    try container.encode(captureMode, forKey: .captureMode)
+    try container.encode(submissionState, forKey: .submissionState)
+    try container.encodeIfPresent(failureReason?.trimmedNilIfEmpty, forKey: .failureReason)
+  }
+
   var payloadType: String {
-    switch (normalizedSourceURL != nil, normalizedSharedText != nil, hasImage) {
+    switch (normalizedSourceURL != nil, normalizedSharedText != nil, hasImages) {
     case (true, true, true):
       return "url+text+image"
     case (true, false, true):
@@ -87,10 +133,19 @@ struct SharedIncomingReport: Codable {
   }
 
   var hasImage: Bool {
-    guard let localImagePath = localImagePath?.trimmedNilIfEmpty else {
-      return false
-    }
-    return FileManager.default.fileExists(atPath: localImagePath)
+    hasImages
+  }
+
+  var hasImages: Bool {
+    !existingLocalImagePaths.isEmpty
+  }
+
+  var localImagePath: String? {
+    existingLocalImagePaths.first ?? localImagePaths.first
+  }
+
+  var existingLocalImagePaths: [String] {
+    localImagePaths.filter { FileManager.default.fileExists(atPath: $0) }
   }
 
   static func normalizeURL(_ raw: String?) -> String? {
@@ -128,6 +183,20 @@ struct SharedIncomingReport: Codable {
       return false
     }
     return lower.contains(".") || lower.hasPrefix("x.com/") || lower.hasPrefix("twitter.com/")
+  }
+
+  private static func normalizeImagePaths(_ imagePaths: [String], legacyPath: String?) -> [String] {
+    var normalized: [String] = []
+    let combined: [String?] = [legacyPath] + imagePaths.map(Optional.some)
+    for rawPath in combined {
+      guard let trimmed = rawPath?.trimmedNilIfEmpty else {
+        continue
+      }
+      if !normalized.contains(trimmed) {
+        normalized.append(trimmed)
+      }
+    }
+    return normalized
   }
 }
 

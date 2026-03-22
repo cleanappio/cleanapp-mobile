@@ -10,12 +10,15 @@ data class SharedIncomingReport(
   val sourceApp: String? = null,
   val sourceUrl: String? = null,
   val sharedText: String? = null,
-  val localImagePath: String? = null,
+  val localImagePaths: List<String> = emptyList(),
   val platform: String,
   val captureMode: String,
   val submissionState: String = "pending",
   val failureReason: String? = null,
 ) {
+  val localImagePath: String?
+    get() = existingImagePaths().firstOrNull() ?: localImagePaths.firstOrNull()
+
   fun normalizedSourceUrl(): String? {
     normalizeUrl(sourceUrl)?.let { return it }
     return normalizeUrl(sharedText)
@@ -31,15 +34,22 @@ data class SharedIncomingReport(
     return text
   }
 
-  fun hasImage(): Boolean {
-    val path = localImagePath?.trim()?.takeIf { it.isNotEmpty() } ?: return false
-    return File(path).exists()
+  fun hasImage(): Boolean = hasImages()
+
+  fun hasImages(): Boolean {
+    return existingImagePaths().isNotEmpty()
+  }
+
+  fun existingImagePaths(): List<String> {
+    return localImagePaths
+      .mapNotNull { it.trim().takeIf(String::isNotEmpty) }
+      .filter { File(it).exists() }
   }
 
   fun payloadType(): String {
     val hasUrl = normalizedSourceUrl() != null
     val hasText = normalizedSharedText() != null
-    val hasImage = hasImage()
+    val hasImage = hasImages()
     return when {
       hasUrl && hasText && hasImage -> "url+text+image"
       hasUrl && hasImage -> "url+image"

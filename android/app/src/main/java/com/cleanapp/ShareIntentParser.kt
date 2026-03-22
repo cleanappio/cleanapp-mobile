@@ -11,13 +11,25 @@ class ShareIntentParser(
   private val pendingShareStore: PendingShareStore,
 ) {
   fun parse(intent: Intent): SharedIncomingReport? {
-    if (intent.action != Intent.ACTION_SEND) {
+    if (intent.action != Intent.ACTION_SEND && intent.action != Intent.ACTION_SEND_MULTIPLE) {
       return null
     }
 
     val sharedText = intent.getStringExtra(Intent.EXTRA_TEXT)?.trim()?.takeIf { it.isNotEmpty() }
-    val imageUri = intent.parcelableExtraCompat<Uri>(Intent.EXTRA_STREAM)
-    val localImagePath = imageUri?.let { pendingShareStore.copyIncomingImage(it) }
+    val imageUris =
+      when (intent.action) {
+        Intent.ACTION_SEND_MULTIPLE -> {
+          intent.parcelableArrayListExtraCompat<Uri>(Intent.EXTRA_STREAM).orEmpty() +
+            buildList {
+              val clipData = intent.clipData ?: return@buildList
+              for (index in 0 until clipData.itemCount) {
+                clipData.getItemAt(index).uri?.let { add(it) }
+              }
+            }
+        }
+        else -> listOfNotNull(intent.parcelableExtraCompat<Uri>(Intent.EXTRA_STREAM))
+      }
+    val localImagePaths = pendingShareStore.copyIncomingImages(imageUris.take(6))
     val sourceApp = detectSourceApp(intent)
 
     val report =
@@ -26,7 +38,7 @@ class ShareIntentParser(
         sourceApp = sourceApp,
         sourceUrl = sharedText,
         sharedText = sharedText,
-        localImagePath = localImagePath,
+        localImagePaths = localImagePaths,
         platform = "android",
         captureMode = "android_share_intent",
       )
@@ -58,4 +70,13 @@ private inline fun <reified T> Intent.parcelableExtraCompat(name: String): T? =
     else ->
       @Suppress("DEPRECATION")
       getParcelableExtra(name) as? T
+  }
+
+private inline fun <reified T : android.os.Parcelable> Intent.parcelableArrayListExtraCompat(name: String): ArrayList<T>? =
+  when {
+    android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU ->
+      getParcelableArrayListExtra(name, T::class.java)
+    else ->
+      @Suppress("DEPRECATION")
+      getParcelableArrayListExtra(name)
   }
