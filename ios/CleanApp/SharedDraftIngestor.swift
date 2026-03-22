@@ -39,9 +39,17 @@ final class SharedDraftIngestor {
         NSLog("[ShareToCleanApp] share_retry_started id=%@", draft.id)
         self.submitter.submit(report: draft, context: context) { result in
           switch result {
-          case .success:
+          case let .success(submission):
             do {
               try self.store.removeDraft(id: draft.id, imagePaths: draft.localImagePaths)
+              self.store.recordSuccessfulSubmission(
+                SharedSubmissionReceipt(
+                  shareID: draft.id,
+                  reportID: submission.reportID,
+                  publicID: submission.publicID,
+                  receiptID: submission.receiptID
+                )
+              )
               submitted += 1
               NSLog("[ShareToCleanApp] share_retry_succeeded id=%@", draft.id)
             } catch {

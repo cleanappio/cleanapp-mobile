@@ -2,6 +2,7 @@ import UIKit
 
 final class ShareViewController: UIViewController {
   private let spinner = UIActivityIndicatorView(style: .large)
+  private let checkmarkView = UIImageView(image: UIImage(systemName: "checkmark.circle.fill"))
   private let parser = ShareParser()
   private let submitter = ShareSubmitter()
   private let draftStore = SharedDraftStore()
@@ -13,9 +14,18 @@ final class ShareViewController: UIViewController {
     spinner.translatesAutoresizingMaskIntoConstraints = false
     spinner.startAnimating()
     view.addSubview(spinner)
+
+    checkmarkView.translatesAutoresizingMaskIntoConstraints = false
+    checkmarkView.tintColor = .systemGreen
+    checkmarkView.preferredSymbolConfiguration = .init(pointSize: 64, weight: .bold)
+    checkmarkView.alpha = 0
+    view.addSubview(checkmarkView)
+
     NSLayoutConstraint.activate([
       spinner.centerXAnchor.constraint(equalTo: view.centerXAnchor),
       spinner.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+      checkmarkView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+      checkmarkView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
     ])
   }
 
@@ -56,13 +66,39 @@ final class ShareViewController: UIViewController {
     NSLog("[ShareToCleanApp] share_submit_started id=%@", report.id)
     submitter.submit(report: report, context: ShareContextStore.shared.load(), timeout: 10) { [weak self] result in
       switch result {
-      case .success:
+      case let .success(submission):
         NSLog("[ShareToCleanApp] share_submit_succeeded id=%@", report.id)
-        self?.finish()
+        self?.handleSuccess(report: report, submission: submission)
       case let .failure(error):
         NSLog("[ShareToCleanApp] share_submit_failed id=%@ error=%@", report.id, String(describing: error))
         self?.queue(report: report, error: error)
       }
+    }
+  }
+
+  private func handleSuccess(report: SharedIncomingReport, submission: ShareSubmissionResult) {
+    draftStore.recordSuccessfulSubmission(
+      SharedSubmissionReceipt(
+        shareID: report.id,
+        reportID: submission.reportID,
+        publicID: submission.publicID,
+        receiptID: submission.receiptID
+      )
+    )
+
+    DispatchQueue.main.async {
+      self.spinner.stopAnimating()
+      UIView.animate(withDuration: 0.15, animations: {
+        self.checkmarkView.alpha = 1
+        self.checkmarkView.transform = CGAffineTransform(scaleX: 1.08, y: 1.08)
+      }, completion: { _ in
+        UIView.animate(withDuration: 0.12, delay: 0.45, options: [.curveEaseInOut], animations: {
+          self.checkmarkView.alpha = 0
+          self.checkmarkView.transform = .identity
+        }, completion: { _ in
+          self.finish()
+        })
+      })
     }
   }
 

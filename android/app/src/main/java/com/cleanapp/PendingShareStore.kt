@@ -12,6 +12,7 @@ class PendingShareStore(private val context: Context) {
   private val prefs = context.getSharedPreferences("cleanapp_share_drafts", Context.MODE_PRIVATE)
   private val contextPrefs = context.getSharedPreferences("cleanapp_share_context", Context.MODE_PRIVATE)
   private val draftsKey = "drafts"
+  private val successfulSubmissionsKey = "successful_submissions"
   private val defaultLiveUrl = "https://live.cleanapp.io"
 
   fun saveContext(sharedDraftContext: SharedDraftContext) {
@@ -67,10 +68,35 @@ class PendingShareStore(private val context: Context) {
     prefs.edit().remove(draftsKey).apply()
   }
 
+  fun recordSuccessfulSubmission(report: SharedIncomingReport, submissionResult: ShareSubmissionRepository.SubmissionResult) {
+    val receipts = loadSuccessfulSubmissions().filterNot { it.shareId == report.id }.toMutableList()
+    receipts.add(
+      SharedSubmissionReceipt(
+        shareId = report.id,
+        reportId = submissionResult.reportId,
+        publicId = submissionResult.publicId,
+        receiptId = submissionResult.receiptId,
+      ),
+    )
+    persistSuccessfulSubmissions(receipts)
+  }
+
+  fun consumeSuccessfulSubmissions(): List<SharedSubmissionReceipt> {
+    val receipts = loadSuccessfulSubmissions()
+    prefs.edit().remove(successfulSubmissionsKey).apply()
+    return receipts
+  }
+
   private fun persistDrafts(drafts: List<SharedIncomingReport>) {
     val array = JSONArray()
     drafts.forEach { array.put(it.toJson()) }
     prefs.edit().putString(draftsKey, array.toString()).apply()
+  }
+
+  private fun persistSuccessfulSubmissions(receipts: List<SharedSubmissionReceipt>) {
+    val array = JSONArray()
+    receipts.forEach { array.put(it.toJson()) }
+    prefs.edit().putString(successfulSubmissionsKey, array.toString()).apply()
   }
 
   private fun persistImagePathsIfNeeded(report: SharedIncomingReport): List<String> {
@@ -135,6 +161,18 @@ class PendingShareStore(private val context: Context) {
 
   private fun imagesDir(): File = File(context.filesDir, "pending-share-images")
 
+  private fun loadSuccessfulSubmissions(): List<SharedSubmissionReceipt> {
+    val raw = prefs.getString(successfulSubmissionsKey, null) ?: return emptyList()
+    return runCatching {
+      val array = JSONArray(raw)
+      buildList {
+        for (index in 0 until array.length()) {
+          add(array.getJSONObject(index).toSharedSubmissionReceipt())
+        }
+      }
+    }.getOrDefault(emptyList())
+  }
+
   private fun SharedIncomingReport.toJson(): JSONObject =
     JSONObject().apply {
       put("id", id)
@@ -170,5 +208,23 @@ class PendingShareStore(private val context: Context) {
       captureMode = optString("captureMode", "android_share_intent"),
       submissionState = optString("submissionState", "pending"),
       failureReason = optString("failureReason").takeIf { it.isNotBlank() },
+    )
+
+  private fun SharedSubmissionReceipt.toJson(): JSONObject =
+    JSONObject().apply {
+      put("shareId", shareId)
+      put("reportId", reportId)
+      put("publicId", publicId)
+      put("receiptId", receiptId)
+      put("createdAt", createdAt)
+    }
+
+  private fun JSONObject.toSharedSubmissionReceipt(): SharedSubmissionReceipt =
+    SharedSubmissionReceipt(
+      shareId = optString("shareId"),
+      reportId = optInt("reportId").takeIf { it > 0 },
+      publicId = optString("publicId").takeIf { it.isNotBlank() },
+      receiptId = optString("receiptId").takeIf { it.isNotBlank() },
+      createdAt = optString("createdAt").takeIf { it.isNotBlank() },
     )
 }

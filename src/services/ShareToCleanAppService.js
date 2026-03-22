@@ -1,6 +1,10 @@
-import {AppState, NativeModules} from 'react-native';
+import {AppState, DeviceEventEmitter, NativeModules} from 'react-native';
 
-import {getOrCreatePushInstallID, getWalletAddress} from './DataManager';
+import {
+  clearMyReportsSnapshot,
+  getOrCreatePushInstallID,
+  getWalletAddress,
+} from './DataManager';
 import AppVersionService from './AppVersionService';
 import {getUrls} from './API/Settings';
 
@@ -57,6 +61,18 @@ class ShareToCleanAppService {
 
       if (shareModule.retryPendingSharedDrafts) {
         await shareModule.retryPendingSharedDrafts();
+      }
+
+      if (shareModule.consumeSuccessfulSharedSubmissions) {
+        const successfulSubmissions =
+          (await shareModule.consumeSuccessfulSharedSubmissions()) || [];
+        if (Array.isArray(successfulSubmissions) && successfulSubmissions.length > 0) {
+          await clearMyReportsSnapshot();
+          DeviceEventEmitter.emit(
+            'cleanapp.shareSubmissionSucceeded',
+            successfulSubmissions,
+          );
+        }
       }
     } catch (error) {
       console.warn('ShareToCleanAppService.syncAndRetry error:', error?.message || error);

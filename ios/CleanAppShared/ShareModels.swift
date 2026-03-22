@@ -214,6 +214,28 @@ struct SharedDraftContext: Codable {
   }
 }
 
+struct SharedSubmissionReceipt: Codable {
+  var shareID: String
+  var reportID: Int?
+  var publicID: String?
+  var receiptID: String?
+  var createdAt: String
+
+  init(
+    shareID: String,
+    reportID: Int?,
+    publicID: String?,
+    receiptID: String?,
+    createdAt: String = ShareDate.iso8601String(from: Date())
+  ) {
+    self.shareID = shareID
+    self.reportID = reportID
+    self.publicID = publicID?.trimmedNilIfEmpty
+    self.receiptID = receiptID?.trimmedNilIfEmpty
+    self.createdAt = createdAt
+  }
+}
+
 enum ShareDate {
   static let formatter: ISO8601DateFormatter = {
     let formatter = ISO8601DateFormatter()

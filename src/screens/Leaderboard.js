@@ -1,10 +1,11 @@
 /* eslint-disable react-native/no-inline-styles */
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
 import {
   Dimensions,
+  DeviceEventEmitter,
   Image,
   // ImageBackground,
   Pressable,
@@ -14,6 +15,7 @@ import {
   ScrollView,
   ActivityIndicator,
   RefreshControl,
+  AppState,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FlatList, GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -350,6 +352,31 @@ export const Leaderboard = (props) => {
       }
     }, [selectedIndex]),
   );
+
+  useEffect(() => {
+    const shareSuccessSubscription = DeviceEventEmitter.addListener(
+      'cleanapp.shareSubmissionSucceeded',
+      () => {
+        fetchData({ force: true, paintCache: true });
+        fetchMyReports({ force: true, paintCache: false });
+      },
+    );
+
+    const appStateSubscription = AppState.addEventListener('change', nextState => {
+      if (nextState !== 'active') {
+        return;
+      }
+      fetchData({ force: true, paintCache: true });
+      if (selectedIndex === 1) {
+        fetchMyReports({ force: true, paintCache: true });
+      }
+    });
+
+    return () => {
+      shareSuccessSubscription.remove();
+      appStateSubscription.remove();
+    };
+  }, [selectedIndex]);
 
   const LeaderboardPlayers = React.memo(() => {
     return (

@@ -22,7 +22,8 @@ class PendingShareWorker(
     var anyFailure = false
     drafts.forEach { draft ->
       try {
-        repository.submitOrThrow(draft, context)
+        val submissionResult = repository.submitOrThrow(draft, context)
+        store.recordSuccessfulSubmission(draft, submissionResult)
         store.removeDraft(draft)
         Log.i("ShareToCleanApp", "share_retry_succeeded id=${draft.id}")
       } catch (error: Exception) {

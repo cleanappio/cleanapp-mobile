@@ -9,6 +9,9 @@ RCT_EXTERN_METHOD(syncShareContext:(NSDictionary *)payload
 RCT_EXTERN_METHOD(retryPendingSharedDrafts:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
+RCT_EXTERN_METHOD(consumeSuccessfulSharedSubmissions:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
 + (BOOL)requiresMainQueueSetup
 {
   return NO;

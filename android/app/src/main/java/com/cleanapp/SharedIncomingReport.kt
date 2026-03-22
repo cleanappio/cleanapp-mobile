@@ -2,6 +2,7 @@ package com.cleanapp
 
 import android.net.Uri
 import java.io.File
+import java.time.Instant
 import java.util.UUID
 
 data class SharedIncomingReport(
@@ -101,4 +102,12 @@ data class SharedDraftContext(
   val installId: String?,
   val liveUrl: String,
   val appVersion: String?,
+)
+
+data class SharedSubmissionReceipt(
+  val shareId: String,
+  val reportId: Int?,
+  val publicId: String?,
+  val receiptId: String?,
+  val createdAt: String? = Instant.now().toString(),
 )

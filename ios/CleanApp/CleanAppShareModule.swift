@@ -4,6 +4,7 @@ import React
 @objc(CleanAppShareModule)
 class CleanAppShareModule: NSObject {
   private let ingestor = SharedDraftIngestor()
+  private let draftStore = SharedDraftStore()
 
   @objc(syncShareContext:resolver:rejecter:)
   func syncShareContext(
@@ -35,6 +36,23 @@ class CleanAppShareModule: NSObject {
     ingestor.retryPendingDrafts(context: context) { stats in
       resolve(stats)
     }
+  }
+
+  @objc(consumeSuccessfulSharedSubmissions:rejecter:)
+  func consumeSuccessfulSharedSubmissions(
+    _ resolve: @escaping RCTPromiseResolveBlock,
+    rejecter reject: @escaping RCTPromiseRejectBlock
+  ) {
+    let receipts = draftStore.consumeSuccessfulSubmissions().map { receipt in
+      [
+        "shareID": receipt.shareID,
+        "reportID": receipt.reportID as Any,
+        "publicID": receipt.publicID as Any,
+        "receiptID": receipt.receiptID as Any,
+        "createdAt": receipt.createdAt,
+      ]
+    }
+    resolve(receipts)
   }
 
   @objc static func requiresMainQueueSetup() -> Bool {

@@ -488,6 +488,15 @@ export const setMyReportsSnapshot = async snapshot => {
   } catch (err) {}
 };
 
+export const clearMyReportsSnapshot = async () => {
+  try {
+    await AsyncStorage.removeItem(KEYS.MY_REPORTS_SNAPSHOT);
+    return true;
+  } catch (err) {
+    return false;
+  }
+};
+
 export const getGuilds = async () => {
   try {
     const response = await AsyncStorage.getItem(KEYS.GUILDS);
