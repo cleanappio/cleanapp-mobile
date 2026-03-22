@@ -13,6 +13,7 @@ import {useStateValue} from './src/services/State/State.js';
 import {theme} from './src/services/Common/theme.js';
 import PollingService from './src/services/PollingService';
 import ReportDeliveryNotificationService from './src/services/ReportDeliveryNotificationService';
+import ShareToCleanAppService from './src/services/ShareToCleanAppService';
 import {
   getLanguage,
   getUserInfo,
@@ -54,11 +55,13 @@ const RootNavigator = () => {
     PollingService.setDispatch(dispatch);
     PollingService.startPolling();
     ReportDeliveryNotificationService.start();
+    ShareToCleanAppService.start();
 
     // Cleanup when component unmounts
     return () => {
       PollingService.stopPolling();
       ReportDeliveryNotificationService.stop();
+      ShareToCleanAppService.stop();
     };
   }, [dispatch]);
   const {show = false} = progressSettings || {};

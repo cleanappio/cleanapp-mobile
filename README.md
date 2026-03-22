@@ -244,6 +244,118 @@ CleanApp includes an interactive build script that simplifies the Android build 
 ./scripts/build-android.sh --help    # Show help
 ```
 
+## Share to CleanApp MVP
+
+CleanApp supports a minimum-friction share flow on both iOS and Android:
+
+`X / browser / Reddit / etc. -> Share -> CleanApp -> report submits automatically`
+
+### MVP behavior
+
+- No compose form
+- No category picker
+- No confirmation screen
+- URL/text is preferred over image
+- If URL/text and image are both present, the report is created from URL/text and the image is attached as supporting evidence
+- If immediate submission fails, the payload is queued locally and retried later
+
+### Shared payload model
+
+Both platforms normalize inbound share payloads into the same native shape:
+
+- `id`
+- `created_at`
+- `source_app`
+- `source_url`
+- `shared_text`
+- `local_image_path`
+- `platform`
+- `submission_state`
+- `failure_reason`
+
+The payload is submitted to the backend endpoint:
+
+- `POST /api/v3/reports/digital-share`
+
+### iOS setup notes
+
+The iOS implementation uses a native Share Extension:
+
+- Target: `CleanAppShareExtension`
+- Entry point: `ios/CleanAppShareExtension/ShareViewController.swift`
+- Parser: `ios/CleanAppShareExtension/ShareParser.swift`
+- Shared native queue/store:
+  - `ios/CleanAppShared/ShareModels.swift`
+  - `ios/CleanAppShared/ShareContextStore.swift`
+  - `ios/CleanAppShared/SharedDraftStore.swift`
+  - `ios/CleanAppShared/ShareSubmitter.swift`
+- Main app retry bridge:
+  - `ios/CleanApp/SharedDraftIngestor.swift`
+  - `ios/CleanApp/CleanAppShareModule.swift`
+
+App Group:
+
+- App Group ID: `group.io.cleanapp.shared`
+- Entitlements are added to both:
+  - `ios/CleanApp/CleanApp.entitlements`
+  - `ios/CleanAppShareExtension/CleanAppShareExtension.entitlements`
+
+Extension activation rules support:
+
+- one web URL
+- text
+- one image
+
+If provisioning is managed outside Xcode, make sure the App Group capability is enabled for both the main app and the Share Extension in the Apple Developer portal/App IDs.
+
+### Android setup notes
+
+The Android implementation uses a native share target activity:
+
+- Entry point: `android/app/src/main/java/com/cleanapp/ShareReceiverActivity.kt`
+- Parser: `android/app/src/main/java/com/cleanapp/ShareIntentParser.kt`
+- Submission: `android/app/src/main/java/com/cleanapp/ShareSubmissionRepository.kt`
+- Local draft store: `android/app/src/main/java/com/cleanapp/PendingShareStore.kt`
+- Retry worker: `android/app/src/main/java/com/cleanapp/PendingShareWorker.kt`
+
+Manifest support is configured for:
+
+- `ACTION_SEND` + `text/plain`
+- `ACTION_SEND` + `image/*`
+
+Retries are scheduled with WorkManager.
+
+### Test checklist
+
+#### iOS
+
+1. Share a URL from Safari into CleanApp.
+2. Confirm the Share Extension appears as a share target.
+3. Confirm no editable compose screen appears.
+4. Confirm a digital report is created automatically.
+5. Share a post/link from X into CleanApp and confirm automatic submission.
+6. Share a screenshot into CleanApp and confirm an image-only digital report is created.
+7. Disable network, share a URL/image, and confirm the share completes cleanly without blocking UI.
+8. Reopen CleanApp and confirm the pending draft is retried automatically.
+
+#### Android
+
+1. Share text/plain into CleanApp from Chrome/X/Reddit.
+2. Confirm CleanApp appears in the Android Sharesheet.
+3. Confirm no compose screen appears.
+4. Confirm the report is submitted automatically.
+5. Share a single image into CleanApp and confirm image-only digital report creation.
+6. Disable network, share a URL/image, and confirm the draft is queued.
+7. Reopen CleanApp or wait for WorkManager retry and confirm the draft is submitted later.
+
+### Assumptions and unresolved dependencies
+
+- The backend endpoint `/api/v3/reports/digital-share` must be deployed and reachable from mobile clients.
+- The iOS App Group `group.io.cleanapp.shared` must be provisioned in Apple Developer for both app IDs.
+- iOS Share Extension runtime behavior still needs final device/TestFlight validation because simulator/workspace builds are heavy and extension behavior is best verified on-device.
+- Android single-share flow is implemented and `:app:assembleDebug` succeeds locally.
+- Multi-item share, video share, editing UI, and category selection are intentionally out of scope for this MVP.
+
 ### Run app on Android simulator
 
 1.  Clean the previous Android build

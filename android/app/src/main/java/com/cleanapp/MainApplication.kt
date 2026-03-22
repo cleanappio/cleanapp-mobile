@@ -21,6 +21,7 @@ class MainApplication : Application(), ReactApplication {
         override fun getPackages(): List<ReactPackage> =
             PackageList(this).packages.apply {
               add(CleanAppNotificationPackage())
+              add(CleanAppSharePackage())
             }
 
         override fun getJSMainModuleName(): String = "index"

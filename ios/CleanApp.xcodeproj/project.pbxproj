@@ -8,44 +8,90 @@
 
 /* Begin PBXBuildFile section */
 		028330C873674768B1913F9D /* Foundation.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 5545B83E7CC84EFFAEDF4550 /* Foundation.ttf */; };
+		07BA576CB45DEFB8FA962CE2 /* SharedDraftIngestor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C7D2470FAA49E7D615C8640 /* SharedDraftIngestor.swift */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		1536D7BBCFE7479BB0F1EF6F /* Ionicons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = FA04431553F848D6BA3E7EB1 /* Ionicons.ttf */; };
 		194ED761D39B4B758728835C /* FontAwesome6_Solid.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3634658B40A241DFB10CC4B2 /* FontAwesome6_Solid.ttf */; };
 		2618AD0691F0472596CE07B2 /* Octicons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 271097EC10454E829E5A827D /* Octicons.ttf */; };
+		34AC6F1A2DE9F9E105AB9D5A /* CleanAppShareModuleBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = C8F0DD0D751C19A6FA710DE4 /* CleanAppShareModuleBridge.m */; };
+		390DE2223E3935836E5E36F3 /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C3437C1BC096157DDDBC685 /* ShareViewController.swift */; };
+		3938A87AB28908A706189B78 /* CleanAppShareModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECAE5EF9A37540D524C3E2DE /* CleanAppShareModule.swift */; };
 		4ED1CABEBA264684AA4BB15F /* SimpleLineIcons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2AABDF4B015A42879F79C72F /* SimpleLineIcons.ttf */; };
 		6CCCEDA7F1254F96B45A444E /* MaterialIcons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 639D896FA06C4709B6DE82EB /* MaterialIcons.ttf */; };
 		7230E6386659459D88BBB30B /* FontAwesome6_Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D226ED2344EA4A34861491C9 /* FontAwesome6_Regular.ttf */; };
 		74362766AC734D889B797CDC /* Feather.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C437B5B1606F4F6081077C71 /* Feather.ttf */; };
+		75427BCAD3AD2E7DD165317F /* SharedDraftStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 059F321192B7B775C2B5BCC1 /* SharedDraftStore.swift */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		7A19F24E6D4D4F0AA12C9001 /* CleanAppNotificationModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A19F24E6D4D4F0AA12C9000 /* CleanAppNotificationModule.swift */; };
 		7A19F24E6D4D4F0AA12C9003 /* CleanAppNotificationModuleBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 7A19F24E6D4D4F0AA12C9002 /* CleanAppNotificationModuleBridge.m */; };
+		7C7F308EBF44C8ABDBFE283C /* ShareSubmitter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56083F9C46F5BA0E172346B5 /* ShareSubmitter.swift */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		85FF3F35466547948447695A /* Zocial.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 103247C34AE34DF3A8FB6A94 /* Zocial.ttf */; };
+		8FD40BF702F65360BA6E37E8 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 24A913E103C79CED80DFD942 /* Foundation.framework */; };
+		A53D624AB40A54B131E44872 /* ShareParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41115D9443A911A214BCD535 /* ShareParser.swift */; };
 		A5D5F9CA05C843C5A55C90CA /* FontAwesome5_Solid.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C8A56BEA6AEE4119B235657B /* FontAwesome5_Solid.ttf */; };
 		A7CC125E8122468CB244B1DC /* AntDesign.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E63686D60C264A1E90971DC4 /* AntDesign.ttf */; };
+		ABA38E5B22BA90FA05A49D04 /* ShareContextStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D48122CDD17208BDA088EBC /* ShareContextStore.swift */; };
 		B4A86901E91C47D6A840DA75 /* FontAwesome5_Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 65393DC811ED44D0B5F43391 /* FontAwesome5_Regular.ttf */; };
 		B4CA47F66DD1401EBCBD4264 /* FontAwesome.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 4B01BEDC110F4DB18394E8C5 /* FontAwesome.ttf */; };
 		B5A3D6D27CDD4640AA64997C /* MaterialCommunityIcons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E720365FC80C49219C21135D /* MaterialCommunityIcons.ttf */; };
+		B5DF4668826A78A5D48CB969 /* ShareModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9728F29031DA8E3A8CAE51C6 /* ShareModels.swift */; };
+		B88D2B4C3A8ED8BF28E2E5B1 /* ShareModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9728F29031DA8E3A8CAE51C6 /* ShareModels.swift */; };
 		C580B9826A094128AF788B10 /* FontAwesome5_Brands.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B23BD43F9BD84CD7B6CCCA57 /* FontAwesome5_Brands.ttf */; };
 		C8F9334D8A7342F310FCB5B1 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
+		CB7DF0C32A268E6F71899F0D /* ShareContextStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D48122CDD17208BDA088EBC /* ShareContextStore.swift */; };
+		D0361863CDA8D8DAF8C8F455 /* CleanAppShareExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = DB6BE8D80795FE390157403A /* CleanAppShareExtension.appex */; };
 		DA7961304738404EADF4148C /* Entypo.ttf in Resources */ = {isa = PBXBuildFile; fileRef = ED6ABABCB3C74007A096E1F1 /* Entypo.ttf */; };
 		DB40E6E76C89461BBA7120EF /* EvilIcons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9082D6AF07D54F97AD4456BF /* EvilIcons.ttf */; };
 		DF481844F0E04054876EABDC /* FontAwesome6_Brands.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 822A247E0F2B4ECFAA7B57B6 /* FontAwesome6_Brands.ttf */; };
+		E221CCDE3AE01630B4D18839 /* SharedDraftStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 059F321192B7B775C2B5BCC1 /* SharedDraftStore.swift */; };
 		E337BDDA71ED51A9570506FE /* libPods-CleanApp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8147B036588757A37DEDE632 /* libPods-CleanApp.a */; };
+		F96BE01B96AD7987F0135D1D /* ShareSubmitter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56083F9C46F5BA0E172346B5 /* ShareSubmitter.swift */; };
 		FA85A278FF734B83AE839E15 /* Fontisto.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C211BDCBE7BF48FC9C8CC442 /* Fontisto.ttf */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		3EECC2E7EF4CCB23111A82D7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B271BA899CDDD893DDF34C08;
+			remoteInfo = CleanAppShareExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		2F00D4B5297754564AE34203 /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				D0361863CDA8D8DAF8C8F455 /* CleanAppShareExtension.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		059F321192B7B775C2B5BCC1 /* SharedDraftStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SharedDraftStore.swift; path = CleanAppShared/SharedDraftStore.swift; sourceTree = "<group>"; };
 		103247C34AE34DF3A8FB6A94 /* Zocial.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Zocial.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Zocial.ttf"; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* CleanApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CleanApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = CleanApp/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = CleanApp/Info.plist; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = CleanApp/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		1C3437C1BC096157DDDBC685 /* ShareViewController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ShareViewController.swift; path = CleanAppShareExtension/ShareViewController.swift; sourceTree = "<group>"; };
+		24A913E103C79CED80DFD942 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		271097EC10454E829E5A827D /* Octicons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Octicons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Octicons.ttf"; sourceTree = "<group>"; };
 		2AABDF4B015A42879F79C72F /* SimpleLineIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = SimpleLineIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/SimpleLineIcons.ttf"; sourceTree = "<group>"; };
 		3634658B40A241DFB10CC4B2 /* FontAwesome6_Solid.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome6_Solid.ttf; path = "../node_modules/react-native-vector-icons/Fonts/FontAwesome6_Solid.ttf"; sourceTree = "<group>"; };
+		3C7D2470FAA49E7D615C8640 /* SharedDraftIngestor.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SharedDraftIngestor.swift; path = CleanApp/SharedDraftIngestor.swift; sourceTree = "<group>"; };
+		41115D9443A911A214BCD535 /* ShareParser.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ShareParser.swift; path = CleanAppShareExtension/ShareParser.swift; sourceTree = "<group>"; };
 		4B01BEDC110F4DB18394E8C5 /* FontAwesome.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome.ttf; path = "../node_modules/react-native-vector-icons/Fonts/FontAwesome.ttf"; sourceTree = "<group>"; };
 		5545B83E7CC84EFFAEDF4550 /* Foundation.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Foundation.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Foundation.ttf"; sourceTree = "<group>"; };
+		56083F9C46F5BA0E172346B5 /* ShareSubmitter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ShareSubmitter.swift; path = CleanAppShared/ShareSubmitter.swift; sourceTree = "<group>"; };
+		5D48122CDD17208BDA088EBC /* ShareContextStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ShareContextStore.swift; path = CleanAppShared/ShareContextStore.swift; sourceTree = "<group>"; };
 		639D896FA06C4709B6DE82EB /* MaterialIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = MaterialIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/MaterialIcons.ttf"; sourceTree = "<group>"; };
 		65393DC811ED44D0B5F43391 /* FontAwesome5_Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome5_Regular.ttf; path = "../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Regular.ttf"; sourceTree = "<group>"; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = CleanApp/AppDelegate.swift; sourceTree = "<group>"; };
@@ -57,15 +103,21 @@
 		86FE184291A1A65ACEDDACFB /* Pods-CleanApp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CleanApp.release.xcconfig"; path = "Target Support Files/Pods-CleanApp/Pods-CleanApp.release.xcconfig"; sourceTree = "<group>"; };
 		9082D6AF07D54F97AD4456BF /* EvilIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = EvilIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/EvilIcons.ttf"; sourceTree = "<group>"; };
 		942ADF7569452C8FAA8EBB58 /* Pods-CleanApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CleanApp.debug.xcconfig"; path = "Target Support Files/Pods-CleanApp/Pods-CleanApp.debug.xcconfig"; sourceTree = "<group>"; };
+		9728F29031DA8E3A8CAE51C6 /* ShareModels.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ShareModels.swift; path = CleanAppShared/ShareModels.swift; sourceTree = "<group>"; };
+		9E4145927DECAD5ED5AA1D0D /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; name = Info.plist; path = CleanAppShareExtension/Info.plist; sourceTree = "<group>"; };
 		B23BD43F9BD84CD7B6CCCA57 /* FontAwesome5_Brands.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome5_Brands.ttf; path = "../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Brands.ttf"; sourceTree = "<group>"; };
 		C211BDCBE7BF48FC9C8CC442 /* Fontisto.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Fontisto.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Fontisto.ttf"; sourceTree = "<group>"; };
 		C437B5B1606F4F6081077C71 /* Feather.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Feather.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Feather.ttf"; sourceTree = "<group>"; };
 		C8A56BEA6AEE4119B235657B /* FontAwesome5_Solid.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome5_Solid.ttf; path = "../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Solid.ttf"; sourceTree = "<group>"; };
+		C8F0DD0D751C19A6FA710DE4 /* CleanAppShareModuleBridge.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = CleanAppShareModuleBridge.m; path = CleanApp/CleanAppShareModuleBridge.m; sourceTree = "<group>"; };
 		D226ED2344EA4A34861491C9 /* FontAwesome6_Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome6_Regular.ttf; path = "../node_modules/react-native-vector-icons/Fonts/FontAwesome6_Regular.ttf"; sourceTree = "<group>"; };
+		DB6BE8D80795FE390157403A /* CleanAppShareExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = CleanAppShareExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		E63686D60C264A1E90971DC4 /* AntDesign.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = AntDesign.ttf; path = "../node_modules/react-native-vector-icons/Fonts/AntDesign.ttf"; sourceTree = "<group>"; };
 		E720365FC80C49219C21135D /* MaterialCommunityIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = MaterialCommunityIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/MaterialCommunityIcons.ttf"; sourceTree = "<group>"; };
+		ECAE5EF9A37540D524C3E2DE /* CleanAppShareModule.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CleanAppShareModule.swift; path = CleanApp/CleanAppShareModule.swift; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		ED6ABABCB3C74007A096E1F1 /* Entypo.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Entypo.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Entypo.ttf"; sourceTree = "<group>"; };
+		F3DCA3A9FF78DAE007B24E9C /* CleanAppShareExtension.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; name = CleanAppShareExtension.entitlements; path = CleanAppShareExtension/CleanAppShareExtension.entitlements; sourceTree = "<group>"; };
 		FA04431553F848D6BA3E7EB1 /* Ionicons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Ionicons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Ionicons.ttf"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -75,6 +127,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				E337BDDA71ED51A9570506FE /* libPods-CleanApp.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		489B7433EDD54523CF25D6E6 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8FD40BF702F65360BA6E37E8 /* Foundation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -91,6 +151,9 @@
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
 				13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */,
+				3C7D2470FAA49E7D615C8640 /* SharedDraftIngestor.swift */,
+				ECAE5EF9A37540D524C3E2DE /* CleanAppShareModule.swift */,
+				C8F0DD0D751C19A6FA710DE4 /* CleanAppShareModuleBridge.m */,
 			);
 			name = CleanApp;
 			sourceTree = "<group>";
@@ -100,8 +163,20 @@
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
 				8147B036588757A37DEDE632 /* libPods-CleanApp.a */,
+				DF6A2680C6FE814B42A89AF1 /* iOS */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		5849FA60FE5FA3A899048A37 /* CleanAppShareExtension */ = {
+			isa = PBXGroup;
+			children = (
+				41115D9443A911A214BCD535 /* ShareParser.swift */,
+				1C3437C1BC096157DDDBC685 /* ShareViewController.swift */,
+				9E4145927DECAD5ED5AA1D0D /* Info.plist */,
+				F3DCA3A9FF78DAE007B24E9C /* CleanAppShareExtension.entitlements */,
+			);
+			name = CleanAppShareExtension;
 			sourceTree = "<group>";
 		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
@@ -120,6 +195,8 @@
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				BBD78D7AC51CEA395F1C20DB /* Pods */,
 				C97527B42C2748D588FB2C25 /* Resources */,
+				8A0098F660E3D9C82E8A7FA4 /* CleanAppShared */,
+				5849FA60FE5FA3A899048A37 /* CleanAppShareExtension */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -130,8 +207,20 @@
 			isa = PBXGroup;
 			children = (
 				13B07F961A680F5B00A75B9A /* CleanApp.app */,
+				DB6BE8D80795FE390157403A /* CleanAppShareExtension.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		8A0098F660E3D9C82E8A7FA4 /* CleanAppShared */ = {
+			isa = PBXGroup;
+			children = (
+				9728F29031DA8E3A8CAE51C6 /* ShareModels.swift */,
+				5D48122CDD17208BDA088EBC /* ShareContextStore.swift */,
+				059F321192B7B775C2B5BCC1 /* SharedDraftStore.swift */,
+				56083F9C46F5BA0E172346B5 /* ShareSubmitter.swift */,
+			);
+			name = CleanAppShared;
 			sourceTree = "<group>";
 		};
 		BBD78D7AC51CEA395F1C20DB /* Pods */ = {
@@ -169,6 +258,14 @@
 			name = Resources;
 			sourceTree = "<group>";
 		};
+		DF6A2680C6FE814B42A89AF1 /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				24A913E103C79CED80DFD942 /* Foundation.framework */,
+			);
+			name = iOS;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -183,15 +280,34 @@
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				7F5E03A2A9FADD50182971A2 /* [CP] Embed Pods Frameworks */,
 				ED4B122E1A26BED200D178AD /* [CP] Copy Pods Resources */,
+				2F00D4B5297754564AE34203 /* Embed App Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				FC7D7780B8DC04547C051385 /* PBXTargetDependency */,
 			);
 			name = CleanApp;
 			productName = CleanApp;
 			productReference = 13B07F961A680F5B00A75B9A /* CleanApp.app */;
 			productType = "com.apple.product-type.application";
+		};
+		B271BA899CDDD893DDF34C08 /* CleanAppShareExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E1F1E0352A574572AB1E6BAB /* Build configuration list for PBXNativeTarget "CleanAppShareExtension" */;
+			buildPhases = (
+				49339C6F9D02F3BA8B514DDF /* Sources */,
+				489B7433EDD54523CF25D6E6 /* Frameworks */,
+				527C0BAEA4C0FF73A5807653 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = CleanAppShareExtension;
+			productName = CleanAppShareExtension;
+			productReference = DB6BE8D80795FE390157403A /* CleanAppShareExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -220,6 +336,7 @@
 			projectRoot = "";
 			targets = (
 				13B07F861A680F5B00A75B9A /* CleanApp */,
+				B271BA899CDDD893DDF34C08 /* CleanAppShareExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -251,6 +368,13 @@
 				2618AD0691F0472596CE07B2 /* Octicons.ttf in Resources */,
 				4ED1CABEBA264684AA4BB15F /* SimpleLineIcons.ttf in Resources */,
 				85FF3F35466547948447695A /* Zocial.ttf in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		527C0BAEA4C0FF73A5807653 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -339,10 +463,39 @@
 				761780ED2CA45674006654EE /* AppDelegate.swift in Sources */,
 				7A19F24E6D4D4F0AA12C9001 /* CleanAppNotificationModule.swift in Sources */,
 				7A19F24E6D4D4F0AA12C9003 /* CleanAppNotificationModuleBridge.m in Sources */,
+				07BA576CB45DEFB8FA962CE2 /* SharedDraftIngestor.swift in Sources */,
+				3938A87AB28908A706189B78 /* CleanAppShareModule.swift in Sources */,
+				34AC6F1A2DE9F9E105AB9D5A /* CleanAppShareModuleBridge.m in Sources */,
+				B88D2B4C3A8ED8BF28E2E5B1 /* ShareModels.swift in Sources */,
+				CB7DF0C32A268E6F71899F0D /* ShareContextStore.swift in Sources */,
+				E221CCDE3AE01630B4D18839 /* SharedDraftStore.swift in Sources */,
+				7C7F308EBF44C8ABDBFE283C /* ShareSubmitter.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		49339C6F9D02F3BA8B514DDF /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B5DF4668826A78A5D48CB969 /* ShareModels.swift in Sources */,
+				ABA38E5B22BA90FA05A49D04 /* ShareContextStore.swift in Sources */,
+				75427BCAD3AD2E7DD165317F /* SharedDraftStore.swift in Sources */,
+				F96BE01B96AD7987F0135D1D /* ShareSubmitter.swift in Sources */,
+				A53D624AB40A54B131E44872 /* ShareParser.swift in Sources */,
+				390DE2223E3935836E5E36F3 /* ShareViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		FC7D7780B8DC04547C051385 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = CleanAppShareExtension;
+			target = B271BA899CDDD893DDF34C08 /* CleanAppShareExtension */;
+			targetProxy = 3EECC2E7EF4CCB23111A82D7 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
@@ -404,6 +557,45 @@
 				PRODUCT_NAME = CleanApp;
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Release;
+		};
+		7513EF5AF3488CC8B4F124E8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_ENTITLEMENTS = CleanAppShareExtension/CleanAppShareExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 45;
+				DEVELOPMENT_TEAM = UW5SVT28YL;
+				INFOPLIST_FILE = CleanAppShareExtension/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				MARKETING_VERSION = 3.2.25;
+				PRODUCT_BUNDLE_IDENTIFIER = io.cleanapp.ShareExtension;
+				PRODUCT_NAME = CleanAppShareExtension;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		8331D34B30AD7B1FBAD64241 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_ENTITLEMENTS = CleanAppShareExtension/CleanAppShareExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 45;
+				DEVELOPMENT_TEAM = UW5SVT28YL;
+				INFOPLIST_FILE = CleanAppShareExtension/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				MARKETING_VERSION = 3.2.25;
+				PRODUCT_BUNDLE_IDENTIFIER = io.cleanapp.ShareExtension;
+				PRODUCT_NAME = CleanAppShareExtension;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
 		};
@@ -576,6 +768,15 @@
 			buildConfigurations = (
 				83CBBA201A601CBA00E9B192 /* Debug */,
 				83CBBA211A601CBA00E9B192 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		E1F1E0352A574572AB1E6BAB /* Build configuration list for PBXNativeTarget "CleanAppShareExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8331D34B30AD7B1FBAD64241 /* Release */,
+				7513EF5AF3488CC8B4F124E8 /* Debug */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
