@@ -64,7 +64,11 @@ const MyReportDetails = ({
 
   // Extract title and description from analysis field with language='en'
   const title = englishAnalysis.title || 'Untitled Report';
-  const description = englishAnalysis.description || report.description || '';
+  const description =
+    englishAnalysis.description ||
+    englishAnalysis.summary ||
+    report.description ||
+    '';
 
   useEffect(() => {
     let cancelled = false;

@@ -1,27 +1,55 @@
-import React, { useRef, useState } from 'react';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import { Linking, Modal, Pressable, ScrollView, StyleSheet, View, Text, TextInput, ToastAndroid, Alert, Platform, InteractionManager, Share } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { fontFamilies } from '../utils/fontFamilies';
-import { theme } from '../services/Common/theme';
+import React, {useEffect, useRef, useState} from 'react';
+import {useFocusEffect} from '@react-navigation/native';
+import {
+  AccessibilityInfo,
+  Linking,
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+  Text,
+  TextInput,
+  ToastAndroid,
+  Alert,
+  Platform,
+  Share,
+} from 'react-native';
+import Reanimated, {
+  cancelAnimation,
+  Easing as ReanimatedEasing,
+  Extrapolation,
+  interpolate,
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withTiming,
+} from 'react-native-reanimated';
+import {SafeAreaView} from 'react-native-safe-area-context';
+import {fontFamilies} from '../utils/fontFamilies';
+import {theme} from '../services/Common/theme';
 import Ripple from '../components/Ripple';
 
 import WalletSettingsIcon from '../assets/ico_cache_settings.svg';
 import BottomSheetDialog from '../components/BotomSheetDialog';
 
 import CopySmallIcon from '../assets/ico_copy_small.svg';
-import { Row } from '../components/Row';
+import EyeSmallIcon from '../assets/ico_eye_small.svg';
+import EyeOffIcon from '../assets/ico_eye_off.svg';
+import {BlurView} from '@react-native-community/blur';
+import {Row} from '../components/Row';
 import Clipboard from '@react-native-clipboard/clipboard';
 import QRCode from 'react-native-qrcode-svg';
 import {
   getPrivacySetting,
   getUserName,
   getWalletAddress,
+  getWalletData,
   setCacheVault,
   setPrivacySetting,
   setUserName,
 } from '../services/DataManager';
-import { useTranslation } from 'react-i18next';
+import {useTranslation} from 'react-i18next';
 import {
   getBlockchainLink,
   getRewardStats,
@@ -31,22 +59,39 @@ import {
 import {generateReferralUrl} from '../functions/referral';
 import {useStateValue} from '../services/State/State';
 import {actions} from '../services/State/Reducer';
-import ShareIcon from '../assets/ico_share.svg';
 import AppVersionDisplay from '../components/AppVersionDisplay';
 
-const CacheScreen = props => {
-  const navigation = useNavigation();
+const CacheScreen = () => {
   const [avatarOpened, setAvatarOpened] = useState(false);
   const [privacyOpened, setPrivacyOpened] = useState(false);
   const [cacheSettingOpened, setCacheSettingOpened] = useState(false);
   const [walletAddress, setWalletAddress] = useState('');
+  const [walletInfo, setWalletInfo] = useState({
+    privateKey: '',
+    seedPhrase: '',
+  });
 
   const [avatarName, setAvatarName] = useState('');
   const [shareDataStatus, setShareDataStatus] = useState(0);
-  const [{ cacheVault }, dispatch] = useStateValue();
+  const [{cacheVault}, dispatch] = useStateValue();
   const [blockchainLink, setBlockchainLink] = useState('');
+  const [refUrl, setRefUrl] = useState('');
+  const [isSharing, setIsSharing] = useState(false);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const [referralGuideLayout, setReferralGuideLayout] = useState({
+    section: null,
+    explainer: null,
+    invite: null,
+    earn: null,
+    grow: null,
+    qr: null,
+    share: null,
+  });
+  const shareInFlightRef = useRef(false);
+  const referralGuideProgress = useSharedValue(0);
+  const referralGuideGlow = useSharedValue(0);
 
-  const { t } = useTranslation();
+  const {t} = useTranslation();
 
   const privacy_values = [
     {
@@ -71,34 +116,145 @@ const CacheScreen = props => {
     setCacheSettingOpened(true);
   };
 
+  const showCopiedToClipboard = () => {
+    if (Platform.OS === 'ios') {
+      Alert.alert(t('cachescreen.copiedtoclipboard'));
+    } else {
+      ToastAndroid.show(t('cachescreen.copiedtoclipboard'), ToastAndroid.SHORT);
+    }
+  };
+
+  const copyToClipboard = value => {
+    if (!value) {
+      return;
+    }
+    Clipboard.setString(value);
+    showCopiedToClipboard();
+  };
+
+  const openExternalLink = async url => {
+    if (!url) {
+      return;
+    }
+    try {
+      await Linking.openURL(url);
+    } catch (err) {
+      // Ignore invalid URLs so the screen remains stable.
+    }
+  };
+
+  const updateReferralGuideLayout = (key, layout) => {
+    setReferralGuideLayout(current => {
+      const previous = current[key];
+      if (
+        previous &&
+        previous.x === layout.x &&
+        previous.y === layout.y &&
+        previous.width === layout.width &&
+        previous.height === layout.height
+      ) {
+        return current;
+      }
+      return {...current, [key]: layout};
+    });
+  };
+
+  useEffect(() => {
+    let isMounted = true;
+    AccessibilityInfo.isReduceMotionEnabled()
+      .then(enabled => {
+        if (isMounted && typeof enabled === 'boolean') {
+          setPrefersReducedMotion(enabled);
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (prefersReducedMotion) {
+      cancelAnimation(referralGuideProgress);
+      cancelAnimation(referralGuideGlow);
+      referralGuideProgress.value = 0;
+      referralGuideGlow.value = 0;
+      return;
+    }
+
+    const uniqueTargetCount = 5;
+    const loopDuration = 6200;
+    referralGuideProgress.value = 0;
+    referralGuideGlow.value = 0;
+    referralGuideProgress.value = withRepeat(
+      withTiming(uniqueTargetCount, {
+        duration: loopDuration,
+        easing: ReanimatedEasing.linear,
+      }),
+      -1,
+      false,
+    );
+    referralGuideGlow.value = withRepeat(
+      withTiming(1, {
+        duration: loopDuration * 0.5,
+        easing: ReanimatedEasing.inOut(ReanimatedEasing.quad),
+      }),
+      -1,
+      true,
+    );
+
+    return () => {
+      cancelAnimation(referralGuideProgress);
+      cancelAnimation(referralGuideGlow);
+      referralGuideProgress.value = 0;
+      referralGuideGlow.value = 0;
+    };
+  }, [prefersReducedMotion, referralGuideGlow, referralGuideProgress]);
+
   useFocusEffect(
     React.useCallback(() => {
       const internalFunc = async () => {
-        getUserName().then((resp) => {
+        const walletData = await getWalletData();
+        setWalletInfo(
+          walletData || {
+            privateKey: '',
+            seedPhrase: '',
+          },
+        );
+        getUserName().then(resp => {
           if (resp) {
             setAvatarName(resp.userName);
           }
         });
-        getPrivacySetting().then((resp) => {
+        getPrivacySetting().then(resp => {
           if (resp) {
             setShareDataStatus(resp);
           }
         });
         const wa = await getWalletAddress();
         setWalletAddress(await getWalletAddress(wa));
-        getRewardStats(wa).then((resp) => {
+        getRewardStats(wa).then(resp => {
           if (resp && resp.ok) {
             let cacheResult = {
               reports: resp.stats.kitns_daily + resp.stats.kitns_disbursed || 0,
-              referrals: resp.stats.kitns_ref_daily + resp.stats.kitns_ref_disbursed || 0,
+              referrals:
+                resp.stats.kitns_ref_daily + resp.stats.kitns_ref_disbursed ||
+                0,
               dailyReports: resp.stats.kitns_daily || 0,
               dailyReferrals: resp.stats.kitns_ref_daily || 0,
               disbursedReports: resp.stats.kitns_disbursed || 0,
               disbursedReferrals: resp.stats.kitns_ref_disbursed || 0,
-              disbursedTotal: resp.stats.kitns_disbursed + resp.stats.kitns_ref_disbursed || 0,
-              dailyTotal: resp.stats.kitns_daily + resp.stats.kitns_ref_daily || 0,
-              total: resp.stats.kitns_daily + resp.stats.kitns_ref_daily +
-                resp.stats.kitns_disbursed + resp.stats.kitns_ref_disbursed || 0,
+              disbursedTotal:
+                resp.stats.kitns_disbursed + resp.stats.kitns_ref_disbursed ||
+                0,
+              dailyTotal:
+                resp.stats.kitns_daily + resp.stats.kitns_ref_daily || 0,
+              total:
+                resp.stats.kitns_daily +
+                  resp.stats.kitns_ref_daily +
+                  resp.stats.kitns_disbursed +
+                  resp.stats.kitns_ref_disbursed || 0,
             };
             dispatch({
               type: actions.SET_CACHE_VAULT,
@@ -107,32 +263,35 @@ const CacheScreen = props => {
             setCacheVault(cacheResult);
           }
         });
-        getBlockchainLink(wa).then((resp) => {
+        getBlockchainLink(wa).then(resp => {
           if (resp && resp.ok) {
             setBlockchainLink(resp.blockchainLink);
           }
         });
-      }
+        generateReferralUrl().then(url => {
+          if (url) {
+            setRefUrl(url);
+          }
+        });
+      };
       internalFunc();
     }, []),
   );
 
   const AvatarSheet = ({
     isVisible = false,
-    onClose = () => { },
-    onUpdateUser = async () => { },
+    onClose = () => {},
+    onUpdateUser = async () => {},
   }) => {
-    const [localAvatarName, setLocalAvatarName] = useState(avatarName === walletAddress ? '' : avatarName);
+    const [localAvatarName, setLocalAvatarName] = useState(
+      avatarName === walletAddress ? '' : avatarName,
+    );
     return (
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={isVisible}
-      >
+      <Modal animationType="slide" transparent={true} visible={isVisible}>
         <View style={styles.modalContainer}>
           <Text style={styles.avatarHeader}>{t('cachescreen.editavatar')}</Text>
           <TextInput
-            style={{ ...styles.textInput, marginTop: 20, marginBottom: 16 }}
+            style={{...styles.textInput, marginTop: 20, marginBottom: 16}}
             color={theme.COLORS.TEXT_GREY}
             autoCorrect={false}
             spellCheck={false}
@@ -143,7 +302,7 @@ const CacheScreen = props => {
             onChangeText={setLocalAvatarName}
           />
           <Pressable
-            style={{ ...styles.bigBtn, marginBottom: 16 }}
+            style={{...styles.bigBtn, marginBottom: 16}}
             onPress={async () => {
               const updateUserResult = await onUpdateUser(localAvatarName);
               if (updateUserResult) {
@@ -154,7 +313,7 @@ const CacheScreen = props => {
             <Text style={styles.txt16bold}>{t('cachescreen.submit')}</Text>
           </Pressable>
           <Pressable
-            style={{ ...styles.bigBtnBlack, marginBottom: 16 }}
+            style={{...styles.bigBtnBlack, marginBottom: 16}}
             onPress={() => {
               onClose();
             }}>
@@ -163,23 +322,23 @@ const CacheScreen = props => {
         </View>
       </Modal>
     );
-  }
+  };
 
   const PrivacySheet = ({
     isVisible = false,
     dataSharingOption = 0,
-    onClose = () => { },
+    onClose = () => {},
   }) => {
     const [privacySelected, setPrivacySelected] = useState(dataSharingOption);
 
-    const selectPrivacy = (privacy_index) => {
+    const selectPrivacy = privacy_index => {
       setPrivacySelected(privacy_index);
     };
 
     const setPrivacy = async () => {
       await updatePrivacyAndTOC(
         walletAddress,
-        privacySelected === 0 ? 'share_data_live' : 'not_share_data_live'
+        privacySelected === 0 ? 'share_data_live' : 'not_share_data_live',
       );
       setPrivacySetting(privacySelected);
       setShareDataStatus(privacySelected);
@@ -187,13 +346,11 @@ const CacheScreen = props => {
     };
 
     return (
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={isVisible}
-      >
+      <Modal animationType="slide" transparent={true} visible={isVisible}>
         <View style={styles.modalContainer}>
-          <Text style={styles.avatarHeader}>{t('cachescreen.privacysettings')}</Text>
+          <Text style={styles.avatarHeader}>
+            {t('cachescreen.privacysettings')}
+          </Text>
           {privacy_values.map((element, index) => (
             <View
               key={index}
@@ -205,7 +362,7 @@ const CacheScreen = props => {
                 width: '80%',
               }}>
               <Ripple onPress={() => selectPrivacy(index)}>
-                <View style={{ ...styles.row, width: '100%' }}>
+                <View style={{...styles.row, width: '100%'}}>
                   <View>
                     <Text style={styles.txt16}>{element.value}</Text>
                     <Text style={styles.txt12italic}>{element.sub_value}</Text>
@@ -222,7 +379,7 @@ const CacheScreen = props => {
             </View>
           ))}
           <Pressable
-            style={{ ...styles.bigBtn, marginTop: 16 }}
+            style={{...styles.bigBtn, marginTop: 16}}
             onPress={setPrivacy}>
             <Text style={styles.txt16bold}>{t('cachescreen.Confirm')}</Text>
           </Pressable>
@@ -231,136 +388,374 @@ const CacheScreen = props => {
     );
   };
 
-  const ReferralScreenModal = ({isVisible = false, onClose = () => {}}) => {
-    const {t} = useTranslation();
-    const [refUrl, setRefUrl] = useState('No refurl');
-    const [isSharing, setIsSharing] = useState(false);
-    const shareInFlightRef = useRef(false);
-    const qrCode = React.useMemo(() => {
-      return (
-        <QRCode
-          size={200}
-          value={refUrl}
-          color={theme.COLORS.BLACK}
-          backgroundColor={theme.COLORS.WHITE}
-          quietZone={5}
-        />
-      );
-    }, [refUrl]);
-
-    const onShare = async () => {
-      if (shareInFlightRef.current || isSharing) {
-        return;
-      }
-      shareInFlightRef.current = true;
-      setIsSharing(true);
-      let fallbackTimer;
-      try {
-        // Close the modal before presenting the native share sheet to avoid UI lockups.
-        if (onClose) {
-          onClose();
-        }
-        await new Promise(resolve => InteractionManager.runAfterInteractions(resolve));
-        await new Promise(resolve => setTimeout(resolve, 200));
-        // Safety: if the share sheet never resolves, release the lock after a short timeout.
-        fallbackTimer = setTimeout(() => {
-          shareInFlightRef.current = false;
-          setIsSharing(false);
-        }, 8000);
-        await Share.share({
-          message: refUrl,
-          title: t('cachescreen.Sharingmyreferralcode'),
-        });
-      } catch (err) {
-        // Swallow errors (including cancel) to avoid locking the UI.
-      } finally {
-        if (fallbackTimer) {
-          clearTimeout(fallbackTimer);
-        }
+  const onShareReferral = async () => {
+    if (shareInFlightRef.current || isSharing || !refUrl) {
+      return;
+    }
+    shareInFlightRef.current = true;
+    setIsSharing(true);
+    let fallbackTimer;
+    try {
+      fallbackTimer = setTimeout(() => {
         shareInFlightRef.current = false;
         setIsSharing(false);
+      }, 8000);
+      await Share.share({
+        message: refUrl,
+        title: t('cachescreen.Sharingmyreferralcode'),
+      });
+    } catch (err) {
+      // Swallow errors (including cancel) to avoid locking the UI.
+    } finally {
+      if (fallbackTimer) {
+        clearTimeout(fallbackTimer);
       }
+      shareInFlightRef.current = false;
+      setIsSharing(false);
+    }
+  };
+
+  const ReferralGuideOverlay = () => {
+    const {section, explainer, invite, earn, qr, share} = referralGuideLayout;
+
+    if (!section || !explainer || !invite || !earn || !qr || !share) {
+      return null;
+    }
+
+    const toSectionRect = layout => ({
+      x: explainer.x + layout.x,
+      y: explainer.y + layout.y,
+      width: layout.width,
+      height: layout.height,
+    });
+
+    const guideTargets = [
+      {
+        key: 'invite',
+        layout: toSectionRect(invite),
+        insetX: 8,
+        insetY: 8,
+        radius: 18,
+      },
+      {
+        key: 'share',
+        layout: share,
+        insetX: 8,
+        insetY: 8,
+        radius: 18,
+      },
+      {
+        key: 'earn',
+        layout: toSectionRect(earn),
+        insetX: 8,
+        insetY: 8,
+        radius: 18,
+      },
+      {
+        key: 'qr',
+        layout: qr,
+        insetX: 12,
+        insetY: 12,
+        radius: 24,
+      },
+      {
+        key: 'section',
+        layout: {
+          x: 4,
+          y: 4,
+          width: section.width - 8,
+          height: section.height - 8,
+        },
+        insetX: 0,
+        insetY: 0,
+        radius: 24,
+      },
+    ];
+
+    const guideFrames = [
+      guideTargets[guideTargets.length - 1],
+      ...guideTargets,
+      guideTargets[0],
+    ];
+    const inputRange = guideFrames.map((_, frameIndex) => frameIndex - 1);
+    const guideCount = guideTargets.length;
+    const leftRange = guideFrames.map(
+      target => target.layout.x - target.insetX,
+    );
+    const topRange = guideFrames.map(target => target.layout.y - target.insetY);
+    const widthRange = guideFrames.map(
+      target => target.layout.width + target.insetX * 2,
+    );
+    const heightRange = guideFrames.map(
+      target => target.layout.height + target.insetY * 2,
+    );
+    const radiusRange = guideFrames.map(target => target.radius);
+
+    const wrapGuidePhase = phase => {
+      'worklet';
+      const wrappedPhase = phase % guideCount;
+      return wrappedPhase < 0 ? wrappedPhase + guideCount : wrappedPhase;
     };
 
-    React.useEffect(() => {
-      if (isVisible) {
-        generateReferralUrl().then(url => {
-          if (url) {
-            setRefUrl(url);
-          }
-        });
-      }
-    }, [isVisible]);
+    const leadContourStyle = useAnimatedStyle(() => {
+      const phase = wrapGuidePhase(referralGuideProgress.value);
+      const glow = prefersReducedMotion ? 0 : referralGuideGlow.value;
+      return {
+        left: interpolate(phase, inputRange, leftRange, Extrapolation.CLAMP),
+        top: interpolate(phase, inputRange, topRange, Extrapolation.CLAMP),
+        width: interpolate(phase, inputRange, widthRange, Extrapolation.CLAMP),
+        height: interpolate(
+          phase,
+          inputRange,
+          heightRange,
+          Extrapolation.CLAMP,
+        ),
+        borderRadius: interpolate(
+          phase,
+          inputRange,
+          radiusRange,
+          Extrapolation.CLAMP,
+        ),
+        opacity: prefersReducedMotion ? 0.2 : 0.14 + glow * 0.05,
+        transform: [
+          {
+            scale: prefersReducedMotion
+              ? 1
+              : interpolate(glow, [0, 0.5, 1], [0.998, 1.01, 1]),
+          },
+        ],
+      };
+    });
+
+    const trailPrimaryContourStyle = useAnimatedStyle(() => {
+      const phase = wrapGuidePhase(referralGuideProgress.value - 0.16);
+      const glow = prefersReducedMotion ? 0 : referralGuideGlow.value;
+      return {
+        left: interpolate(phase, inputRange, leftRange, Extrapolation.CLAMP),
+        top: interpolate(phase, inputRange, topRange, Extrapolation.CLAMP),
+        width: interpolate(phase, inputRange, widthRange, Extrapolation.CLAMP),
+        height: interpolate(
+          phase,
+          inputRange,
+          heightRange,
+          Extrapolation.CLAMP,
+        ),
+        borderRadius: interpolate(
+          phase,
+          inputRange,
+          radiusRange,
+          Extrapolation.CLAMP,
+        ),
+        opacity: prefersReducedMotion ? 0.28 : 0.26 + glow * 0.08,
+        transform: [
+          {
+            scale: prefersReducedMotion
+              ? 1.012
+              : interpolate(glow, [0, 0.5, 1], [1.01, 1.024, 1.012]),
+          },
+        ],
+      };
+    });
+
+    const trailSecondaryContourStyle = useAnimatedStyle(() => {
+      const phase = wrapGuidePhase(referralGuideProgress.value - 0.32);
+      const glow = prefersReducedMotion ? 0 : referralGuideGlow.value;
+      return {
+        left: interpolate(phase, inputRange, leftRange, Extrapolation.CLAMP),
+        top: interpolate(phase, inputRange, topRange, Extrapolation.CLAMP),
+        width: interpolate(phase, inputRange, widthRange, Extrapolation.CLAMP),
+        height: interpolate(
+          phase,
+          inputRange,
+          heightRange,
+          Extrapolation.CLAMP,
+        ),
+        borderRadius: interpolate(
+          phase,
+          inputRange,
+          radiusRange,
+          Extrapolation.CLAMP,
+        ),
+        opacity: prefersReducedMotion ? 0.34 : 0.34 + glow * 0.1,
+        transform: [
+          {
+            scale: prefersReducedMotion
+              ? 1.02
+              : interpolate(glow, [0, 0.5, 1], [1.02, 1.04, 1.024]),
+          },
+        ],
+      };
+    });
+
+    const contourLayers = [
+      {
+        key: 'trail-secondary',
+        animatedStyle: trailSecondaryContourStyle,
+      },
+      {
+        key: 'trail-primary',
+        animatedStyle: trailPrimaryContourStyle,
+      },
+      {
+        key: 'lead',
+        animatedStyle: leadContourStyle,
+      },
+    ];
 
     return (
-      <Modal animationType="slide" transparent={true} visible={isVisible}>
-        <View style={styles.modalContainer}>
-          <View style={styles.referralModalContent}>
-            <Text style={styles.referralContent}>{t('referral.content')}</Text>
+      <View pointerEvents="none" style={styles.referralGuideLayer}>
+        {contourLayers.map(layer => {
+          return (
+            <Reanimated.View
+              key={layer.key}
+              style={[styles.referralGuideContour, layer.animatedStyle]}>
+              <View
+                style={[
+                  styles.referralGuideContourSoft,
+                  styles.referralGuideContourInset,
+                ]}
+              />
+              <View
+                style={[
+                  styles.referralGuideContourMid,
+                  styles.referralGuideContourInset,
+                ]}
+              />
+              <View
+                style={[
+                  styles.referralGuideContourCore,
+                  styles.referralGuideContourInset,
+                ]}
+              />
+            </Reanimated.View>
+          );
+        })}
+      </View>
+    );
+  };
 
-            <View style={styles.referralExplainerRow}>
-              <View style={styles.referralExplainerCol}>
-                <Text style={styles.referralExplainerIcon}>👤</Text>
-                <Text style={styles.referralExplainerTitle}>
-                  {t('referral.explainerInviteTitle')}
-                </Text>
-                <Text style={styles.referralExplainerDesc}>
-                  {t('referral.explainerInviteDesc')}
-                </Text>
-              </View>
-              <View style={styles.referralExplainerDivider} />
-              <View style={styles.referralExplainerCol}>
-                <Text style={styles.referralExplainerIcon}>🔁</Text>
-                <Text style={styles.referralExplainerTitle}>
-                  {t('referral.explainerEarnTitle')}
-                </Text>
-                <Text style={styles.referralExplainerDesc}>
-                  {t('referral.explainerEarnDesc')}
-                </Text>
-              </View>
-              <View style={styles.referralExplainerDivider} />
-              <View style={styles.referralExplainerCol}>
-                <Text style={styles.referralExplainerIcon}>🌱</Text>
-                <Text style={styles.referralExplainerTitle}>
-                  {t('referral.explainerGrowTitle')}
-                </Text>
-                <Text style={styles.referralExplainerDesc}>
-                  {t('referral.explainerGrowDesc')}
-                </Text>
-              </View>
-            </View>
+  const ReferralShareSection = () => {
+    return (
+      <View
+        style={styles.referralSection}
+        onLayout={({nativeEvent}) =>
+          updateReferralGuideLayout('section', nativeEvent.layout)
+        }>
+        <ReferralGuideOverlay />
+        <Text style={styles.txt16bold}>{t('cachescreen.referCleanapp')}</Text>
 
-            <View style={styles.qrContainer}>{qrCode}</View>
-
-            <Text style={styles.referralUrl}>{refUrl}</Text>
-
-            <View style={{...styles.row, gap: 16}}>
-              <Pressable
-                style={[styles.smallBtn, isSharing && styles.smallBtnDisabled]}
-                onPress={onShare}
-                disabled={isSharing}
-              >
-                <Text style={styles.txt16bold}>{t('referral.share')}</Text>
-              </Pressable>
-
-              <Pressable style={{...styles.smallBtn, backgroundColor: theme.COLORS.BLACK_04}} onPress={onClose}>
-                <Text style={styles.txt16bold}>{t('cachescreen.back')}</Text>
-              </Pressable>
-            </View>
+        <View
+          style={styles.referralExplainerRow}
+          onLayout={({nativeEvent}) =>
+            updateReferralGuideLayout('explainer', nativeEvent.layout)
+          }>
+          <View
+            style={styles.referralExplainerCol}
+            onLayout={({nativeEvent}) =>
+              updateReferralGuideLayout('invite', nativeEvent.layout)
+            }>
+            <Text style={styles.referralExplainerLabel}>
+              {'👤 '}
+              {t('referral.explainerInviteTitle')}
+            </Text>
+            <Text style={styles.referralExplainerDesc}>
+              {t('referral.explainerInviteDesc')}
+            </Text>
+          </View>
+          <View style={styles.referralExplainerDivider} />
+          <View
+            style={styles.referralExplainerCol}
+            onLayout={({nativeEvent}) =>
+              updateReferralGuideLayout('earn', nativeEvent.layout)
+            }>
+            <Text style={styles.referralExplainerLabel}>
+              {'🔁 '}
+              {t('referral.explainerEarnTitle')}
+            </Text>
+            <Text style={styles.referralExplainerDesc}>
+              {t('referral.explainerEarnDesc')}
+            </Text>
+          </View>
+          <View style={styles.referralExplainerDivider} />
+          <View
+            style={styles.referralExplainerCol}
+            onLayout={({nativeEvent}) =>
+              updateReferralGuideLayout('grow', nativeEvent.layout)
+            }>
+            <Text style={styles.referralExplainerLabel}>
+              {'🌱 '}
+              {t('referral.explainerGrowTitle')}
+            </Text>
+            <Text style={styles.referralExplainerDesc}>
+              {t('referral.explainerGrowDesc')}
+            </Text>
           </View>
         </View>
-      </Modal>
+
+        {refUrl ? (
+          <View
+            style={styles.qrContainer}
+            onLayout={({nativeEvent}) =>
+              updateReferralGuideLayout('qr', nativeEvent.layout)
+            }>
+            <QRCode
+              size={180}
+              value={refUrl}
+              color={theme.COLORS.BLACK}
+              backgroundColor={theme.COLORS.WHITE}
+              quietZone={5}
+            />
+          </View>
+        ) : null}
+
+        <View style={styles.referralLinkBlock}>
+          <View style={styles.referralLinkRow}>
+            <Text
+              style={styles.referralUrlLink}
+              onPress={() => openExternalLink(refUrl)}
+              numberOfLines={2}
+              ellipsizeMode="tail">
+              {refUrl}
+            </Text>
+            <Pressable
+              onPress={() => copyToClipboard(refUrl)}
+              hitSlop={12}
+              disabled={!refUrl}>
+              <CopySmallIcon />
+            </Pressable>
+          </View>
+        </View>
+
+        <Pressable
+          style={[
+            styles.referralShareButton,
+            isSharing && styles.smallBtnDisabled,
+          ]}
+          onLayout={({nativeEvent}) =>
+            updateReferralGuideLayout('share', nativeEvent.layout)
+          }
+          onPress={onShareReferral}
+          disabled={isSharing || !refUrl}>
+          <Text style={styles.txt16bold}>{t('referral.share')}</Text>
+        </Pressable>
+      </View>
     );
   };
 
   const CacheSettingSheet = ({isVisible = false, onClose = () => {}}) => {
-    const onCopyWalletAddress = (address) => {
-      Clipboard.setString(address);
-      if (Platform.OS === 'ios') {
-        Alert.alert('Copied to clipboard');
-      } else {
-        ToastAndroid.show('Copied to clipboard', ToastAndroid.SHORT);
-      }
+    const [isShowPrivateKey, setIsShowPrivateKey] = useState(true);
+    const [isShowMnemonics, setIsShowMnemonics] = useState(true);
+
+    const showMnemonics = () => {
+      setIsShowMnemonics(current => !current);
+    };
+
+    const showPrivateKey = () => {
+      setIsShowPrivateKey(current => !current);
+    };
+
+    const onCopyWalletAddress = address => {
+      copyToClipboard(address);
     };
 
     const CacheSettingView = () => {
@@ -378,7 +773,7 @@ const CacheScreen = props => {
                 <Text style={styles.txt12bold}>
                   {t('cachescreen.youraddress')}
                 </Text>
-                <Text style={styles.txt12} >{walletAddress}</Text>
+                <Text style={styles.txt12}>{walletAddress}</Text>
               </View>
               <Ripple onPress={() => onCopyWalletAddress(walletAddress)}>
                 <CopySmallIcon />
@@ -392,38 +787,86 @@ const CacheScreen = props => {
               paddingHorizontal: 8,
             }}>
             <View style={styles.row}>
-              <View style={{ width: '100%' }}>
+              <View style={{width: '70%'}}>
                 <Text style={styles.txt12bold}>
                   {t('cachescreen.privatekey')}
                 </Text>
-                <Text style={styles.txt12}>
-                  Private key display is disabled in the app. Use a dedicated
-                  export flow if recovery material is ever needed.
+                <View>
+                  <Text style={{...styles.txt12, ...styles.txtBlur}}>
+                    {walletInfo.privateKey}
+                  </Text>
+                  {isShowPrivateKey && (
+                    <BlurView
+                      blurAmount={1}
+                      blurRadius={1}
+                      blurType="light"
+                      overlayColor="transparent"
+                      style={{
+                        position: 'absolute',
+                        width: '100%',
+                        height: '100%',
+                      }}
+                    />
+                  )}
+                </View>
+              </View>
+              <View style={styles.row}>
+                <Text style={{...styles.txt9, color: theme.COLORS.BTN_BG_BLUE}}>
+                  {isShowPrivateKey
+                    ? t('cachescreen.taptoreveal')
+                    : t('cachescreen.taptohide')}
                 </Text>
+                <Ripple onPress={showPrivateKey}>
+                  {isShowPrivateKey ? <EyeSmallIcon /> : <EyeOffIcon />}
+                </Ripple>
               </View>
             </View>
           </View>
           <View
-            style={{ ...styles.blue30Card, marginTop: 24, paddingHorizontal: 8 }}>
+            style={{...styles.blue30Card, marginTop: 24, paddingHorizontal: 8}}>
             <Text style={styles.txt12}>
               {t('cachescreen.keepyourkitnsafe')}
             </Text>
           </View>
-          <View style={{ ...styles.blueBorderCard, marginTop: 24 }}>
+          <View style={{...styles.blueBorderCard, marginTop: 24}}>
             <View style={styles.row}>
-              <View style={{ width: '100%' }}>
+              <View style={{width: '70%'}}>
                 <Text style={styles.txt12bold}>
                   {t('cachescreen.mnemonicphrase')}
                 </Text>
-                <Text style={styles.txt12}>
-                  Recovery phrase display is disabled in the app. Keep recovery
-                  material outside the device UI.
+                <View>
+                  <Text style={{...styles.txt12, ...styles.txtBlur}}>
+                    {walletInfo.seedPhrase}
+                  </Text>
+                  {isShowMnemonics && (
+                    <BlurView
+                      blurAmount={1}
+                      blurRadius={1}
+                      blurType="light"
+                      overlayColor="transparent"
+                      style={{
+                        position: 'absolute',
+                        width: '100%',
+                        height: '100%',
+                      }}
+                    />
+                  )}
+                </View>
+              </View>
+              <View style={styles.row}>
+                <Text style={{...styles.txt9, color: theme.COLORS.BTN_BG_BLUE}}>
+                  {isShowMnemonics
+                    ? t('cachescreen.taptoreveal')
+                    : t('cachescreen.taptohide')}
                 </Text>
+                <Ripple onPress={showMnemonics}>
+                  {isShowMnemonics ? <EyeSmallIcon /> : <EyeOffIcon />}
+                </Ripple>
               </View>
             </View>
           </View>
           <Ripple
-            containerStyle={{ marginTop: 24 }}
+            containerStyle={{marginTop: 24}}
             style={{...styles.bigBtnBlack, width: '100%'}}
             onPress={onClose}>
             <Text style={styles.txt16bold}>{t('cachescreen.back')}</Text>
@@ -438,42 +881,41 @@ const CacheScreen = props => {
         onClose={onClose}
         title={t('cachescreen.cachesettings')}
         headerIcon={<WalletSettingsIcon />}>
-
         <CacheSettingView />
       </BottomSheetDialog>
     );
   };
 
-  const [referralOpened, setReferralOpened] = useState(false);
-
-  const openReferralScreen = () => {
-    setReferralOpened(true);
-  };
-
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}>
         <View style={styles.container}>
           {/** balance */}
           <View style={styles.balanceContainer}>
             <Row>
               <Text style={styles.txt16}>{t('cachescreen.total')}</Text>
-              <Text style={{ ...styles.txt16, lineHeight: 16 }}>
-                {cacheVault.total || 0} <Text style={styles.txt16}>{'KITN'}</Text>
+              <Text style={{...styles.txt16, lineHeight: 16}}>
+                {cacheVault.total || 0}{' '}
+                <Text style={styles.txt16}>{'KITN'}</Text>
               </Text>
             </Row>
             <Row>
               <Text style={styles.txt9}>{t('cachescreen.fromReports')}</Text>
               <Text style={styles.txt9}>
-                {cacheVault.reports || 0} <Text style={styles.txt9}>{'KITN'}</Text>
+                {cacheVault.reports || 0}{' '}
+                <Text style={styles.txt9}>{'KITN'}</Text>
               </Text>
             </Row>
             <Row>
               <Text style={styles.txt9}>{t('cachescreen.fromReferrals')}</Text>
               <Text style={styles.txt9}>
-                {cacheVault.referrals || 0} <Text style={styles.txt9}>{'KITN'}</Text>
+                {cacheVault.referrals || 0}{' '}
+                <Text style={styles.txt9}>{'KITN'}</Text>
               </Text>
             </Row>
+            {/*
             <Row>
               <Text style={styles.txt9}>{t('cachescreen.todaysReports')}</Text>
               <Text style={styles.txt9}>
@@ -486,7 +928,9 @@ const CacheScreen = props => {
                 {cacheVault.dailyReferrals} <Text style={styles.txt9}>{'KITN'}</Text>
               </Text>
             </Row>
+            */}
           </View>
+          {/*
           <View style={styles.balanceContainer}>
             <Row>
               <Text style={styles.txt12}>{t('cachescreen.todaysLitterbox')}</Text>
@@ -496,103 +940,69 @@ const CacheScreen = props => {
               <Text style={styles.txt16}>{'KITN'}</Text>
             </Text>
           </View>
-          <View style={styles.balanceContainer}>
-            <Row>
-              <Text style={styles.txt12}>{t('cachescreen.blockchainLink')}</Text>
-            </Row>
-            <Row style={{ marginTop: 12 }}>
-              <Text
-                style={{ ...styles.txt12bold, color: theme.COLORS.GREEN_LINK }}
-                onPress={() => Linking.openURL(blockchainLink)}
-              >{blockchainLink}</Text>
-            </Row>
-          </View>
-          {/** Avatar */}
-          <View style={styles.row}>
-            <Text style={styles.txt12}>{t('cachescreen.avatar')}</Text>
-            <View style={styles.border} />
-          </View>
-          <View style={{ ...styles.blueCard, marginTop: 8 }}>
-            <View style={styles.row}>
-              <Text style={styles.txt12thin}>
-                {avatarName === walletAddress ? t('cachescreen.avatarnotset') : avatarName}
-              </Text>
-              <Pressable style={styles.btnBlack} onPress={editAvatar}>
-                <Text style={styles.txt16bold}>
-                  {avatarName === walletAddress ? t('cachescreen.create') : t('cachescreen.edit')}
+          */}
+          <View style={styles.topActionRow}>
+            <View style={[styles.greyCard, styles.topActionCard]}>
+              <View style={styles.topActionCardContent}>
+                <Text style={styles.topActionEmoji}>{'🔗'}</Text>
+                <Text
+                  style={styles.topActionLink}
+                  onPress={() => openExternalLink(blockchainLink)}>
+                  {t('cachescreen.blockchainLink')}
                 </Text>
-              </Pressable>
-            </View>
-          </View>
-          {/** Privacy */}
-          <View style={styles.block}>
-            <View style={styles.row}>
-              <Text style={styles.txt12}>{t('cachescreen.privacy')}</Text>
-              <View style={styles.border} />
-            </View>
-            <View style={{ ...styles.blueCard, marginTop: 8 }}>
-              <View style={styles.row}>
-                <View>
-                  <Text style={styles.txt12thin}>
-                    {shareDataStatus == 0
-                      ? t('cachescreen.Mapreportswithavatar')
-                      : t('cachescreen.Sharereportsanonymously')
-                    }
-                  </Text>
-                  <Text style={styles.txt12thinitalic}>
-                    {shareDataStatus == 0
-                      ? t('cachescreen.Traceable')
-                      : t('cachescreen.Nodatacollectedwhileflagging')
-                    }
-                  </Text>
-                </View>
-                <Pressable style={styles.btnBlack} onPress={editPrivacy}>
-                  <Text style={styles.txt16bold}>{t('cachescreen.edit')}</Text>
-                </Pressable>
               </View>
             </View>
-            <View style={{ ...styles.greyCard, marginTop: 16 }}>
-              <View style={styles.row}>
-                <Text style={styles.txt16bold}>
+            <Pressable
+              style={[styles.greyCard, styles.topActionCard]}
+              onPress={openWalletSettings}>
+              <View style={styles.topActionCardContent}>
+                <WalletSettingsIcon />
+                <Text style={styles.topActionTitle}>
                   {t('cachescreen.cachesettings')}
                 </Text>
-                <Pressable onPress={openWalletSettings}>
-                  <WalletSettingsIcon />
-                </Pressable>
               </View>
-            </View>
+            </Pressable>
           </View>
 
-          <View style={{...styles.greyCard, marginBottom: 16, marginTop: -20}}>
-            <View style={styles.row}>
-              <Text style={styles.txt16bold}>{t('referral.title')}</Text>
-              <Pressable onPress={openReferralScreen}>
-                <ShareIcon />
-              </Pressable>
-            </View>
+          <View style={styles.profileActionRow}>
+            <Pressable
+              style={[styles.blueCard, styles.profileActionCard]}
+              onPress={editAvatar}>
+              <Text style={styles.profileActionTileText}>
+                {`${t('cachescreen.create')} ${t('cachescreen.avatar')}`}
+              </Text>
+            </Pressable>
+
+            <Pressable
+              style={[styles.blueCard, styles.profileActionCard]}
+              onPress={editPrivacy}>
+              <Text style={styles.profileActionTileText}>
+                {t('cachescreen.privacy')}
+              </Text>
+            </Pressable>
           </View>
 
-          {/* Version Display */}
-          <View style={styles.versionContainer}>
-            <AppVersionDisplay
-              showBuildNumber={false}
-              style={styles.versionDisplay}
-              textStyle={styles.versionText}
-            />
-          </View>
+          <ReferralShareSection />
         </View>
       </ScrollView>
+      <View pointerEvents="none" style={styles.versionContainer}>
+        <AppVersionDisplay
+          showBuildNumber={false}
+          style={styles.versionDisplay}
+          textStyle={styles.versionText}
+        />
+      </View>
       <AvatarSheet
         isVisible={avatarOpened}
         onClose={() => {
           setAvatarOpened(false);
         }}
-        onUpdateUser={async (userName) => {
+        onUpdateUser={async userName => {
           if (userName.length == 0) {
             Alert.alert(
               t('onboarding.Error'),
               t('cachescreen.errAvatarEmpty'),
-              [{ text: t('onboarding.Ok'), type: 'cancel' }],
+              [{text: t('onboarding.Ok'), type: 'cancel'}],
             );
             return false;
           }
@@ -602,11 +1012,11 @@ const CacheScreen = props => {
               Alert.alert(
                 t('onboarding.Error'),
                 t('onboarding.ErrSameUsernameExists'),
-                [{ text: t('onboarding.Ok'), type: 'cancel' }],
+                [{text: t('onboarding.Ok'), type: 'cancel'}],
               );
               return false;
             }
-            setUserName({ userName: userName });
+            setUserName({userName: userName});
             return true;
           } else {
             return false;
@@ -626,12 +1036,6 @@ const CacheScreen = props => {
           setCacheSettingOpened(false);
         }}
       />
-      <ReferralScreenModal
-        isVisible={referralOpened}
-        onClose={() => {
-          setReferralOpened(false);
-        }}
-      />
     </SafeAreaView>
   );
 };
@@ -641,18 +1045,21 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: theme.COLORS.BG,
   },
+  scrollContent: {
+    paddingBottom: 128,
+  },
   container: {
     flex: 1,
     paddingHorizontal: 16,
-    paddingTop: 22,
+    paddingTop: 6,
   },
   block: {
     marginTop: 16,
-    marginBottom: 36,
+    marginBottom: 20,
   },
   balanceContainer: {
     padding: 16,
-    marginTop: 16,
+    marginTop: 8,
     borderRadius: 8,
     backgroundColor: theme.COLORS.PANEL_BG,
   },
@@ -664,7 +1071,67 @@ const styles = StyleSheet.create({
   greyCard: {
     backgroundColor: theme.APP_COLOR_1,
     borderRadius: 8,
-    padding: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  topActionRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 16,
+  },
+  topActionCard: {
+    flex: 1,
+    minHeight: 58,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  topActionEmoji: {
+    fontSize: 20,
+    lineHeight: 22,
+    marginBottom: 4,
+  },
+  topActionLink: {
+    fontFamily: fontFamilies.Default,
+    fontSize: 13,
+    lineHeight: 17,
+    fontWeight: '500',
+    color: theme.COLORS.GREEN_LINK,
+    textAlign: 'center',
+  },
+  topActionCardContent: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  topActionTitle: {
+    marginTop: 4,
+    fontFamily: fontFamilies.Default,
+    fontSize: 13,
+    lineHeight: 17,
+    fontWeight: '500',
+    color: theme.COLORS.TEXT_GREY,
+    textAlign: 'center',
+  },
+  profileActionRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 8,
+    marginBottom: 16,
+  },
+  profileActionCard: {
+    flex: 1,
+    minHeight: 52,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  profileActionTileText: {
+    fontFamily: fontFamilies.Default,
+    fontSize: 13,
+    lineHeight: 17,
+    fontWeight: '500',
+    color: theme.COLORS.TEXT_GREY,
+    textAlign: 'center',
   },
   blueCard: {
     paddingHorizontal: 16,
@@ -857,41 +1324,94 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'stretch',
     justifyContent: 'center',
-    marginBottom: 16,
+    marginTop: 12,
+    marginBottom: 8,
   },
   referralExplainerCol: {
     flex: 1,
     alignItems: 'center',
-    paddingHorizontal: 6,
+    paddingHorizontal: 2,
   },
-  referralExplainerIcon: {
-    fontSize: 18,
-    marginBottom: 6,
-  },
-  referralExplainerTitle: {
-    color: 'white',
-    fontSize: 14,
+  referralExplainerLabel: {
+    color: theme.COLORS.TEXT_GREY,
+    fontSize: 13,
     fontFamily: fontFamilies.Default,
     fontWeight: '600',
     marginBottom: 4,
+    textAlign: 'center',
   },
   referralExplainerDesc: {
-    color: 'white',
-    fontSize: 12,
+    color: theme.COLORS.TEXT_GREY,
+    fontSize: 10,
+    lineHeight: 13,
     fontFamily: fontFamilies.Default,
-    opacity: 0.7,
+    opacity: 0.8,
     textAlign: 'center',
   },
   referralExplainerDivider: {
     width: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: theme.COLORS.BORDER_GREY,
     marginVertical: 6,
   },
+  referralSection: {
+    marginTop: 0,
+    marginBottom: 8,
+    padding: 12,
+    borderRadius: 8,
+    backgroundColor: theme.COLORS.PANEL_BG,
+    alignItems: 'center',
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  referralGuideLayer: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  referralGuideContour: {
+    position: 'absolute',
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+  },
+  referralGuideContourInset: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  referralGuideContourSoft: {
+    borderWidth: 9,
+    borderColor: 'rgba(244, 255, 249, 0.1)',
+  },
+  referralGuideContourMid: {
+    borderWidth: 4,
+    borderColor: 'rgba(246, 255, 249, 0.28)',
+  },
+  referralGuideContourCore: {
+    borderWidth: 1.5,
+    borderColor: 'rgba(250, 255, 252, 0.82)',
+  },
   qrContainer: {
-    marginVertical: 20,
-    padding: 16,
+    marginTop: 2,
+    marginBottom: 8,
+    padding: 8,
     backgroundColor: 'white',
     borderRadius: 8,
+  },
+  referralLinkBlock: {
+    width: '100%',
+    alignItems: 'center',
+  },
+  referralLinkRow: {
+    marginTop: 2,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+  },
+  referralUrlLink: {
+    maxWidth: '82%',
+    color: theme.COLORS.GREEN_LINK,
+    fontSize: 12,
+    lineHeight: 17,
+    fontFamily: fontFamilies.Default,
+    textAlign: 'center',
   },
   referralUrl: {
     color: 'white',
@@ -901,18 +1421,30 @@ const styles = StyleSheet.create({
     fontFamily: fontFamilies.Default,
     paddingHorizontal: 16,
   },
-  versionContainer: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+  referralShareButton: {
+    width: '100%',
+    marginTop: 12,
+    backgroundColor: theme.COLORS.BTN_BG_BLUE,
+    borderRadius: 8,
+    paddingVertical: 10,
     alignItems: 'center',
   },
+  versionContainer: {
+    position: 'absolute',
+    right: 18,
+    bottom: 18,
+    alignItems: 'flex-end',
+  },
   versionDisplay: {
-    paddingVertical: 4,
+    paddingVertical: 0,
+    paddingHorizontal: 0,
   },
   versionText: {
-    fontSize: 11,
+    fontSize: 10,
     color: theme.COLORS.TEXT_GREY,
+    opacity: 0.96,
     fontFamily: fontFamilies.Default,
+    textAlign: 'right',
   },
 });
 

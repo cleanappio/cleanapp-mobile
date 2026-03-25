@@ -239,7 +239,11 @@ class PollingService {
       return {
         id: report.seq || `report_${index}`,
         title: primaryAnalysis.title || 'Untitled Report',
-        description: primaryAnalysis.description || 'No description available',
+        description:
+          primaryAnalysis.description ||
+          primaryAnalysis.summary ||
+          report.description ||
+          'No description available',
         time: report.timestamp,
         status: 'pending', // Default status since API doesn't provide this
         location: `${report.latitude?.toFixed(4)}, ${report.longitude?.toFixed(4)}`,
