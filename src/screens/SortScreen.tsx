@@ -1,7 +1,6 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Animated,
   Dimensions,
   Easing,
@@ -17,6 +16,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import {useTranslation} from 'react-i18next';
 
+import {GetOrCreateLocalWallet} from '../functions/login';
 import {fontFamilies} from '../utils/fontFamilies';
 import {theme} from '../services/Common/theme';
 import {getUrls} from '../services/API/Settings';
@@ -26,11 +26,13 @@ import {ToastService} from '../components/ToastifyToast';
 import {useStateValue} from '../services/State/State';
 import {actions} from '../services/State/Reducer';
 
-const {width: screenWidth, height: screenHeight} = Dimensions.get('window');
+const {width: screenWidth} = Dimensions.get('window');
 
 const SWIPE_THRESHOLD = 110;
 const HOLD_CANCEL_DISTANCE = 18;
 const HOLD_DURATION_MS = 3000;
+const THERMOMETER_HEIGHT = 168;
+const SORT_FETCH_ATTEMPTS = 8;
 
 type SortVerdict = 'high_value' | 'spam';
 
@@ -52,6 +54,19 @@ interface SortCandidate {
   sort_metrics: SortMetrics;
 }
 
+interface PreparedSortCandidate {
+  candidate: SortCandidate;
+  imageUrl: string;
+  prefetched: boolean;
+}
+
+interface CandidateLoadResult {
+  ok: boolean;
+  prepared?: PreparedSortCandidate;
+  empty?: boolean;
+  error?: string;
+}
+
 const buildRawImageUrl = (seq?: number) => {
   if (!seq) {
     return '';
@@ -65,26 +80,20 @@ const buildRawImageUrl = (seq?: number) => {
 
 const clampUrgency = (value: number) => Math.max(0, Math.min(10, value));
 
-const formatUrgencyMean = (value?: number) => {
-  if (typeof value !== 'number' || Number.isNaN(value)) {
-    return '0.0';
-  }
-  return value.toFixed(1);
-};
-
 const SortScreen = () => {
   const navigation = useNavigation();
   const {t} = useTranslation();
   const [{cacheVault}, dispatch] = useStateValue();
 
   const [sorterId, setSorterId] = useState('');
-  const [candidate, setCandidate] = useState<SortCandidate | null>(null);
+  const [activeCard, setActiveCard] = useState<PreparedSortCandidate | null>(
+    null,
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [emptyState, setEmptyState] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [urgencyScore, setUrgencyScore] = useState(0);
-  const [sessionSortCount, setSessionSortCount] = useState(0);
   const [sessionKitns, setSessionKitns] = useState(0);
   const [imageReady, setImageReady] = useState(false);
   const [imageFailed, setImageFailed] = useState(false);
@@ -94,25 +103,86 @@ const SortScreen = () => {
   const holdProgress = useRef(new Animated.Value(0)).current;
   const holdValueRef = useRef(0);
   const isGestureCancelledRef = useRef(false);
+  const prefetchedCardRef = useRef<PreparedSortCandidate | null>(null);
+  const prefetchSourceSeqRef = useRef<number | null>(null);
+  const prefetchPromiseRef = useRef<Promise<CandidateLoadResult> | null>(null);
 
   const rotation = useMemo(
     () =>
       translateX.interpolate({
         inputRange: [-screenWidth * 0.6, 0, screenWidth * 0.6],
-        outputRange: ['-10deg', '0deg', '10deg'],
+        outputRange: ['-8deg', '0deg', '8deg'],
         extrapolate: 'clamp',
       }),
     [translateX],
   );
 
+  const spamCueOpacity = useMemo(
+    () =>
+      translateX.interpolate({
+        inputRange: [-screenWidth * 0.4, -40, 0],
+        outputRange: [1, 0.72, 0.3],
+        extrapolate: 'clamp',
+      }),
+    [translateX],
+  );
+
+  const highValueCueOpacity = useMemo(
+    () =>
+      translateX.interpolate({
+        inputRange: [0, 40, screenWidth * 0.4],
+        outputRange: [0.3, 0.72, 1],
+        extrapolate: 'clamp',
+      }),
+    [translateX],
+  );
+
+  const cuePulse = useRef(new Animated.Value(0)).current;
+
   const thermometerFillHeight = useMemo(
     () =>
       holdProgress.interpolate({
         inputRange: [0, 1],
-        outputRange: [0, 224],
+        outputRange: [0, THERMOMETER_HEIGHT],
         extrapolate: 'clamp',
       }),
     [holdProgress],
+  );
+
+  const leftArrowTranslateX = useMemo(
+    () =>
+      cuePulse.interpolate({
+        inputRange: [0, 1],
+        outputRange: [0, -10],
+      }),
+    [cuePulse],
+  );
+
+  const rightArrowTranslateX = useMemo(
+    () =>
+      cuePulse.interpolate({
+        inputRange: [0, 1],
+        outputRange: [0, 10],
+      }),
+    [cuePulse],
+  );
+
+  const cueGlowOpacity = useMemo(
+    () =>
+      cuePulse.interpolate({
+        inputRange: [0, 1],
+        outputRange: [0.45, 0.9],
+      }),
+    [cuePulse],
+  );
+
+  const cueScale = useMemo(
+    () =>
+      cuePulse.interpolate({
+        inputRange: [0, 1],
+        outputRange: [1, 1.08],
+      }),
+    [cuePulse],
   );
 
   useEffect(() => {
@@ -126,12 +196,45 @@ const SortScreen = () => {
     };
   }, [holdProgress]);
 
-  const resetGestureState = useCallback(() => {
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(cuePulse, {
+          toValue: 1,
+          duration: 900,
+          easing: Easing.inOut(Easing.quad),
+          useNativeDriver: true,
+        }),
+        Animated.timing(cuePulse, {
+          toValue: 0,
+          duration: 900,
+          easing: Easing.inOut(Easing.quad),
+          useNativeDriver: true,
+        }),
+      ]),
+    );
+
+    loop.start();
+
+    return () => {
+      loop.stop();
+      cuePulse.stopAnimation();
+    };
+  }, [cuePulse]);
+
+  const clearGestureValues = useCallback(() => {
     holdProgress.stopAnimation();
     holdProgress.setValue(0);
     holdValueRef.current = 0;
     setUrgencyScore(0);
     isGestureCancelledRef.current = false;
+    translateX.stopAnimation();
+    translateX.setValue(0);
+  }, [holdProgress, translateX]);
+
+  const resetGestureState = useCallback(() => {
+    clearGestureValues();
+
     Animated.parallel([
       Animated.spring(translateX, {
         toValue: 0,
@@ -141,13 +244,14 @@ const SortScreen = () => {
       }),
       Animated.timing(cardOpacity, {
         toValue: 1,
-        duration: 150,
+        duration: 160,
         useNativeDriver: true,
       }),
     ]).start();
-  }, [cardOpacity, holdProgress, translateX]);
+  }, [cardOpacity, clearGestureValues, translateX]);
 
   const startHoldAnimation = useCallback(() => {
+    holdProgress.stopAnimation();
     holdProgress.setValue(0);
     holdValueRef.current = 0;
     setUrgencyScore(0);
@@ -159,8 +263,34 @@ const SortScreen = () => {
     }).start();
   }, [holdProgress]);
 
+  const stagePreparedCandidate = useCallback(
+    (prepared: PreparedSortCandidate) => {
+      clearGestureValues();
+      cardOpacity.stopAnimation();
+      cardOpacity.setValue(0);
+      setActiveCard(prepared);
+      setImageReady(prepared.prefetched);
+      setImageFailed(false);
+      setErrorMessage('');
+      setEmptyState(false);
+      Animated.timing(cardOpacity, {
+        toValue: 1,
+        duration: 240,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }).start();
+    },
+    [cardOpacity, clearGestureValues],
+  );
+
+  const clearPrefetchedCandidate = useCallback(() => {
+    prefetchedCardRef.current = null;
+    prefetchSourceSeqRef.current = null;
+    prefetchPromiseRef.current = null;
+  }, []);
+
   const incrementLocalKitns = useCallback(
-    async (rewardKitns: number) => {
+    (rewardKitns: number) => {
       if (!rewardKitns) {
         return;
       }
@@ -179,69 +309,221 @@ const SortScreen = () => {
         type: actions.SET_CACHE_VAULT,
         cacheVault: nextCacheVault,
       });
-      await setCacheVault(nextCacheVault);
+      void setCacheVault(nextCacheVault);
     },
     [cacheVault, dispatch],
   );
 
-  const loadNextCandidate = useCallback(async () => {
-    if (!sorterId) {
-      return;
-    }
+  const fetchPreparedCandidate = useCallback(
+    async (excludedReportSeqs: number[] = []): Promise<CandidateLoadResult> => {
+      if (!sorterId) {
+        return {
+          ok: false,
+          error:
+            t('sortscreen.loadError') ||
+            'Unable to load a report to sort right now.',
+        };
+      }
 
-    setIsLoading(true);
-    setErrorMessage('');
-    setEmptyState(false);
-    setImageReady(false);
-    setImageFailed(false);
+      const excludedSeqSet = new Set(
+        excludedReportSeqs.filter(seq => Number.isInteger(seq) && seq > 0),
+      );
 
-    const response = await getNextSortReport(sorterId);
-    if (!response?.ok) {
-      setCandidate(null);
-      setIsLoading(false);
-      if (response?.empty) {
-        setEmptyState(true);
+      for (let attempt = 0; attempt < SORT_FETCH_ATTEMPTS; attempt += 1) {
+        const response = await getNextSortReport(
+          sorterId,
+          Array.from(excludedSeqSet),
+        );
+        if (!response?.ok) {
+          if (response?.empty) {
+            return {
+              ok: false,
+              empty: true,
+            };
+          }
+
+          return {
+            ok: false,
+            error:
+              response?.error ||
+              t('sortscreen.loadError') ||
+              'Unable to load a report to sort right now.',
+          };
+        }
+
+        const nextCandidate = response.candidate;
+        const nextSeq = nextCandidate?.report?.seq;
+        if (!nextSeq || excludedSeqSet.has(nextSeq)) {
+          continue;
+        }
+
+        excludedSeqSet.add(nextSeq);
+        const imageUrl = buildRawImageUrl(nextSeq);
+        if (!imageUrl) {
+          continue;
+        }
+
+        let prefetched = false;
+        try {
+          prefetched = await Image.prefetch(imageUrl);
+        } catch (err) {
+          prefetched = false;
+        }
+
+        if (!prefetched) {
+          continue;
+        }
+
+        return {
+          ok: true,
+          prepared: {
+            candidate: nextCandidate,
+            imageUrl,
+            prefetched,
+          },
+        };
+      }
+
+      return {
+        ok: false,
+        error:
+          t('sortscreen.loadError') ||
+          'Unable to load a report to sort right now.',
+      };
+    },
+    [sorterId, t],
+  );
+
+  const applyCandidateLoadResult = useCallback(
+    (result: CandidateLoadResult) => {
+      if (result.ok && result.prepared) {
+        stagePreparedCandidate(result.prepared);
         return;
       }
+
+      setActiveCard(null);
+      setImageReady(false);
+      setImageFailed(false);
+      if (result.empty) {
+        setEmptyState(true);
+        setErrorMessage('');
+        return;
+      }
+
+      setEmptyState(false);
       setErrorMessage(
-        t('sortscreen.loadError') ||
+        result.error ||
+          t('sortscreen.loadError') ||
           'Unable to load a report to sort right now.',
       );
-      return;
-    }
+    },
+    [stagePreparedCandidate, t],
+  );
 
-    translateX.setValue(0);
-    cardOpacity.setValue(0);
-    setCandidate(response.candidate);
-    Animated.timing(cardOpacity, {
-      toValue: 1,
-      duration: 260,
-      easing: Easing.out(Easing.cubic),
-      useNativeDriver: true,
-    }).start();
-    setIsLoading(false);
-  }, [cardOpacity, sorterId, t, translateX]);
+  const loadFreshCandidate = useCallback(
+    async (excludedReportSeqs: number[] = []) => {
+      if (!sorterId) {
+        return;
+      }
+
+      setIsLoading(true);
+      setErrorMessage('');
+      setEmptyState(false);
+      setImageReady(false);
+      setImageFailed(false);
+      clearPrefetchedCandidate();
+
+      const result = await fetchPreparedCandidate(excludedReportSeqs);
+      applyCandidateLoadResult(result);
+      setIsLoading(false);
+    },
+    [
+      applyCandidateLoadResult,
+      clearPrefetchedCandidate,
+      fetchPreparedCandidate,
+      sorterId,
+    ],
+  );
+
+  const queueNextCandidatePrefetch = useCallback(
+    (currentSeq?: number) => {
+      if (!sorterId || !currentSeq) {
+        return Promise.resolve<CandidateLoadResult | null>(null);
+      }
+
+      if (
+        prefetchedCardRef.current &&
+        prefetchSourceSeqRef.current === currentSeq
+      ) {
+        return Promise.resolve<CandidateLoadResult>({
+          ok: true,
+          prepared: prefetchedCardRef.current,
+        });
+      }
+
+      if (
+        prefetchPromiseRef.current &&
+        prefetchSourceSeqRef.current === currentSeq
+      ) {
+        return prefetchPromiseRef.current;
+      }
+
+      prefetchSourceSeqRef.current = currentSeq;
+      const promise = fetchPreparedCandidate([currentSeq])
+        .then(result => {
+          if (prefetchSourceSeqRef.current !== currentSeq) {
+            return result;
+          }
+          prefetchedCardRef.current =
+            result.ok && result.prepared ? result.prepared : null;
+          return result;
+        })
+        .finally(() => {
+          if (prefetchSourceSeqRef.current === currentSeq) {
+            prefetchPromiseRef.current = null;
+          }
+        });
+
+      prefetchPromiseRef.current = promise;
+      return promise;
+    },
+    [fetchPreparedCandidate, sorterId],
+  );
 
   useEffect(() => {
     let isMounted = true;
 
-    const loadWallet = async () => {
-      const walletAddress = await getWalletAddress();
+    const resolveSorterId = async () => {
+      setIsLoading(true);
+      setErrorMessage('');
+
+      let nextSorterId = await getWalletAddress();
+
+      if (!nextSorterId) {
+        const walletReady = await GetOrCreateLocalWallet();
+        if (walletReady) {
+          nextSorterId = await getWalletAddress();
+        }
+      }
+
       if (!isMounted) {
         return;
       }
-      if (!walletAddress) {
+
+      if (!nextSorterId) {
         setIsLoading(false);
         setErrorMessage(
-          t('sortscreen.walletRequired') ||
-            'A wallet is required before you can start sorting.',
+          t('sortscreen.loadError') ||
+            'Unable to load a report to sort right now.',
         );
         return;
       }
-      setSorterId(walletAddress);
+
+      setSorterId(String(nextSorterId));
     };
 
-    loadWallet();
+    resolveSorterId();
+
     return () => {
       isMounted = false;
     };
@@ -252,23 +534,79 @@ const SortScreen = () => {
       if (!sorterId) {
         return undefined;
       }
-      loadNextCandidate();
+
+      if (!activeCard && !isSubmitting) {
+        void loadFreshCandidate();
+        return undefined;
+      }
+
+      if (activeCard?.candidate?.report?.seq && !isSubmitting) {
+        void queueNextCandidatePrefetch(activeCard.candidate.report.seq);
+      }
       return undefined;
-    }, [loadNextCandidate, sorterId]),
+    }, [
+      activeCard,
+      isSubmitting,
+      loadFreshCandidate,
+      queueNextCandidatePrefetch,
+      sorterId,
+    ]),
   );
+
+  useEffect(() => {
+    const currentSeq = activeCard?.candidate?.report?.seq;
+    if (!sorterId || !currentSeq || isSubmitting) {
+      return;
+    }
+
+    void queueNextCandidatePrefetch(currentSeq);
+  }, [activeCard, isSubmitting, queueNextCandidatePrefetch, sorterId]);
+
+  const handleImageLoadError = useCallback(() => {
+    const failedSeq = activeCard?.candidate?.report?.seq;
+
+    setImageReady(false);
+    setImageFailed(false);
+
+    if (!failedSeq || isLoading || isSubmitting) {
+      setImageFailed(true);
+      return;
+    }
+
+    setActiveCard(null);
+    void loadFreshCandidate([failedSeq]);
+  }, [activeCard, isLoading, isSubmitting, loadFreshCandidate]);
 
   const finishSort = useCallback(
     async (verdict: SortVerdict, nextUrgency: number) => {
-      if (!candidate || !sorterId || isSubmitting) {
+      const currentCandidate = activeCard?.candidate;
+      const currentSeq = currentCandidate?.report?.seq;
+      if (!currentCandidate || !currentSeq || !sorterId || isSubmitting) {
         return;
       }
 
       setIsSubmitting(true);
       setErrorMessage('');
 
+      const nextCandidatePromise =
+        prefetchedCardRef.current && prefetchSourceSeqRef.current === currentSeq
+          ? Promise.resolve<CandidateLoadResult>({
+              ok: true,
+              prepared: prefetchedCardRef.current,
+            })
+          : queueNextCandidatePrefetch(currentSeq).then(
+              result =>
+                result || {
+                  ok: false,
+                  error:
+                    t('sortscreen.loadError') ||
+                    'Unable to load a report to sort right now.',
+                },
+            );
+
       const response = await submitSortReport({
         sorterId,
-        reportSeq: candidate.report.seq,
+        reportSeq: currentSeq,
         verdict,
         urgencyScore: clampUrgency(nextUrgency),
       });
@@ -281,9 +619,13 @@ const SortScreen = () => {
             text2:
               t('sortscreen.loadingAnother') || 'Loading another report now.',
           });
-          await loadNextCandidate();
+
+          const nextResult = await nextCandidatePromise;
+          if (prefetchSourceSeqRef.current === currentSeq) {
+            clearPrefetchedCandidate();
+          }
+          applyCandidateLoadResult(nextResult);
           setIsSubmitting(false);
-          resetGestureState();
           return;
         }
 
@@ -299,9 +641,8 @@ const SortScreen = () => {
 
       const rewardKitns = Number(response.submission?.reward_kitns || 0);
       if (rewardKitns > 0) {
-        setSessionSortCount(prev => prev + 1);
         setSessionKitns(prev => prev + rewardKitns);
-        await incrementLocalKitns(rewardKitns);
+        incrementLocalKitns(rewardKitns);
         ToastService.success(
           `+${rewardKitns} ${t('sortscreen.kitn') || 'KITN'}`,
           'top',
@@ -309,16 +650,20 @@ const SortScreen = () => {
         );
       }
 
-      setCandidate(null);
-      resetGestureState();
-      await loadNextCandidate();
+      const nextResult = await nextCandidatePromise;
+      if (prefetchSourceSeqRef.current === currentSeq) {
+        clearPrefetchedCandidate();
+      }
+      applyCandidateLoadResult(nextResult);
       setIsSubmitting(false);
     },
     [
-      candidate,
+      activeCard,
+      applyCandidateLoadResult,
+      clearPrefetchedCandidate,
       incrementLocalKitns,
       isSubmitting,
-      loadNextCandidate,
+      queueNextCandidatePrefetch,
       resetGestureState,
       sorterId,
       t,
@@ -349,8 +694,20 @@ const SortScreen = () => {
   const panResponder = useMemo(
     () =>
       PanResponder.create({
-        onStartShouldSetPanResponder: () => !isSubmitting && !!candidate,
-        onMoveShouldSetPanResponder: () => !isSubmitting && !!candidate,
+        onStartShouldSetPanResponder: () =>
+          !isSubmitting &&
+          !!activeCard?.candidate &&
+          imageReady &&
+          !imageFailed &&
+          !errorMessage &&
+          !emptyState,
+        onMoveShouldSetPanResponder: () =>
+          !isSubmitting &&
+          !!activeCard?.candidate &&
+          imageReady &&
+          !imageFailed &&
+          !errorMessage &&
+          !emptyState,
         onPanResponderGrant: () => {
           startHoldAnimation();
         },
@@ -374,9 +731,9 @@ const SortScreen = () => {
           const {dx} = gestureState;
           holdProgress.stopAnimation(value => {
             const heldUrgency = clampUrgency(Math.round(value * 10));
+            holdProgress.setValue(0);
 
             if (dx >= SWIPE_THRESHOLD) {
-              holdProgress.setValue(0);
               setUrgencyScore(0);
               animateCardOffscreen(1, () => {
                 finishSort('high_value', 0);
@@ -384,19 +741,19 @@ const SortScreen = () => {
               return;
             }
 
-            if (dx <= -SWIPE_THRESHOLD) {
-              holdProgress.setValue(0);
+            if (heldUrgency > 0) {
               setUrgencyScore(0);
               animateCardOffscreen(-1, () => {
-                finishSort('spam', 0);
+                finishSort('spam', heldUrgency);
               });
               return;
             }
 
-            if (heldUrgency > 0) {
-              holdProgress.setValue(0);
+            if (dx <= -SWIPE_THRESHOLD) {
               setUrgencyScore(0);
-              finishSort('spam', heldUrgency);
+              animateCardOffscreen(-1, () => {
+                finishSort('spam', 0);
+              });
               return;
             }
 
@@ -408,10 +765,14 @@ const SortScreen = () => {
         },
       }),
     [
+      activeCard,
       animateCardOffscreen,
-      candidate,
+      emptyState,
+      errorMessage,
       finishSort,
       holdProgress,
+      imageFailed,
+      imageReady,
       isSubmitting,
       resetGestureState,
       startHoldAnimation,
@@ -419,248 +780,259 @@ const SortScreen = () => {
     ],
   );
 
-  const currentSortMetrics = candidate?.sort_metrics;
-  const imageUrl = buildRawImageUrl(candidate?.report?.seq);
+  const candidate = activeCard?.candidate || null;
+  const imageUrl = activeCard?.imageUrl || '';
 
   const handleBack = useCallback(() => {
     if (navigation.canGoBack()) {
       navigation.goBack();
       return;
     }
-    Alert.alert(
-      t('sortscreen.exitTitle') || 'Exit Sort',
-      t('sortscreen.exitBody') || 'Return to the main camera screen?',
-      [
-        {
-          text: t('sortscreen.stay') || 'Stay',
-          style: 'cancel',
-        },
-        {
-          text: t('sortscreen.leave') || 'Leave',
-          onPress: () => navigation.navigate('Camera' as never),
-        },
-      ],
-    );
-  }, [navigation, t]);
+
+    navigation.navigate('Camera' as never);
+  }, [navigation]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <LinearGradient
-        colors={['#09110C', '#13271B', '#171717']}
-        start={{x: 0.15, y: 0}}
-        end={{x: 0.9, y: 1}}
-        style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-            <Text style={styles.backButtonText}>
-              {t('sortscreen.back') || 'Back'}
-            </Text>
-          </TouchableOpacity>
-
-          <View style={styles.sessionBadge}>
-            <Text style={styles.sessionBadgeValue}>{sessionKitns}</Text>
-            <Text style={styles.sessionBadgeLabel}>
-              {t('sortscreen.kitn') || 'KITN'}
-            </Text>
-          </View>
-        </View>
-
-        <View style={styles.titleBlock}>
-          <Text style={styles.eyebrow}>
-            {t('sortscreen.eyebrow') || 'SORT'}
-          </Text>
-          <Text style={styles.title}>
-            {t('sortscreen.title') ||
-              'Swipe right for high value. Hold to rank urgency.'}
-          </Text>
-          <Text style={styles.subtitle}>
-            {t('sortscreen.subtitle') ||
-              'Every accepted sort pays 1 KITN for now while we train the consensus model.'}
-          </Text>
-        </View>
-
-        <View style={styles.canvas}>
-          <View style={styles.thermometerColumn}>
-            <Text style={styles.thermometerLabel}>
-              {t('sortscreen.urgency') || 'Urgency'}
-            </Text>
-            <View style={styles.thermometerTrack}>
-              <Animated.View
-                style={[
-                  styles.thermometerFill,
-                  {
-                    height: thermometerFillHeight,
-                  },
-                ]}
+      <View style={styles.container}>
+        <View style={styles.stage}>
+          <Animated.View
+            style={[
+              styles.surface,
+              {
+                opacity: cardOpacity,
+                transform: [{translateX}, {rotate: rotation}],
+              },
+            ]}
+            {...panResponder.panHandlers}>
+            {candidate ? (
+              <Image
+                source={{uri: imageUrl}}
+                style={styles.reportImage}
+                resizeMode="cover"
+                onLoad={() => {
+                  setImageReady(true);
+                  setImageFailed(false);
+                }}
+                onError={handleImageLoadError}
               />
-              <View style={styles.thermometerTicks}>
-                {[10, 8, 6, 4, 2, 0].map(mark => (
-                  <View key={mark} style={styles.tickRow}>
-                    <View style={styles.tickLine} />
-                    <Text style={styles.tickLabel}>{mark}</Text>
-                  </View>
-                ))}
-              </View>
-            </View>
-            <Text style={styles.thermometerValue}>{urgencyScore}/10</Text>
-          </View>
+            ) : (
+              <View style={styles.reportFallback} />
+            )}
 
-          <View style={styles.cardColumn}>
-            <Animated.View
-              style={[
-                styles.reportCard,
-                {
-                  opacity: cardOpacity,
-                  transform: [{translateX}, {rotate: rotation}],
-                },
+            <LinearGradient
+              colors={[
+                'rgba(3, 8, 5, 0.72)',
+                'rgba(3, 8, 5, 0.10)',
+                'rgba(3, 8, 5, 0.82)',
               ]}
-              {...panResponder.panHandlers}>
-              {candidate ? (
-                <>
-                  <Image
-                    source={{uri: imageUrl}}
-                    style={styles.reportImage}
-                    resizeMode="cover"
-                    onLoad={() => {
-                      setImageReady(true);
-                      setImageFailed(false);
-                    }}
-                    onError={() => {
-                      setImageReady(false);
-                      setImageFailed(true);
-                    }}
-                  />
-                  <LinearGradient
-                    colors={['rgba(9, 17, 12, 0.0)', 'rgba(9, 17, 12, 0.78)']}
-                    style={styles.imageOverlay}
-                  />
-                  {!imageReady && !imageFailed && (
-                    <View style={styles.imageLoadingOverlay}>
-                      <ActivityIndicator
-                        size="large"
-                        color={theme.COLORS.BTN_BG_BLUE}
-                      />
-                    </View>
-                  )}
-                  {imageFailed && (
-                    <View style={styles.imageLoadingOverlay}>
-                      <Text style={styles.emptyCardText}>
-                        {t('sortscreen.imageUnavailable') ||
-                          'Image unavailable for this report.'}
-                      </Text>
-                    </View>
-                  )}
-                  <View style={styles.cardMeta}>
-                    <Text style={styles.reportIdPill}>
-                      #{candidate.report.seq}
-                    </Text>
-                    <Text style={styles.cardHint}>
-                      {t('sortscreen.cardHint') ||
-                        'Swipe right = High Value  •  Swipe left or hold = Spam'}
-                    </Text>
-                  </View>
-                </>
-              ) : (
-                <View style={styles.emptyCard}>
-                  <Text style={styles.emptyCardText}>
-                    {t('sortscreen.waiting') || 'Loading your next report...'}
+              locations={[0, 0.42, 1]}
+              style={StyleSheet.absoluteFill}
+            />
+
+            {candidate && (
+              <>
+                <View pointerEvents="none" style={styles.centerHintPill}>
+                  <Text style={styles.centerHintText}>
+                    Hold to rate urgency
                   </Text>
                 </View>
-              )}
-            </Animated.View>
 
-            <View style={styles.statusRow}>
-              <View style={styles.metricPill}>
-                <Text style={styles.metricValue}>
-                  {currentSortMetrics?.sort_count || 0}
-                </Text>
-                <Text style={styles.metricLabel}>
-                  {t('sortscreen.sorts') || 'sorts'}
-                </Text>
-              </View>
-              <View style={styles.metricPill}>
-                <Text style={styles.metricValue}>
-                  {formatUrgencyMean(currentSortMetrics?.urgency_mean)}
-                </Text>
-                <Text style={styles.metricLabel}>
-                  {t('sortscreen.meanUrgency') || 'mean urgency'}
-                </Text>
-              </View>
-              <View style={styles.metricPill}>
-                <Text style={styles.metricValue}>{sessionSortCount}</Text>
-                <Text style={styles.metricLabel}>
-                  {t('sortscreen.session') || 'session'}
-                </Text>
-              </View>
-            </View>
+                <Animated.View
+                  pointerEvents="none"
+                  style={[
+                    styles.sideCue,
+                    styles.sideCueLeft,
+                    {opacity: spamCueOpacity},
+                  ]}>
+                  <Animated.View
+                    style={[
+                      styles.sideCueArrowBadge,
+                      styles.sideCueArrowBadgeLeft,
+                      {
+                        opacity: cueGlowOpacity,
+                        transform: [
+                          {translateX: leftArrowTranslateX},
+                          {scale: cueScale},
+                        ],
+                      },
+                    ]}>
+                    <Text
+                      style={[styles.sideCueArrow, styles.sideCueArrowLeft]}>
+                      ←
+                    </Text>
+                  </Animated.View>
+                  <Text style={styles.sideCueDirection}>Swipe left</Text>
+                  <Text style={styles.sideCueLabel}>
+                    {t('sortscreen.spam') || 'Spam'}
+                  </Text>
+                  <Text style={styles.sideCueMeta}>Low signal or junk</Text>
+                </Animated.View>
 
-            <View style={styles.instructionsRow}>
-              <View style={[styles.verdictPill, styles.spamPill]}>
-                <Text style={styles.verdictLabel}>
-                  {t('sortscreen.spam') || 'Spam'}
+                <Animated.View
+                  pointerEvents="none"
+                  style={[
+                    styles.sideCue,
+                    styles.sideCueRight,
+                    {opacity: highValueCueOpacity},
+                  ]}>
+                  <Animated.View
+                    style={[
+                      styles.sideCueArrowBadge,
+                      styles.sideCueArrowBadgeRight,
+                      {
+                        opacity: cueGlowOpacity,
+                        transform: [
+                          {translateX: rightArrowTranslateX},
+                          {scale: cueScale},
+                        ],
+                      },
+                    ]}>
+                    <Text
+                      style={[styles.sideCueArrow, styles.sideCueArrowRight]}>
+                      →
+                    </Text>
+                  </Animated.View>
+                  <Text style={styles.sideCueDirection}>Swipe right</Text>
+                  <Text style={styles.sideCueLabel}>
+                    {t('sortscreen.highValue') || 'High Value'}
+                  </Text>
+                  <Text style={styles.sideCueMeta}>Worth escalating</Text>
+                </Animated.View>
+
+                <View pointerEvents="none" style={styles.thermometerDock}>
+                  <Text style={styles.thermometerTitle}>
+                    {t('sortscreen.urgency') || 'Urgency'}
+                  </Text>
+                  <View style={styles.thermometerWrap}>
+                    <Animated.View
+                      style={[
+                        styles.thermometerFill,
+                        {height: thermometerFillHeight},
+                      ]}
+                    />
+                    <View style={styles.thermometerScale}>
+                      <Text style={styles.thermometerScaleText}>10</Text>
+                      <View style={styles.thermometerDivider} />
+                      <Text style={styles.thermometerScaleText}>0</Text>
+                    </View>
+                  </View>
+                  <View style={styles.thermometerScorePill}>
+                    <Text style={styles.thermometerScoreValue}>
+                      {urgencyScore}
+                    </Text>
+                  </View>
+                </View>
+
+                <View pointerEvents="none" style={styles.reportChip}>
+                  <Text style={styles.reportChipText}>
+                    Report #{candidate.report.seq}
+                  </Text>
+                </View>
+              </>
+            )}
+
+            {!imageReady && !imageFailed && candidate && !isLoading && (
+              <View style={styles.imageStateOverlay}>
+                <ActivityIndicator
+                  size="large"
+                  color={theme.COLORS.BTN_BG_BLUE}
+                />
+              </View>
+            )}
+
+            {imageFailed && candidate && !isLoading && (
+              <View style={styles.centerPanel}>
+                <Text style={styles.panelTitle}>
+                  {t('sortscreen.problem') || 'Something went wrong'}
                 </Text>
-                <Text style={styles.verdictText}>
-                  {t('sortscreen.spamHint') || 'Swipe left or hold for urgency'}
+                <Text style={styles.panelBody}>
+                  {t('sortscreen.imageUnavailable') ||
+                    'Image unavailable for this report.'}
                 </Text>
               </View>
-              <View style={[styles.verdictPill, styles.highValuePill]}>
-                <Text style={styles.verdictLabel}>
-                  {t('sortscreen.highValue') || 'High Value'}
-                </Text>
-                <Text style={styles.verdictText}>
-                  {t('sortscreen.highValueHint') || 'Swipe right'}
+            )}
+
+            {isLoading && !candidate && (
+              <View style={styles.centerPanel}>
+                <ActivityIndicator
+                  size="large"
+                  color={theme.COLORS.BTN_BG_BLUE}
+                />
+                <Text style={styles.panelBody}>
+                  {t('sortscreen.waiting') || 'Loading your next report...'}
                 </Text>
               </View>
+            )}
+
+            {isSubmitting && (
+              <View style={styles.statusDock}>
+                <ActivityIndicator
+                  size="small"
+                  color={theme.COLORS.BTN_BG_BLUE}
+                />
+                <Text style={styles.statusDockText}>
+                  {t('sortscreen.submitting') || 'Submitting your sort...'}
+                </Text>
+              </View>
+            )}
+
+            {emptyState && !isLoading && (
+              <View style={styles.centerPanel}>
+                <Text style={styles.panelTitle}>
+                  {t('sortscreen.emptyTitle') || 'Queue complete'}
+                </Text>
+                <Text style={styles.panelBody}>
+                  {t('sortscreen.emptyBody') ||
+                    'You have already sorted every report currently available to you.'}
+                </Text>
+                <TouchableOpacity
+                  style={styles.panelButton}
+                  onPress={() => {
+                    void loadFreshCandidate();
+                  }}>
+                  <Text style={styles.panelButtonText}>
+                    {t('sortscreen.retry') || 'Check again'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {!!errorMessage && !isLoading && (
+              <View style={styles.centerPanel}>
+                <Text style={styles.panelTitle}>
+                  {t('sortscreen.problem') || 'Something went wrong'}
+                </Text>
+                <Text style={styles.panelBody}>{errorMessage}</Text>
+                <TouchableOpacity
+                  style={styles.panelButton}
+                  onPress={() => {
+                    void loadFreshCandidate();
+                  }}>
+                  <Text style={styles.panelButtonText}>
+                    {t('sortscreen.retry') || 'Retry'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </Animated.View>
+
+          <View pointerEvents="box-none" style={styles.topBar}>
+            <TouchableOpacity style={styles.backButton} onPress={handleBack}>
+              <Text style={styles.backButtonText}>
+                {t('sortscreen.back') || 'Back'}
+              </Text>
+            </TouchableOpacity>
+
+            <View style={styles.kitnBadge}>
+              <Text style={styles.kitnValue}>{sessionKitns}</Text>
+              <Text style={styles.kitnLabel}>
+                {t('sortscreen.kitn') || 'KITN'}
+              </Text>
             </View>
           </View>
         </View>
-
-        {(isLoading || isSubmitting) && (
-          <View style={styles.loadingPanel}>
-            <ActivityIndicator size="large" color={theme.COLORS.BTN_BG_BLUE} />
-            <Text style={styles.loadingText}>
-              {isSubmitting
-                ? t('sortscreen.submitting') || 'Submitting your sort...'
-                : t('sortscreen.loading') || 'Loading the next report...'}
-            </Text>
-          </View>
-        )}
-
-        {emptyState && (
-          <View style={styles.noticePanel}>
-            <Text style={styles.noticeTitle}>
-              {t('sortscreen.emptyTitle') || 'Queue complete'}
-            </Text>
-            <Text style={styles.noticeBody}>
-              {t('sortscreen.emptyBody') ||
-                'You have already sorted every report currently available to you.'}
-            </Text>
-            <TouchableOpacity
-              style={styles.noticeButton}
-              onPress={loadNextCandidate}>
-              <Text style={styles.noticeButtonText}>
-                {t('sortscreen.retry') || 'Check again'}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        )}
-
-        {!!errorMessage && !isLoading && (
-          <View style={styles.noticePanel}>
-            <Text style={styles.noticeTitle}>
-              {t('sortscreen.problem') || 'Something went wrong'}
-            </Text>
-            <Text style={styles.noticeBody}>{errorMessage}</Text>
-            <TouchableOpacity
-              style={styles.noticeButton}
-              onPress={loadNextCandidate}>
-              <Text style={styles.noticeButtonText}>
-                {t('sortscreen.retry') || 'Retry'}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      </LinearGradient>
+      </View>
     </SafeAreaView>
   );
 };
@@ -668,15 +1040,40 @@ const SortScreen = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#09110C',
+    backgroundColor: '#06100A',
   },
   container: {
     flex: 1,
-    paddingHorizontal: 18,
-    paddingTop: 12,
-    paddingBottom: 18,
+    backgroundColor: '#06100A',
+    paddingHorizontal: 10,
+    paddingTop: 8,
+    paddingBottom: 10,
   },
-  header: {
+  stage: {
+    flex: 1,
+    borderRadius: 32,
+    overflow: 'hidden',
+    backgroundColor: '#050806',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.06)',
+  },
+  surface: {
+    flex: 1,
+    backgroundColor: '#050806',
+  },
+  reportImage: {
+    width: '100%',
+    height: '100%',
+  },
+  reportFallback: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#08110C',
+  },
+  topBar: {
+    position: 'absolute',
+    top: 14,
+    left: 14,
+    right: 14,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -684,311 +1081,285 @@ const styles = StyleSheet.create({
   backButton: {
     paddingHorizontal: 14,
     paddingVertical: 10,
-    borderRadius: 18,
+    borderRadius: 999,
+    backgroundColor: 'rgba(5, 8, 6, 0.68)',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
-    backgroundColor: 'rgba(8, 10, 12, 0.46)',
+    borderColor: 'rgba(255,255,255,0.12)',
   },
   backButtonText: {
     color: theme.COLORS.TEXT_WHITE,
-    fontFamily: fontFamilies.Default,
-    fontWeight: '600',
+    fontFamily: fontFamilies.DefaultBold,
+    fontSize: 14,
   },
-  sessionBadge: {
+  kitnBadge: {
     flexDirection: 'row',
     alignItems: 'baseline',
     gap: 6,
     paddingHorizontal: 14,
     paddingVertical: 10,
-    borderRadius: 18,
-    backgroundColor: 'rgba(89, 228, 128, 0.14)',
+    borderRadius: 999,
+    backgroundColor: 'rgba(37, 192, 136, 0.16)',
     borderWidth: 1,
-    borderColor: 'rgba(89, 228, 128, 0.35)',
+    borderColor: 'rgba(89, 228, 128, 0.34)',
   },
-  sessionBadgeValue: {
-    color: '#59E480',
-    fontFamily: fontFamilies.Default,
-    fontWeight: '700',
+  kitnValue: {
+    color: '#8AF5A7',
+    fontFamily: fontFamilies.DefaultBold,
     fontSize: 18,
   },
-  sessionBadgeLabel: {
+  kitnLabel: {
     color: theme.COLORS.TEXT_WHITE,
     fontFamily: fontFamilies.Default,
     fontSize: 12,
     opacity: 0.84,
   },
-  titleBlock: {
-    marginTop: 18,
-    gap: 8,
+  centerHintPill: {
+    position: 'absolute',
+    top: 74,
+    alignSelf: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 999,
+    backgroundColor: 'rgba(5, 8, 6, 0.56)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.10)',
   },
-  eyebrow: {
-    color: '#59E480',
-    fontFamily: fontFamilies.Default,
-    letterSpacing: 2.4,
-    fontSize: 12,
-    fontWeight: '700',
+  centerHintText: {
+    color: theme.COLORS.TEXT_WHITE,
+    fontFamily: fontFamilies.DefaultBold,
+    fontSize: 13,
+    letterSpacing: 0.3,
   },
-  title: {
+  sideCue: {
+    position: 'absolute',
+    top: '31%',
+    width: 144,
+    minHeight: 112,
+    paddingHorizontal: 16,
+    paddingTop: 22,
+    paddingBottom: 16,
+    borderRadius: 26,
+    backgroundColor: 'rgba(4, 7, 5, 0.78)',
+    borderWidth: 1.4,
+    justifyContent: 'flex-end',
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 12},
+    shadowOpacity: 0.24,
+    shadowRadius: 24,
+    elevation: 9,
+  },
+  sideCueLeft: {
+    left: 14,
+    borderColor: 'rgba(255, 138, 90, 0.78)',
+  },
+  sideCueRight: {
+    right: 14,
+    borderColor: 'rgba(129, 243, 163, 0.78)',
+  },
+  sideCueArrowBadge: {
+    position: 'absolute',
+    top: 12,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+  },
+  sideCueArrowBadgeLeft: {
+    left: 14,
+    backgroundColor: 'rgba(255, 124, 78, 0.18)',
+    borderColor: 'rgba(255, 157, 118, 0.42)',
+  },
+  sideCueArrowBadgeRight: {
+    right: 14,
+    backgroundColor: 'rgba(111, 242, 155, 0.18)',
+    borderColor: 'rgba(149, 244, 176, 0.42)',
+  },
+  sideCueArrow: {
+    fontSize: 30,
+    fontFamily: fontFamilies.DefaultBold,
+    color: theme.COLORS.TEXT_WHITE,
+    textShadowColor: 'rgba(0,0,0,0.42)',
+    textShadowOffset: {width: 0, height: 4},
+    textShadowRadius: 12,
+  },
+  sideCueArrowLeft: {
+    color: '#FF9D76',
+  },
+  sideCueArrowRight: {
+    color: '#95F4B0',
+  },
+  sideCueDirection: {
+    color: 'rgba(255,255,255,0.74)',
+    fontFamily: fontFamilies.DefaultBold,
+    fontSize: 11,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    marginBottom: 6,
+  },
+  sideCueLabel: {
+    color: theme.COLORS.TEXT_WHITE,
+    fontFamily: fontFamilies.DefaultBold,
+    fontSize: 18,
+    textShadowColor: 'rgba(0,0,0,0.34)',
+    textShadowOffset: {width: 0, height: 2},
+    textShadowRadius: 8,
+  },
+  sideCueMeta: {
     color: theme.COLORS.TEXT_WHITE,
     fontFamily: fontFamilies.Default,
-    fontSize: 30,
-    lineHeight: 36,
-    fontWeight: '700',
-    maxWidth: 320,
-  },
-  subtitle: {
-    color: theme.COLORS.TEXT_GREY,
-    fontFamily: fontFamilies.Default,
-    fontSize: 14,
-    lineHeight: 20,
-    maxWidth: 340,
-  },
-  canvas: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
-    marginTop: 18,
-  },
-  thermometerColumn: {
-    width: 62,
-    alignItems: 'center',
-    gap: 10,
-  },
-  thermometerLabel: {
-    color: theme.COLORS.TEXT_GREY,
-    fontFamily: fontFamilies.Default,
     fontSize: 12,
-    textTransform: 'uppercase',
-    letterSpacing: 1.4,
+    opacity: 0.92,
+    marginTop: 4,
+    textShadowColor: 'rgba(0,0,0,0.28)',
+    textShadowOffset: {width: 0, height: 2},
+    textShadowRadius: 6,
   },
-  thermometerTrack: {
-    width: 44,
-    height: 224,
+  thermometerDock: {
+    position: 'absolute',
+    left: 14,
+    bottom: 24,
+    alignItems: 'center',
+    gap: 8,
+  },
+  thermometerTitle: {
+    color: theme.COLORS.TEXT_WHITE,
+    fontFamily: fontFamilies.DefaultBold,
+    fontSize: 12,
+    letterSpacing: 1.1,
+    textTransform: 'uppercase',
+  },
+  thermometerWrap: {
+    width: 46,
+    height: THERMOMETER_HEIGHT,
     borderRadius: 24,
+    backgroundColor: 'rgba(5, 8, 6, 0.62)',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
-    backgroundColor: 'rgba(8, 10, 12, 0.48)',
-    justifyContent: 'flex-end',
+    borderColor: 'rgba(255,255,255,0.12)',
     overflow: 'hidden',
+    justifyContent: 'space-between',
   },
   thermometerFill: {
     position: 'absolute',
     left: 0,
     right: 0,
     bottom: 0,
-    borderRadius: 24,
-    backgroundColor: '#59E480',
+    backgroundColor: '#25C088',
   },
-  thermometerTicks: {
+  thermometerScale: {
     flex: 1,
     justifyContent: 'space-between',
+    alignItems: 'center',
     paddingVertical: 10,
-    paddingHorizontal: 6,
   },
-  tickRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  tickLine: {
-    width: 10,
-    height: 1,
-    backgroundColor: 'rgba(255,255,255,0.48)',
-  },
-  tickLabel: {
+  thermometerScaleText: {
     color: theme.COLORS.TEXT_WHITE,
+    fontFamily: fontFamilies.DefaultBold,
     fontSize: 10,
-    fontFamily: fontFamilies.Default,
-    opacity: 0.8,
+    opacity: 0.84,
   },
-  thermometerValue: {
-    color: theme.COLORS.TEXT_WHITE,
-    fontFamily: fontFamilies.Default,
-    fontWeight: '700',
-    fontSize: 15,
-  },
-  cardColumn: {
+  thermometerDivider: {
     flex: 1,
-    gap: 12,
   },
-  reportCard: {
-    height: Math.min(screenHeight * 0.54, 500),
-    borderRadius: 30,
-    overflow: 'hidden',
-    backgroundColor: '#0E1310',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 16},
-    shadowOpacity: 0.28,
-    shadowRadius: 20,
-    elevation: 10,
-  },
-  reportImage: {
-    width: '100%',
-    height: '100%',
-  },
-  imageOverlay: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  imageLoadingOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(9, 17, 12, 0.44)',
-  },
-  cardMeta: {
-    position: 'absolute',
-    left: 18,
-    right: 18,
-    bottom: 18,
-    gap: 10,
-  },
-  reportIdPill: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: 12,
+  thermometerScorePill: {
+    minWidth: 38,
+    paddingHorizontal: 10,
     paddingVertical: 7,
     borderRadius: 999,
-    backgroundColor: 'rgba(8, 10, 12, 0.62)',
-    color: theme.COLORS.TEXT_WHITE,
-    fontFamily: fontFamilies.Default,
-    fontWeight: '700',
+    backgroundColor: 'rgba(5, 8, 6, 0.72)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.12)',
+    alignItems: 'center',
   },
-  cardHint: {
+  thermometerScoreValue: {
     color: theme.COLORS.TEXT_WHITE,
-    fontFamily: fontFamilies.Default,
+    fontFamily: fontFamilies.DefaultBold,
+    fontSize: 16,
+  },
+  reportChip: {
+    position: 'absolute',
+    left: 14,
+    right: 14,
+    bottom: 18,
+    alignItems: 'center',
+  },
+  reportChipText: {
+    color: theme.COLORS.TEXT_WHITE,
+    fontFamily: fontFamilies.DefaultBold,
     fontSize: 13,
-    lineHeight: 18,
-    maxWidth: 280,
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+    borderRadius: 999,
+    backgroundColor: 'rgba(5, 8, 6, 0.62)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.10)',
+    overflow: 'hidden',
   },
-  emptyCard: {
-    flex: 1,
+  imageStateOverlay: {
+    ...StyleSheet.absoluteFillObject,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 24,
+    backgroundColor: 'rgba(5, 8, 6, 0.36)',
   },
-  emptyCardText: {
-    color: theme.COLORS.TEXT_GREY,
-    fontFamily: fontFamilies.Default,
-    fontSize: 16,
-    textAlign: 'center',
-  },
-  statusRow: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  metricPill: {
-    flex: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    borderRadius: 18,
-    backgroundColor: 'rgba(8, 10, 12, 0.42)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
-  },
-  metricValue: {
-    color: theme.COLORS.TEXT_WHITE,
-    fontFamily: fontFamilies.Default,
-    fontWeight: '700',
-    fontSize: 20,
-  },
-  metricLabel: {
-    color: theme.COLORS.TEXT_GREY,
-    fontFamily: fontFamilies.Default,
-    fontSize: 12,
-    marginTop: 4,
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
-  },
-  instructionsRow: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  verdictPill: {
-    flex: 1,
-    paddingHorizontal: 14,
-    paddingVertical: 14,
-    borderRadius: 18,
-    borderWidth: 1,
-  },
-  spamPill: {
-    backgroundColor: 'rgba(228, 95, 53, 0.14)',
-    borderColor: 'rgba(228, 95, 53, 0.3)',
-  },
-  highValuePill: {
-    backgroundColor: 'rgba(89, 228, 128, 0.12)',
-    borderColor: 'rgba(89, 228, 128, 0.32)',
-  },
-  verdictLabel: {
-    color: theme.COLORS.TEXT_WHITE,
-    fontFamily: fontFamilies.Default,
-    fontWeight: '700',
-    fontSize: 15,
-  },
-  verdictText: {
-    color: theme.COLORS.TEXT_GREY,
-    fontFamily: fontFamilies.Default,
-    fontSize: 12,
-    lineHeight: 17,
-    marginTop: 5,
-  },
-  loadingPanel: {
+  statusDock: {
     position: 'absolute',
-    left: 18,
-    right: 18,
-    bottom: 24,
+    left: 20,
+    right: 20,
+    bottom: 34,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
     paddingHorizontal: 18,
     paddingVertical: 16,
-    borderRadius: 18,
-    backgroundColor: 'rgba(8, 10, 12, 0.78)',
+    borderRadius: 24,
+    backgroundColor: 'rgba(5, 8, 6, 0.82)',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: 'rgba(255,255,255,0.10)',
+  },
+  statusDockText: {
+    color: theme.COLORS.TEXT_WHITE,
+    fontFamily: fontFamilies.Default,
+    fontSize: 15,
+  },
+  centerPanel: {
+    position: 'absolute',
+    left: 20,
+    right: 20,
+    bottom: 34,
+    paddingHorizontal: 18,
+    paddingVertical: 18,
+    borderRadius: 24,
+    backgroundColor: 'rgba(5, 8, 6, 0.86)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.10)',
     alignItems: 'center',
     gap: 10,
   },
-  loadingText: {
+  panelTitle: {
     color: theme.COLORS.TEXT_WHITE,
-    fontFamily: fontFamilies.Default,
-    fontSize: 14,
+    fontFamily: fontFamilies.DefaultBold,
+    fontSize: 22,
+    textAlign: 'center',
   },
-  noticePanel: {
-    position: 'absolute',
-    left: 18,
-    right: 18,
-    bottom: 24,
-    paddingHorizontal: 18,
-    paddingVertical: 18,
-    borderRadius: 20,
-    backgroundColor: 'rgba(8, 10, 12, 0.86)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-    gap: 10,
-  },
-  noticeTitle: {
-    color: theme.COLORS.TEXT_WHITE,
-    fontFamily: fontFamilies.Default,
-    fontWeight: '700',
-    fontSize: 18,
-  },
-  noticeBody: {
+  panelBody: {
     color: theme.COLORS.TEXT_GREY,
     fontFamily: fontFamilies.Default,
-    fontSize: 14,
-    lineHeight: 20,
+    fontSize: 15,
+    lineHeight: 22,
+    textAlign: 'center',
   },
-  noticeButton: {
-    alignSelf: 'flex-start',
-    marginTop: 4,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 16,
+  panelButton: {
+    marginTop: 2,
+    paddingHorizontal: 16,
+    paddingVertical: 11,
+    borderRadius: 999,
     backgroundColor: '#59E480',
   },
-  noticeButtonText: {
-    color: '#09110C',
-    fontFamily: fontFamilies.Default,
-    fontWeight: '700',
+  panelButtonText: {
+    color: '#06100A',
+    fontFamily: fontFamilies.DefaultBold,
     fontSize: 14,
   },
 });

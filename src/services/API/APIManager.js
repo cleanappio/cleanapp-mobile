@@ -780,12 +780,19 @@ export const readDetailedReportByPublicId = async publicId => {
   }
 };
 
-export const getNextSortReport = async sorterId => {
+export const getNextSortReport = async (sorterId, excludedReportSeqs = []) => {
   try {
+    const params = {
+      sorter_id: String(sorterId || ''),
+    };
+    if (Array.isArray(excludedReportSeqs) && excludedReportSeqs.length > 0) {
+      params.exclude_report_seqs = excludedReportSeqs
+        .map(seq => Number(seq))
+        .filter(seq => Number.isInteger(seq) && seq > 0)
+        .join(',');
+    }
     const url = `${getUrls().liveUrl}/api/v3/${s.v3api.getNextSortReport}?${new URLSearchParams(
-      {
-        sorter_id: String(sorterId || ''),
-      },
+      params,
     )}`;
     const response = await fetch(url);
 
