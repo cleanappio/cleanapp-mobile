@@ -1,9 +1,6 @@
-import { getJSONData, postJSONData } from './CoreAPICalls';
-import { settings as s, getUrls } from './Settings';
-import {
-  getMapLocation,
-  getOrCreatePushInstallID,
-} from '../DataManager';
+import {getJSONData, postJSONData} from './CoreAPICalls';
+import {settings as s, getUrls} from './Settings';
+import {getMapLocation, getOrCreatePushInstallID} from '../DataManager';
 import MatchReportsLogger from '../../utils/MatchReportsLogger';
 import AppVersionService from '../AppVersionService';
 
@@ -99,13 +96,16 @@ export const report = async (
       data.annotation = annotation.trim();
     }
 
-    const response = await fetch(`${getUrls().liveUrl}/api/v1/human-reports/submit`, {
-      method: 'post',
-      headers: {
-        'Content-Type': 'application/json',
+    const response = await fetch(
+      `${getUrls().liveUrl}/api/v1/human-reports/submit`,
+      {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
       },
-      body: JSON.stringify(data),
-    });
+    );
     const ret = {
       ok: response.ok,
     };
@@ -590,7 +590,7 @@ export const matchReports = async (
       const totalDuration = Date.now() - startTime;
       MatchReportsLogger.logProcessError(
         new Error(ret.error || 'API call failed'),
-        { processId, response },
+        {processId, response},
         totalDuration,
       );
     }
@@ -666,20 +666,23 @@ export const registerMobilePushDevice = async ({
   notificationsEnabled,
 }) => {
   try {
-    const response = await fetch(`${getUrls().liveUrl}/api/v3/mobile/push/register`, {
-      method: 'post',
-      headers: {
-        'Content-Type': 'application/json',
+    const response = await fetch(
+      `${getUrls().liveUrl}/api/v3/mobile/push/register`,
+      {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          install_id: installId,
+          platform: platform,
+          provider: provider,
+          push_token: pushToken,
+          app_version: appVersion,
+          notifications_enabled: Boolean(notificationsEnabled),
+        }),
       },
-      body: JSON.stringify({
-        install_id: installId,
-        platform: platform,
-        provider: provider,
-        push_token: pushToken,
-        app_version: appVersion,
-        notifications_enabled: Boolean(notificationsEnabled),
-      }),
-    });
+    );
 
     if (!response.ok) {
       return null;
@@ -694,16 +697,19 @@ export const registerMobilePushDevice = async ({
 
 export const unregisterMobilePushDevice = async ({installId, provider}) => {
   try {
-    const response = await fetch(`${getUrls().liveUrl}/api/v3/mobile/push/unregister`, {
-      method: 'post',
-      headers: {
-        'Content-Type': 'application/json',
+    const response = await fetch(
+      `${getUrls().liveUrl}/api/v3/mobile/push/unregister`,
+      {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          install_id: installId,
+          provider: provider,
+        }),
       },
-      body: JSON.stringify({
-        install_id: installId,
-        provider: provider,
-      }),
-    });
+    );
 
     if (!response.ok) {
       return null;
@@ -722,9 +728,11 @@ export const unregisterMobilePushDevice = async ({installId, provider}) => {
  */
 export const readReportCases = async seq => {
   try {
-    const url = `${getUrls().liveUrl}/api/v3/reports/cases?${new URLSearchParams({
-      seq: String(seq),
-    })}`;
+    const url = `${getUrls().liveUrl}/api/v3/reports/cases?${new URLSearchParams(
+      {
+        seq: String(seq),
+      },
+    )}`;
     const response = await fetch(url);
     if (!response.ok) {
       return null;
@@ -738,9 +746,11 @@ export const readReportCases = async seq => {
 
 export const readDetailedReportBySeq = async seq => {
   try {
-    const url = `${getUrls().liveUrl}/api/v3/reports/by-seq?${new URLSearchParams({
-      seq: String(seq),
-    })}`;
+    const url = `${getUrls().liveUrl}/api/v3/reports/by-seq?${new URLSearchParams(
+      {
+        seq: String(seq),
+      },
+    )}`;
     const response = await fetch(url);
     if (!response.ok) {
       return null;
@@ -754,9 +764,11 @@ export const readDetailedReportBySeq = async seq => {
 
 export const readDetailedReportByPublicId = async publicId => {
   try {
-    const url = `${getUrls().liveUrl}/api/v3/reports/by-public-id?${new URLSearchParams({
-      public_id: String(publicId),
-    })}`;
+    const url = `${getUrls().liveUrl}/api/v3/reports/by-public-id?${new URLSearchParams(
+      {
+        public_id: String(publicId),
+      },
+    )}`;
     const response = await fetch(url);
     if (!response.ok) {
       return null;
@@ -765,5 +777,82 @@ export const readDetailedReportByPublicId = async publicId => {
   } catch (err) {
     console.warn('readDetailedReportByPublicId error:', err.message);
     return null;
+  }
+};
+
+export const getNextSortReport = async sorterId => {
+  try {
+    const url = `${getUrls().liveUrl}/api/v3/${s.v3api.getNextSortReport}?${new URLSearchParams(
+      {
+        sorter_id: String(sorterId || ''),
+      },
+    )}`;
+    const response = await fetch(url);
+
+    if (response.status === 404) {
+      return {
+        ok: false,
+        empty: true,
+      };
+    }
+
+    if (!response.ok) {
+      return {
+        ok: false,
+        error: response.statusText,
+      };
+    }
+
+    const candidate = await response.json();
+    return {
+      ok: true,
+      candidate,
+    };
+  } catch (err) {
+    console.warn('getNextSortReport error:', err.message);
+    return {
+      ok: false,
+      error: err.message || 'Unknown error occurred',
+    };
+  }
+};
+
+export const submitSortReport = async ({
+  sorterId,
+  reportSeq,
+  verdict,
+  urgencyScore,
+}) => {
+  try {
+    const response = await fetch(
+      `${getUrls().liveUrl}/api/v3/${s.v3api.submitSortReport}`,
+      {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          sorter_id: sorterId,
+          report_seq: reportSeq,
+          verdict: verdict,
+          urgency_score: urgencyScore,
+        }),
+      },
+    );
+
+    const payload = await response.json().catch(() => null);
+
+    return {
+      ok: response.ok,
+      status: response.status,
+      error: payload?.error || response.statusText,
+      submission: payload,
+    };
+  } catch (err) {
+    console.warn('submitSortReport error:', err.message);
+    return {
+      ok: false,
+      error: err.message || 'Unknown error occurred',
+    };
   }
 };
