@@ -15,12 +15,13 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import {theme} from '../services/Common/theme';
 import {fontFamilies} from '../utils/fontFamilies';
 import {useReverseGeocoding} from '../hooks/useReverseGeocoding';
-import {useTranslation} from 'react-i18next';
 import ResponsiveImage from '../components/ResponsiveImage';
 import ChevronLeft from '../components/ChevronLeft';
 import NavigationIcon from '../components/NavigationIcon';
 import {readReportCases} from '../services/API/APIManager';
-import CaseAwarenessCard from '../components/CaseAwarenessCard';
+import CaseAwarenessCard, {
+  type CaseAwarenessCase,
+} from '../components/CaseAwarenessCard';
 
 type MyReportsStackParamList = {
   Leaderboard: undefined;
@@ -38,11 +39,10 @@ const MyReportDetails = ({
   route: RouteProp<MyReportsStackParamList, 'MyReportDetails'>;
 }) => {
   const navigation = useNavigation<MyReportDetailsNavigationProp>();
-  const {t} = useTranslation();
   const {report: reportItem} = route.params;
   const report = reportItem.report;
-  const [relatedCases, setRelatedCases] = useState<any[]>([]);
-  var englishAnalysis = reportItem.analysis[0];
+  const [relatedCases, setRelatedCases] = useState<CaseAwarenessCase[]>([]);
+  let englishAnalysis = reportItem.analysis[0];
   for (const analysisItem of reportItem.analysis) {
     if (analysisItem.language === 'en') {
       englishAnalysis = analysisItem;

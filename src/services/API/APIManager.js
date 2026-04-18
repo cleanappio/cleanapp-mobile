@@ -25,9 +25,9 @@ export const updateOrCreateUser = async (
       ok: response.ok,
     };
     if (response.ok) {
-      resp_json = await response.json();
-      ret.team = resp_json.team;
-      ret.dup_avatar = resp_json.dup_avatar;
+      const responseJson = await response.json();
+      ret.team = responseJson.team;
+      ret.dup_avatar = responseJson.dup_avatar;
     } else {
       if (response.error) {
         ret.error = response.error;
@@ -262,9 +262,9 @@ export const getTeams = async publicAddress => {
       ok: response.ok,
     };
     if (response.ok) {
-      respJson = await response.json();
-      ret.green = respJson.green;
-      ret.blue = respJson.blue;
+      const responseJson = await response.json();
+      ret.green = responseJson.green;
+      ret.blue = responseJson.blue;
     } else {
       if (response.error) {
         ret.error = response.error;
@@ -339,8 +339,8 @@ export const getBlockchainLink = async publicAddress => {
       ok: response.ok,
     };
     if (response.ok) {
-      respJson = await response.json();
-      ret.blockchainLink = respJson.blockchain_link;
+      const responseJson = await response.json();
+      ret.blockchainLink = responseJson.blockchain_link;
     } else {
       if (response.error) {
         ret.error = response.error;

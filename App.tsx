@@ -1,5 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable react-native/no-inline-styles */
 import 'react-native-screens';
 import {enableScreens} from 'react-native-screens';
 import {StatusBar, NativeModules, Platform} from 'react-native';
@@ -162,7 +160,7 @@ const App = () => {
 
   useEffect(() => {
     SplashScreen.hide();
-  });
+  }, []);
   return (
     <Provider store={store}>
       <StateProvider initialState={initialState} reducer={reducer}>
