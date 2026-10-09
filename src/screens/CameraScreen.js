@@ -809,16 +809,11 @@ const CameraScreen = props => {
 
   const checkPhotoLibraryPermission = async () => {
     try {
-      let permission;
-      if (Platform.OS === 'ios') {
-        permission = PERMISSIONS.IOS.PHOTO_LIBRARY;
-      } else {
-        if (Platform.Version >= 33) {
-          permission = PERMISSIONS.ANDROID.READ_MEDIA_IMAGES;
-        } else {
-          permission = PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE;
-        }
+      // Android's system picker grants access only to the selected photo.
+      if (Platform.OS === 'android') {
+        return true;
       }
+      const permission = PERMISSIONS.IOS.PHOTO_LIBRARY;
 
       const result = await check(permission);
       switch (result) {
@@ -1142,7 +1137,7 @@ const CameraScreen = props => {
 
     try {
       // Check photo library permission first
-      if (!hasPhotoLibraryPermission) {
+      if (Platform.OS === 'ios' && !hasPhotoLibraryPermission) {
         const hasPermission = await checkPhotoLibraryPermission();
         if (!hasPermission) {
           return;

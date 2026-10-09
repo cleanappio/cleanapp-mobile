@@ -24,6 +24,10 @@ const IOS_PROJECT_PBXPROJ = path.join(
   'CleanApp.xcodeproj',
   'project.pbxproj',
 );
+const IOS_INFO_PLISTS = [
+  path.join(__dirname, '..', 'ios', 'CleanApp', 'Info.plist'),
+  path.join(__dirname, '..', 'ios', 'CleanAppShareExtension', 'Info.plist'),
+];
 
 function readJsonFile(filePath) {
   try {
@@ -106,6 +110,24 @@ function updatePackageJson(version) {
   }
 }
 
+function updateIOSInfoPlists(version, buildNumber) {
+  IOS_INFO_PLISTS.forEach(filePath => {
+    let content = fs.readFileSync(filePath, 'utf8');
+    [
+      ['CFBundleShortVersionString', version],
+      ['CFBundleVersion', String(buildNumber)],
+    ].forEach(([key, value]) => {
+      const pattern = new RegExp(`(<key>${key}</key>\\s*<string>)[^<]*(</string>)`);
+      if (!pattern.test(content)) {
+        throw new Error(`Missing ${key} in ${filePath}`);
+      }
+      content = content.replace(pattern, (_, before, after) => before + value + after);
+    });
+    fs.writeFileSync(filePath, content);
+    console.log(`✅ Updated ${filePath}`);
+  });
+}
+
 function main() {
   console.log('🔄 Syncing app version across all platforms...\n');
 
@@ -130,6 +152,7 @@ function main() {
 
   // Update iOS project
   updateIOSProject(version, buildNumber);
+  updateIOSInfoPlists(version, buildNumber);
 
   console.log('\n✅ Version sync completed!');
   console.log('\n📝 Next steps:');
@@ -148,4 +171,5 @@ module.exports = {
   updateAndroidBuildGradle,
   updateIOSProject,
   updatePackageJson,
+  updateIOSInfoPlists,
 };

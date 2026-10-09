@@ -1,3 +1,4 @@
+import {SafeAreaView} from 'react-native-safe-area-context';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {
   ActivityIndicator,
@@ -6,7 +7,6 @@ import {
   Easing,
   Image,
   PanResponder,
-  SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -30,9 +30,10 @@ const {width: screenWidth} = Dimensions.get('window');
 
 const SWIPE_THRESHOLD = 110;
 const HOLD_CANCEL_DISTANCE = 18;
-const HOLD_DURATION_MS = 3000;
+const HOLD_DURATION_MS = 1500;
 const THERMOMETER_HEIGHT = 168;
-const SORT_FETCH_ATTEMPTS = 8;
+const SORT_FETCH_ATTEMPTS = 16;
+const SORT_RECENT_EXCLUDE_LIMIT = 32;
 
 type SortVerdict = 'high_value' | 'spam';
 
@@ -97,7 +98,6 @@ const SortScreen = () => {
   const [sessionKitns, setSessionKitns] = useState(0);
   const [imageReady, setImageReady] = useState(false);
   const [imageFailed, setImageFailed] = useState(false);
-
   const translateX = useRef(new Animated.Value(0)).current;
   const cardOpacity = useRef(new Animated.Value(1)).current;
   const holdProgress = useRef(new Animated.Value(0)).current;
@@ -106,6 +106,9 @@ const SortScreen = () => {
   const prefetchedCardRef = useRef<PreparedSortCandidate | null>(null);
   const prefetchSourceSeqRef = useRef<number | null>(null);
   const prefetchPromiseRef = useRef<Promise<CandidateLoadResult> | null>(null);
+  const holdTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const holdStartAtRef = useRef(0);
+  const seenReportSeqsRef = useRef<Set<number>>(new Set());
 
   const rotation = useMemo(
     () =>
@@ -153,7 +156,7 @@ const SortScreen = () => {
     () =>
       cuePulse.interpolate({
         inputRange: [0, 1],
-        outputRange: [0, -10],
+        outputRange: [0, -14],
       }),
     [cuePulse],
   );
@@ -162,7 +165,7 @@ const SortScreen = () => {
     () =>
       cuePulse.interpolate({
         inputRange: [0, 1],
-        outputRange: [0, 10],
+        outputRange: [0, 14],
       }),
     [cuePulse],
   );
@@ -171,7 +174,7 @@ const SortScreen = () => {
     () =>
       cuePulse.interpolate({
         inputRange: [0, 1],
-        outputRange: [0.45, 0.9],
+        outputRange: [0.5, 0.78],
       }),
     [cuePulse],
   );
@@ -181,6 +184,15 @@ const SortScreen = () => {
       cuePulse.interpolate({
         inputRange: [0, 1],
         outputRange: [1, 1.08],
+      }),
+    [cuePulse],
+  );
+
+  const cueLift = useMemo(
+    () =>
+      cuePulse.interpolate({
+        inputRange: [0, 1],
+        outputRange: [0, -6],
       }),
     [cuePulse],
   );
@@ -204,12 +216,14 @@ const SortScreen = () => {
           duration: 900,
           easing: Easing.inOut(Easing.quad),
           useNativeDriver: true,
+          isInteraction: false,
         }),
         Animated.timing(cuePulse, {
           toValue: 0,
           duration: 900,
           easing: Easing.inOut(Easing.quad),
           useNativeDriver: true,
+          isInteraction: false,
         }),
       ]),
     );
@@ -222,7 +236,15 @@ const SortScreen = () => {
     };
   }, [cuePulse]);
 
+  const stopHoldTimer = useCallback(() => {
+    if (holdTimerRef.current) {
+      clearInterval(holdTimerRef.current);
+      holdTimerRef.current = null;
+    }
+  }, []);
+
   const clearGestureValues = useCallback(() => {
+    stopHoldTimer();
     holdProgress.stopAnimation();
     holdProgress.setValue(0);
     holdValueRef.current = 0;
@@ -230,7 +252,7 @@ const SortScreen = () => {
     isGestureCancelledRef.current = false;
     translateX.stopAnimation();
     translateX.setValue(0);
-  }, [holdProgress, translateX]);
+  }, [holdProgress, stopHoldTimer, translateX]);
 
   const resetGestureState = useCallback(() => {
     clearGestureValues();
@@ -251,28 +273,55 @@ const SortScreen = () => {
   }, [cardOpacity, clearGestureValues, translateX]);
 
   const startHoldAnimation = useCallback(() => {
+    stopHoldTimer();
     holdProgress.stopAnimation();
     holdProgress.setValue(0);
     holdValueRef.current = 0;
     setUrgencyScore(0);
-    Animated.timing(holdProgress, {
-      toValue: 1,
-      duration: HOLD_DURATION_MS,
-      easing: Easing.linear,
-      useNativeDriver: false,
-    }).start();
-  }, [holdProgress]);
+    holdStartAtRef.current = Date.now();
+
+    holdTimerRef.current = setInterval(() => {
+      const elapsed = Date.now() - holdStartAtRef.current;
+      const nextValue = Math.min(1, elapsed / HOLD_DURATION_MS);
+      holdProgress.setValue(nextValue);
+
+      if (nextValue >= 1) {
+        stopHoldTimer();
+      }
+    }, 33);
+  }, [holdProgress, stopHoldTimer]);
+
+  const rememberSeenReportSeq = useCallback((seq: number) => {
+    if (!Number.isInteger(seq) || seq <= 0) {
+      return;
+    }
+
+    const seenSeqs = seenReportSeqsRef.current;
+    if (seenSeqs.has(seq)) {
+      seenSeqs.delete(seq);
+    }
+    seenSeqs.add(seq);
+
+    while (seenSeqs.size > SORT_RECENT_EXCLUDE_LIMIT) {
+      const oldestSeq = seenSeqs.values().next().value;
+      if (!oldestSeq) {
+        break;
+      }
+      seenSeqs.delete(oldestSeq);
+    }
+  }, []);
 
   const stagePreparedCandidate = useCallback(
     (prepared: PreparedSortCandidate) => {
-      clearGestureValues();
       cardOpacity.stopAnimation();
       cardOpacity.setValue(0);
+      clearGestureValues();
       setActiveCard(prepared);
       setImageReady(prepared.prefetched);
       setImageFailed(false);
       setErrorMessage('');
       setEmptyState(false);
+      rememberSeenReportSeq(prepared.candidate.report.seq);
       Animated.timing(cardOpacity, {
         toValue: 1,
         duration: 240,
@@ -280,7 +329,7 @@ const SortScreen = () => {
         useNativeDriver: true,
       }).start();
     },
-    [cardOpacity, clearGestureValues],
+    [cardOpacity, clearGestureValues, rememberSeenReportSeq],
   );
 
   const clearPrefetchedCandidate = useCallback(() => {
@@ -288,6 +337,22 @@ const SortScreen = () => {
     prefetchSourceSeqRef.current = null;
     prefetchPromiseRef.current = null;
   }, []);
+
+  const getSessionExcludedSeqs = useCallback(
+    (additionalSeqs: number[] = []) => {
+      const recentSeenSeqs = Array.from(seenReportSeqsRef.current).slice(
+        -SORT_RECENT_EXCLUDE_LIMIT,
+      );
+      const excludedSeqs = new Set<number>(recentSeenSeqs);
+      additionalSeqs.forEach(seq => {
+        if (Number.isInteger(seq) && seq > 0) {
+          excludedSeqs.add(seq);
+        }
+      });
+      return Array.from(excludedSeqs);
+    },
+    [],
+  );
 
   const incrementLocalKitns = useCallback(
     (rewardKitns: number) => {
@@ -326,8 +391,12 @@ const SortScreen = () => {
       }
 
       const excludedSeqSet = new Set(
-        excludedReportSeqs.filter(seq => Number.isInteger(seq) && seq > 0),
+        getSessionExcludedSeqs(excludedReportSeqs),
       );
+      let lastLoadError = '';
+      let prefetchMisses = 0;
+      let duplicateResponses = 0;
+      let missingImageUrls = 0;
 
       for (let attempt = 0; attempt < SORT_FETCH_ATTEMPTS; attempt += 1) {
         const response = await getNextSortReport(
@@ -342,24 +411,24 @@ const SortScreen = () => {
             };
           }
 
-          return {
-            ok: false,
-            error:
-              response?.error ||
-              t('sortscreen.loadError') ||
-              'Unable to load a report to sort right now.',
-          };
+          lastLoadError =
+            response?.error ||
+            t('sortscreen.loadError') ||
+            'Unable to load a report to sort right now.';
+          continue;
         }
 
         const nextCandidate = response.candidate;
         const nextSeq = nextCandidate?.report?.seq;
         if (!nextSeq || excludedSeqSet.has(nextSeq)) {
+          duplicateResponses += nextSeq ? 1 : 0;
           continue;
         }
 
         excludedSeqSet.add(nextSeq);
         const imageUrl = buildRawImageUrl(nextSeq);
         if (!imageUrl) {
+          missingImageUrls += 1;
           continue;
         }
 
@@ -369,8 +438,8 @@ const SortScreen = () => {
         } catch (err) {
           prefetched = false;
         }
-
         if (!prefetched) {
+          prefetchMisses += 1;
           continue;
         }
 
@@ -384,14 +453,22 @@ const SortScreen = () => {
         };
       }
 
+      console.warn('sort.fetch exhausted candidates', {
+        excludedCount: excludedSeqSet.size,
+        duplicateResponses,
+        missingImageUrls,
+        prefetchMisses,
+        lastLoadError,
+      });
       return {
         ok: false,
         error:
+          lastLoadError ||
           t('sortscreen.loadError') ||
           'Unable to load a report to sort right now.',
       };
     },
-    [sorterId, t],
+    [getSessionExcludedSeqs, sorterId, t],
   );
 
   const applyCandidateLoadResult = useCallback(
@@ -433,7 +510,9 @@ const SortScreen = () => {
       setImageFailed(false);
       clearPrefetchedCandidate();
 
-      const result = await fetchPreparedCandidate(excludedReportSeqs);
+      const result = await fetchPreparedCandidate(
+        getSessionExcludedSeqs(excludedReportSeqs),
+      );
       applyCandidateLoadResult(result);
       setIsLoading(false);
     },
@@ -441,6 +520,7 @@ const SortScreen = () => {
       applyCandidateLoadResult,
       clearPrefetchedCandidate,
       fetchPreparedCandidate,
+      getSessionExcludedSeqs,
       sorterId,
     ],
   );
@@ -469,7 +549,9 @@ const SortScreen = () => {
       }
 
       prefetchSourceSeqRef.current = currentSeq;
-      const promise = fetchPreparedCandidate([currentSeq])
+      const promise = fetchPreparedCandidate(
+        getSessionExcludedSeqs([currentSeq]),
+      )
         .then(result => {
           if (prefetchSourceSeqRef.current !== currentSeq) {
             return result;
@@ -487,7 +569,7 @@ const SortScreen = () => {
       prefetchPromiseRef.current = promise;
       return promise;
     },
-    [fetchPreparedCandidate, sorterId],
+    [fetchPreparedCandidate, getSessionExcludedSeqs, sorterId],
   );
 
   useEffect(() => {
@@ -721,6 +803,7 @@ const SortScreen = () => {
               Math.abs(dy) > HOLD_CANCEL_DISTANCE)
           ) {
             isGestureCancelledRef.current = true;
+            stopHoldTimer();
             holdProgress.stopAnimation();
             holdProgress.setValue(0);
             holdValueRef.current = 0;
@@ -729,36 +812,42 @@ const SortScreen = () => {
         },
         onPanResponderRelease: (_, gestureState) => {
           const {dx} = gestureState;
-          holdProgress.stopAnimation(value => {
-            const heldUrgency = clampUrgency(Math.round(value * 10));
-            holdProgress.setValue(0);
+          stopHoldTimer();
+          const heldProgress = isGestureCancelledRef.current
+            ? 0
+            : Math.min(
+                1,
+                (Date.now() - holdStartAtRef.current) / HOLD_DURATION_MS,
+              );
+          const heldUrgency = clampUrgency(Math.round(heldProgress * 10));
+          holdProgress.stopAnimation();
+          holdProgress.setValue(0);
 
-            if (dx >= SWIPE_THRESHOLD) {
-              setUrgencyScore(0);
-              animateCardOffscreen(1, () => {
-                finishSort('high_value', 0);
-              });
-              return;
-            }
+          if (dx >= SWIPE_THRESHOLD) {
+            setUrgencyScore(0);
+            animateCardOffscreen(1, () => {
+              finishSort('high_value', 0);
+            });
+            return;
+          }
 
-            if (heldUrgency > 0) {
-              setUrgencyScore(0);
-              animateCardOffscreen(-1, () => {
-                finishSort('spam', heldUrgency);
-              });
-              return;
-            }
+          if (heldUrgency > 0) {
+            setUrgencyScore(0);
+            animateCardOffscreen(-1, () => {
+              finishSort('spam', heldUrgency);
+            });
+            return;
+          }
 
-            if (dx <= -SWIPE_THRESHOLD) {
-              setUrgencyScore(0);
-              animateCardOffscreen(-1, () => {
-                finishSort('spam', 0);
-              });
-              return;
-            }
+          if (dx <= -SWIPE_THRESHOLD) {
+            setUrgencyScore(0);
+            animateCardOffscreen(-1, () => {
+              finishSort('spam', 0);
+            });
+            return;
+          }
 
-            resetGestureState();
-          });
+          resetGestureState();
         },
         onPanResponderTerminate: () => {
           resetGestureState();
@@ -776,6 +865,7 @@ const SortScreen = () => {
       isSubmitting,
       resetGestureState,
       startHoldAnimation,
+      stopHoldTimer,
       translateX,
     ],
   );
@@ -807,6 +897,8 @@ const SortScreen = () => {
             {...panResponder.panHandlers}>
             {candidate ? (
               <Image
+                // Remount per report so the native view cannot retain the swiped photo.
+                key={candidate.report.seq}
                 source={{uri: imageUrl}}
                 style={styles.reportImage}
                 resizeMode="cover"
@@ -832,12 +924,6 @@ const SortScreen = () => {
 
             {candidate && (
               <>
-                <View pointerEvents="none" style={styles.centerHintPill}>
-                  <Text style={styles.centerHintText}>
-                    Hold to rate urgency
-                  </Text>
-                </View>
-
                 <Animated.View
                   pointerEvents="none"
                   style={[
@@ -852,6 +938,7 @@ const SortScreen = () => {
                       {
                         opacity: cueGlowOpacity,
                         transform: [
+                          {translateY: cueLift},
                           {translateX: leftArrowTranslateX},
                           {scale: cueScale},
                         ],
@@ -862,7 +949,6 @@ const SortScreen = () => {
                       ←
                     </Text>
                   </Animated.View>
-                  <Text style={styles.sideCueDirection}>Swipe left</Text>
                   <Text style={styles.sideCueLabel}>
                     {t('sortscreen.spam') || 'Spam'}
                   </Text>
@@ -883,6 +969,7 @@ const SortScreen = () => {
                       {
                         opacity: cueGlowOpacity,
                         transform: [
+                          {translateY: cueLift},
                           {translateX: rightArrowTranslateX},
                           {scale: cueScale},
                         ],
@@ -893,7 +980,6 @@ const SortScreen = () => {
                       →
                     </Text>
                   </Animated.View>
-                  <Text style={styles.sideCueDirection}>Swipe right</Text>
                   <Text style={styles.sideCueLabel}>
                     {t('sortscreen.highValue') || 'High Value'}
                   </Text>
@@ -901,6 +987,11 @@ const SortScreen = () => {
                 </Animated.View>
 
                 <View pointerEvents="none" style={styles.thermometerDock}>
+                  <View style={styles.urgencyHint}>
+                    <Text style={styles.urgencyHintText}>
+                      Hold to rate urgency
+                    </Text>
+                  </View>
                   <Text style={styles.thermometerTitle}>
                     {t('sortscreen.urgency') || 'Urgency'}
                   </Text>
@@ -1113,33 +1204,32 @@ const styles = StyleSheet.create({
     fontSize: 12,
     opacity: 0.84,
   },
-  centerHintPill: {
+  urgencyHint: {
     position: 'absolute',
-    top: 74,
-    alignSelf: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 999,
-    backgroundColor: 'rgba(5, 8, 6, 0.56)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.10)',
+    left: '100%',
+    marginLeft: 10,
+    top: 34,
+    width: 100,
   },
-  centerHintText: {
-    color: theme.COLORS.TEXT_WHITE,
-    fontFamily: fontFamilies.DefaultBold,
-    fontSize: 13,
-    letterSpacing: 0.3,
+  urgencyHintText: {
+    color: '#B2B9B4',
+    fontFamily: fontFamilies.Default,
+    fontSize: 12,
+    lineHeight: 18,
+    textShadowColor: 'rgba(0,0,0,0.8)',
+    textShadowOffset: {width: 0, height: 1},
+    textShadowRadius: 4,
   },
   sideCue: {
     position: 'absolute',
     top: '31%',
     width: 144,
-    minHeight: 112,
+    minHeight: 98,
     paddingHorizontal: 16,
-    paddingTop: 22,
+    paddingTop: 38,
     paddingBottom: 16,
     borderRadius: 26,
-    backgroundColor: 'rgba(4, 7, 5, 0.78)',
+    backgroundColor: 'rgba(4, 7, 5, 0.58)',
     borderWidth: 1.4,
     justifyContent: 'flex-end',
     shadowColor: '#000',
@@ -1158,10 +1248,10 @@ const styles = StyleSheet.create({
   },
   sideCueArrowBadge: {
     position: 'absolute',
-    top: 12,
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    top: -16,
+    width: 54,
+    height: 54,
+    borderRadius: 27,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
@@ -1189,14 +1279,6 @@ const styles = StyleSheet.create({
   },
   sideCueArrowRight: {
     color: '#95F4B0',
-  },
-  sideCueDirection: {
-    color: 'rgba(255,255,255,0.74)',
-    fontFamily: fontFamilies.DefaultBold,
-    fontSize: 11,
-    letterSpacing: 1,
-    textTransform: 'uppercase',
-    marginBottom: 6,
   },
   sideCueLabel: {
     color: theme.COLORS.TEXT_WHITE,
@@ -1285,7 +1367,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   reportChipText: {
-    color: theme.COLORS.TEXT_WHITE,
+    color: '#B9C0BB',
     fontFamily: fontFamilies.DefaultBold,
     fontSize: 13,
     paddingHorizontal: 14,

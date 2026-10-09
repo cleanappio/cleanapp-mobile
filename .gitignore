@@ -101,3 +101,9 @@ yarn-error.log
 # Env
 .env
 .env.local
+
+*.aab
+
+*.apk
+
+/vendor/

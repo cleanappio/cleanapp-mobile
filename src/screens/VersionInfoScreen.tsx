@@ -1,10 +1,10 @@
+import {SafeAreaView} from 'react-native-safe-area-context';
 import React from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
-  SafeAreaView,
   Alert,
 } from 'react-native';
 import {theme} from '../services/Common/theme';
