@@ -42,6 +42,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
 import RenderStat from '../components/RenderStat';
 import ResponsiveImage from '../components/ResponsiveImage';
+import ReportDeliverySummary from '../components/ReportDeliverySummary';
 
 const Tab = ({ title, icon, value, isSelected, setTab }) => {
   return (
@@ -171,6 +172,7 @@ export const Leaderboard = (props) => {
   const [isLoadingReports, setIsLoadingReports] = useState(false);
   const [reportsError, setReportsError] = useState(null);
   const [refreshingReports, setRefreshingReports] = useState(false);
+  const [deliveryRefreshKey, setDeliveryRefreshKey] = useState(0);
   const isFetchingDataRef = useRef(false);
   const isFetchingReportsRef = useRef(false);
 
@@ -325,15 +327,18 @@ export const Leaderboard = (props) => {
   };
 
   const handleRefreshReports = async () => {
+    setDeliveryRefreshKey(value => value + 1);
     setRefreshingReports(true);
     await fetchMyReports({ force: true, paintCache: true });
     setRefreshingReports(false);
   };
 
-  const navigateToReport = (report) => {
+  const navigateToReport = (report, initialSection) => {
     // Navigate to MyReportDetails within the Leaderboard stack
-    navigation.navigate('MyReportDetails', { 
-      report
+    navigation.navigate('MyReportDetails', {
+      report,
+      initialSection,
+      escalationRequestId: initialSection ? Date.now() : undefined,
     });
   };
 
@@ -583,6 +588,11 @@ export const Leaderboard = (props) => {
                               <Text style={styles.reportTime}>
                                 {formatTime(report.report.timestamp || report.report.time)}
                               </Text>
+                              <ReportDeliverySummary
+                                seq={report.report.seq}
+                                refreshKey={deliveryRefreshKey}
+                                onPress={() => navigateToReport(report, 'escalation_log')}
+                              />
                             </View>
                           </Pressable>
                         );

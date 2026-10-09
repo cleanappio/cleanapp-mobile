@@ -40,6 +40,8 @@ class CleanAppNotificationModule(
         "recipient_name",
         "sent_at",
         "navigate_to",
+        "initial_section",
+        "recipient_count",
         "notification_id",
       )
 

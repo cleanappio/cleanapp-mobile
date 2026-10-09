@@ -74,6 +74,7 @@ yarn-error.log
 **/fastlane/test_output
 
 # Bundle artifact
+/android/app/src/main/assets/index.android.bundle
 *.jsbundle
 *.dSYM
 *.dSYM.zip

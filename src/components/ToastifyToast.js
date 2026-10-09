@@ -1,11 +1,38 @@
 import React from 'react';
-import {View, Text, StyleSheet} from 'react-native';
+import {View, Text, StyleSheet, Pressable} from 'react-native';
 import ToastManager, {Toast} from 'toastify-react-native';
 import {theme} from '../services/Common/theme';
 import {fontFamilies} from '../utils/fontFamilies';
 
+export const DeliveryToast = props => (
+  <View style={[styles.toast, styles.infoToast]}>
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`${props.text1}. View escalation log`}
+      style={styles.textContainer}
+      onPress={() => {
+        props.onPress?.();
+        props.hide?.();
+      }}>
+      <Text style={styles.toastText}>{props.text1}</Text>
+      {props.text2 ? (
+        <Text style={styles.toastSubtext}>{props.text2}</Text>
+      ) : null}
+      <Text style={styles.deliveryAction}>View escalation log →</Text>
+    </Pressable>
+    <Text
+      accessibilityLabel="Dismiss notification"
+      accessibilityRole="button"
+      style={styles.closeButton}
+      onPress={props.hide}>
+      ✕
+    </Text>
+  </View>
+);
+
 // Custom toast configuration to match our app's design
 const toastConfig = {
+  delivery: props => <DeliveryToast {...props} />,
   success: props => (
     <View style={[styles.toast, styles.successToast]}>
       <View style={styles.contentContainer}>
@@ -129,6 +156,13 @@ const styles = StyleSheet.create({
     fontFamily: fontFamilies.Default,
     marginTop: 4,
     opacity: 0.9,
+  },
+  deliveryAction: {
+    color: theme.COLORS.WHITE,
+    fontFamily: fontFamilies.Default,
+    fontSize: 14,
+    fontWeight: '600',
+    marginTop: 8,
   },
   closeButton: {
     color: theme.COLORS.WHITE,

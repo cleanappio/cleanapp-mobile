@@ -1,4 +1,10 @@
-import {AppState, NativeEventEmitter, NativeModules, Platform} from 'react-native';
+import {
+  AppState,
+  DeviceEventEmitter,
+  NativeEventEmitter,
+  NativeModules,
+  Platform,
+} from 'react-native';
 import Config from 'react-native-config';
 import {
   checkNotifications,
@@ -27,6 +33,11 @@ import {
 } from './DataManager';
 import {ToastService} from '../components/ToastifyToast';
 import {runWhenNavigationReady} from './NavigationService';
+import {
+  formatDeliveryTimestamp,
+  getSentRecipients,
+  getReportDeliverySummary,
+} from '../utils/reportDelivery';
 
 const POLL_INTERVAL_MS = 15000;
 const TERMINAL_STATUSES = new Set(['sent', 'processed_no_delivery']);
@@ -42,6 +53,8 @@ class ReportDeliveryNotificationService {
     this.subscription = null;
     this.notificationOpenSubscription = null;
     this.notificationEventEmitter = null;
+    this.notificationOpenVersion = 0;
+    this.navigationRequestID = 0;
   }
 
   start = async () => {
@@ -317,15 +330,17 @@ class ReportDeliveryNotificationService {
         return;
       }
 
-      const nativeRegistration = await notificationModule.registerForRemoteNotifications(
-        this.buildRemotePushConfig(),
-      );
+      const nativeRegistration =
+        await notificationModule.registerForRemoteNotifications(
+          this.buildRemotePushConfig(),
+        );
 
       if (!nativeRegistration || !nativeRegistration.token) {
         return;
       }
 
-      const provider = nativeRegistration.provider || (Platform.OS === 'ios' ? 'apns' : 'fcm');
+      const provider =
+        nativeRegistration.provider || (Platform.OS === 'ios' ? 'apns' : 'fcm');
       const appVersion = await AppVersionService.getFullVersionString();
       const existingRegistration = await getPushDeviceRegistration();
 
@@ -381,16 +396,23 @@ class ReportDeliveryNotificationService {
       recipient_email: primaryRecipient?.email || '',
       recipient_name:
         primaryRecipient?.display_name || primaryRecipient?.organization || '',
-      sent_at: primaryRecipient?.sent_at || statusResponse.last_email_sent_at || '',
+      sent_at: primaryRecipient?.sent_at || '',
       navigate_to: 'my_report_details',
+      initial_section: 'escalation_log',
+      recipient_count: String(getSentRecipients(statusResponse).length),
     };
+
+    DeviceEventEmitter.emit('cleanapp.reportDeliveryUpdated', {
+      seq: pendingReport.seq,
+    });
 
     if (this.appState === 'active') {
       ToastService.show({
-        type: notificationConfig.type,
+        type: 'delivery',
         text1: notificationConfig.title,
         text2: notificationConfig.body,
         duration: 6000,
+        onPress: () => this.handleNotificationOpenPayload(userInfo),
       });
       return;
     }
@@ -410,48 +432,13 @@ class ReportDeliveryNotificationService {
   };
 
   buildNotificationConfig = statusResponse => {
-    const primaryRecipient = this.getPrimaryRecipient(statusResponse);
-    const recipientLabel =
-      primaryRecipient?.display_name ||
-      primaryRecipient?.organization ||
-      '';
-    const recipientEmail = primaryRecipient?.email || '';
-    const sentAt =
-      this.formatNotificationTimestamp(
-        primaryRecipient?.sent_at || statusResponse.last_email_sent_at,
-      ) || '';
-
-    if (statusResponse.status === 'sent') {
-      const recipientCount = Number(statusResponse.recipient_count || 0);
-
-      if (recipientLabel && recipientEmail) {
-        const extraCount = Math.max(recipientCount - 1, 0);
-        return {
-          type: 'success',
-          title: 'Report sent',
-          body:
-            extraCount > 0
-              ? `Your report was sent to ${recipientLabel} at ${recipientEmail}${sentAt ? ` on ${sentAt}` : ''} and ${extraCount} more recipient(s).`
-              : `Your report was sent to ${recipientLabel} at ${recipientEmail}${sentAt ? ` on ${sentAt}` : ''}.`,
-        };
-      }
-
-      if (recipientEmail) {
-        const extraCount = Math.max(recipientCount - 1, 0);
-        return {
-          type: 'success',
-          title: 'Report sent',
-          body:
-            extraCount > 0
-              ? `Your report was sent to ${recipientEmail}${sentAt ? ` on ${sentAt}` : ''} and ${extraCount} more recipient(s).`
-              : `Your report was sent to ${recipientEmail}${sentAt ? ` on ${sentAt}` : ''}.`,
-        };
-      }
-
+    const summary = getReportDeliverySummary(statusResponse);
+    const sentAt = formatDeliveryTimestamp(summary.latestSentAt);
+    if (summary.count) {
       return {
         type: 'success',
-        title: 'Report processed',
-        body: 'Your report was processed and outreach was completed.',
+        title: 'Report emailed',
+        body: `${summary.label}${sentAt ? ` • ${sentAt}` : ''}.`,
       };
     }
 
@@ -463,33 +450,10 @@ class ReportDeliveryNotificationService {
   };
 
   getPrimaryRecipient = statusResponse => {
-    if (!Array.isArray(statusResponse?.recipients)) {
-      return null;
-    }
-
-    const sentRecipient = statusResponse.recipients.find(
-      recipient => recipient?.delivery_status === 'sent',
-    );
-    return sentRecipient || statusResponse.recipients[0] || null;
+    return getSentRecipients(statusResponse)[0] || null;
   };
 
-  formatNotificationTimestamp = rawTimestamp => {
-    if (!rawTimestamp) {
-      return '';
-    }
-
-    try {
-      return new Date(rawTimestamp).toLocaleString(undefined, {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      });
-    } catch {
-      return rawTimestamp;
-    }
-  };
+  formatNotificationTimestamp = formatDeliveryTimestamp;
 
   subscribeToNotificationOpens = () => {
     const notificationModule = NativeModules.CleanAppNotificationModule;
@@ -498,19 +462,22 @@ class ReportDeliveryNotificationService {
     }
 
     if (!this.notificationEventEmitter) {
-      this.notificationEventEmitter = new NativeEventEmitter(notificationModule);
+      this.notificationEventEmitter = new NativeEventEmitter(
+        notificationModule,
+      );
     }
 
     if (this.notificationOpenSubscription) {
       return;
     }
 
-    this.notificationOpenSubscription = this.notificationEventEmitter.addListener(
-      'notificationOpened',
-      payload => {
-        this.handleNotificationOpenPayload(payload);
-      },
-    );
+    this.notificationOpenSubscription =
+      this.notificationEventEmitter.addListener(
+        'notificationOpened',
+        payload => {
+          this.handleNotificationOpenPayload(payload);
+        },
+      );
   };
 
   handleInitialNotificationOpen = async () => {
@@ -540,29 +507,56 @@ class ReportDeliveryNotificationService {
       return;
     }
 
+    const openVersion = ++this.notificationOpenVersion;
     const reportWithAnalysis =
       (seq ? await readDetailedReportBySeq(seq) : null) ||
       (publicId ? await readDetailedReportByPublicId(publicId) : null);
+    if (openVersion !== this.notificationOpenVersion) {
+      return;
+    }
 
-    if (!reportWithAnalysis?.report || !Array.isArray(reportWithAnalysis?.analysis)) {
+    if (
+      !reportWithAnalysis?.report ||
+      !Array.isArray(reportWithAnalysis?.analysis)
+    ) {
+      if (this.appState === 'active') {
+        ToastService.show({
+          type: 'error',
+          text1: 'Could not open this report',
+          text2: 'Open My Reports to try again.',
+        });
+      }
       return;
     }
 
     runWhenNavigationReady(() => {
+      if (openVersion !== this.notificationOpenVersion) {
+        return;
+      }
       NativeModules.CleanAppNotificationModule?.clearInitialNotification?.();
-      navigationOpenMyReportDetails(reportWithAnalysis);
+      this.navigationRequestID = Math.max(
+        Date.now(),
+        this.navigationRequestID + 1,
+      );
+      navigationOpenMyReportDetails(
+        reportWithAnalysis,
+        this.navigationRequestID,
+      );
     });
   };
 }
 
 export default new ReportDeliveryNotificationService();
 
-const navigationOpenMyReportDetails = reportWithAnalysis => {
+const navigationOpenMyReportDetails = (reportWithAnalysis, requestID) => {
   const {navigationRef} = require('./NavigationService');
   navigationRef.navigate('Leaderboard', {
     screen: 'MyReportDetails',
     params: {
       report: reportWithAnalysis,
+      initialSection: 'escalation_log',
+      // A second notification for an already open report must scroll again.
+      escalationRequestId: requestID,
     },
   });
 };

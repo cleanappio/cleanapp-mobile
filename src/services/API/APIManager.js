@@ -652,7 +652,7 @@ export const readReportEmailStatus = async (userId, seq) => {
     const result = await response.json();
     return result;
   } catch (err) {
-    console.warn('readReportEmailStatus error:', err.message);
+    console.warn('Could not read report email status.');
     return null;
   }
 };
