@@ -3,9 +3,25 @@ import {StyleSheet, Text, View} from 'react-native';
 import {theme} from '../services/Common/theme';
 import {fontFamilies} from '../utils/fontFamilies';
 
-const percentage = value => `${Math.round((value || 0) * 100)}%`;
+export interface CaseAwarenessCase {
+  case_id: string;
+  title: string;
+  status: string;
+  summary?: string | null;
+  severity_score?: number | null;
+  urgency_score?: number | null;
+  escalation_target_count?: number | null;
+  delivery_count?: number | null;
+}
 
-const CaseAwarenessCard = ({cases = []}) => {
+interface CaseAwarenessCardProps {
+  cases?: CaseAwarenessCase[];
+}
+
+const percentage = (value?: number | null) =>
+  `${Math.round((value || 0) * 100)}%`;
+
+const CaseAwarenessCard = ({cases = []}: CaseAwarenessCardProps) => {
   if (!cases.length) {
     return null;
   }

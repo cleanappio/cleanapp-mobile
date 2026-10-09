@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {RouteProp, useNavigation} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {
@@ -15,16 +15,22 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import {theme} from '../services/Common/theme';
 import {fontFamilies} from '../utils/fontFamilies';
 import {useReverseGeocoding} from '../hooks/useReverseGeocoding';
-import {useTranslation} from 'react-i18next';
 import ResponsiveImage from '../components/ResponsiveImage';
 import ChevronLeft from '../components/ChevronLeft';
 import NavigationIcon from '../components/NavigationIcon';
 import {readReportCases} from '../services/API/APIManager';
-import CaseAwarenessCard from '../components/CaseAwarenessCard';
+import CaseAwarenessCard, {
+  type CaseAwarenessCase,
+} from '../components/CaseAwarenessCard';
+import ReportEscalationLog from '../components/ReportEscalationLog';
 
 type MyReportsStackParamList = {
   Leaderboard: undefined;
-  MyReportDetails: {report: any};
+  MyReportDetails: {
+    report: any;
+    initialSection?: 'escalation_log';
+    escalationRequestId?: number;
+  };
 };
 
 type MyReportDetailsNavigationProp = StackNavigationProp<
@@ -38,12 +44,22 @@ const MyReportDetails = ({
   route: RouteProp<MyReportsStackParamList, 'MyReportDetails'>;
 }) => {
   const navigation = useNavigation<MyReportDetailsNavigationProp>();
-  const {t} = useTranslation();
-  const {report: reportItem} = route.params;
+  const {
+    report: reportItem,
+    initialSection,
+    escalationRequestId,
+  } = route.params;
+  const scrollRef = useRef<ScrollView>(null);
+  const [contentY, setContentY] = useState(0);
+  const [logY, setLogY] = useState<number | null>(null);
+  const [contentHeight, setContentHeight] = useState(0);
+  const [alignEscalationLog, setAlignEscalationLog] = useState(
+    initialSection === 'escalation_log',
+  );
   const report = reportItem.report;
-  const [relatedCases, setRelatedCases] = useState<any[]>([]);
-  var englishAnalysis = reportItem.analysis[0];
-  for (const analysisItem of reportItem.analysis) {
+  const [relatedCases, setRelatedCases] = useState<CaseAwarenessCase[]>([]);
+  let englishAnalysis = reportItem.analysis?.[0] || {};
+  for (const analysisItem of reportItem.analysis || []) {
     if (analysisItem.language === 'en') {
       englishAnalysis = analysisItem;
       break;
@@ -86,6 +102,20 @@ const MyReportDetails = ({
       cancelled = true;
     };
   }, [report?.seq]);
+
+  useEffect(() => {
+    setAlignEscalationLog(initialSection === 'escalation_log');
+  }, [initialSection, escalationRequestId, report.seq]);
+
+  useEffect(() => {
+    if (!alignEscalationLog || logY == null) {
+      return;
+    }
+    const frame = requestAnimationFrame(() => {
+      scrollRef.current?.scrollTo({y: contentY + logY, animated: true});
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [alignEscalationLog, escalationRequestId, contentY, logY, contentHeight]);
 
   const formatTime = (timeString: string) => {
     try {
@@ -143,7 +173,12 @@ const MyReportDetails = ({
         <View style={styles.headerRight} />
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        ref={scrollRef}
+        style={styles.content}
+        onContentSizeChange={(_width, height) => setContentHeight(height)}
+        onScrollBeginDrag={() => setAlignEscalationLog(false)}
+        showsVerticalScrollIndicator={false}>
         {/* Report Image */}
         {report.seq && (
           <View style={styles.imageContainer}>
@@ -157,7 +192,9 @@ const MyReportDetails = ({
         )}
 
         {/* Report Content */}
-        <View style={styles.reportContent}>
+        <View
+          style={styles.reportContent}
+          onLayout={event => setContentY(event.nativeEvent.layout.y)}>
           <Text style={styles.reportTitle}>{title}</Text>
           {description && (
             <Text style={styles.reportDescription}>{description}</Text>
@@ -222,6 +259,12 @@ const MyReportDetails = ({
             </View>
           </Pressable>
 
+          <View onLayout={event => setLogY(event.nativeEvent.layout.y)}>
+            <ReportEscalationLog
+              seq={report.seq}
+              refreshKey={escalationRequestId}
+            />
+          </View>
           <CaseAwarenessCard cases={relatedCases} />
         </View>
       </ScrollView>

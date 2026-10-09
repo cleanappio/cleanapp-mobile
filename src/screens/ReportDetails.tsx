@@ -7,7 +7,6 @@ import {
   Text,
   View,
   ScrollView,
-  Image,
   Dimensions,
   Linking,
   Alert,
@@ -16,15 +15,14 @@ import {
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {theme} from '../services/Common/theme';
 import {fontFamilies} from '../utils/fontFamilies';
-import {useTranslation} from 'react-i18next';
 import ResponsiveImage from '../components/ResponsiveImage';
 import ChevronLeft from '../components/ChevronLeft';
 import NavigationIcon from '../components/NavigationIcon';
-import {getLocation} from '../functions/geolocation';
-import {calculateDistance} from '../utils/calculateDistance';
 import {useReverseGeocoding} from '../hooks/useReverseGeocoding';
 import {readReportCases} from '../services/API/APIManager';
-import CaseAwarenessCard from '../components/CaseAwarenessCard';
+import CaseAwarenessCard, {
+  type CaseAwarenessCase,
+} from '../components/CaseAwarenessCard';
 // import {useReportsContext} from '../contexts/ReportsContext';
 
 type ReportsStackParamList = {
@@ -47,9 +45,8 @@ const ReportDetails = ({
   >;
 }) => {
   const navigation = useNavigation<ReportDetailsNavigationProp>();
-  const {t} = useTranslation();
   const {report} = route.params;
-  const [relatedCases, setRelatedCases] = useState<any[]>([]);
+  const [relatedCases, setRelatedCases] = useState<CaseAwarenessCase[]>([]);
 
   // Reverse geocoding hook to get human-readable address
   const {
@@ -63,23 +60,6 @@ const ReportDetails = ({
     language: 'en',
     autoFetch: true,
   });
-
-  const checkDistanceFromReport = async (): Promise<number> => {
-    console.log('Checking distance from report');
-    const userLocation = await getLocation();
-    console.log('User location is ', userLocation);
-
-    console.log('Calculating distance');
-    const distance = calculateDistance(
-      userLocation.latitude,
-      userLocation.longitude,
-      report.latitude,
-      report.longitude,
-    );
-
-    console.log('Distance is ', distance, ' meters');
-    return distance;
-  };
 
   const goBack = () => {
     navigation.goBack();

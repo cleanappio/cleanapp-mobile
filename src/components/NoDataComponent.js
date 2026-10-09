@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import React, {useState, useEffect} from 'react';
 import {View, Text, Animated} from 'react-native';
 import AntIcon from 'react-native-vector-icons/AntDesign';

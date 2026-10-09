@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import React, {useEffect, useState} from 'react';
 import {Text, View, Animated, StyleSheet} from 'react-native';
 import Ripple from './Ripple';

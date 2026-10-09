@@ -1,15 +1,11 @@
-const zipObject = (keys = [], values = []) => {
-  return keys.reduce(
-    (acc, key, index) => ({
-      ...acc,
-      [key]: values[index],
-    }),
-    {},
+export const objectPromiseAll = async <
+  T extends Record<string, Promise<unknown>>,
+>(
+  obj: T,
+): Promise<{[K in keyof T]: Awaited<T[K]>}> => {
+  const resolvedEntries = await Promise.all(
+    Object.entries(obj).map(async ([key, promise]) => [key, await promise] as const),
   );
-};
 
-export const objectPromiseAll = async (obj: {[key: string]: Promise<any>}) => {
-  const keys = Object.keys(obj);
-  const result = await Promise.all(Object.values(obj));
-  return zipObject(keys, result);
+  return Object.fromEntries(resolvedEntries) as {[K in keyof T]: Awaited<T[K]>};
 };

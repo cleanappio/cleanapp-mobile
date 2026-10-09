@@ -1,28 +1,31 @@
 import Config from 'react-native-config';
-import { getBlockchainLink } from './APIManager';
+import {getBlockchainLink} from './APIManager';
 
 export const settings = {
-  prod: {  // Cleanapp Google Cloud Prod
+  prod: {
+    // Cleanapp Google Cloud Prod
     apiUrl: 'https://api.cleanapp.io',
     webUrl: 'https://cleanapp.io',
     mapUrl: 'https://embed.cleanapp.io',
     liveUrl: 'https://live.cleanapp.io',
-    processingUrl: 'https://processing.cleanapp.io'
+    processingUrl: 'https://processing.cleanapp.io',
   },
-  dev: {  // Cleanapp Google Cloud Dev
+  dev: {
+    // Cleanapp Google Cloud Dev
     apiUrl: 'http://dev.api.cleanapp.io:8080',
     webUrl: 'https://dev.cleanapp.io',
     mapUrl: 'https://devembed.cleanapp.io',
     liveUrl: 'https://devlive.cleanapp.io',
-    processingUrl: 'https://devprocessing.cleanapp.io'
+    processingUrl: 'https://devprocessing.cleanapp.io',
   },
-  local: {  // Cleanapp Local
+  local: {
+    // Cleanapp Local
     // URLs need to be tweaked dependent on the local environment
     apiUrl: 'http://192.168.86.125:8080',
     webUrl: 'http://192.168.86.125:3000',
     mapUrl: 'https://devembed.cleanapp.io',
     liveUrl: 'https://devlive.cleanapp.io',
-    processingUrl: 'https://devprocessing.cleanapp.io'
+    processingUrl: 'https://devprocessing.cleanapp.io',
   },
   v2api: {
     updateOrCreateUser: 'update_or_create_user',
@@ -41,10 +44,12 @@ export const settings = {
   },
   v3api: {
     getReportsByLatLon: 'get_reports_by_lat_lon',
+    getNextSortReport: 'reports/sort/next',
+    submitSortReport: 'reports/sort/submit',
   },
   apiSettings: {
     sendingAttempts: 3,
-  }
+  },
 };
 
 export const getUrls = () => {
