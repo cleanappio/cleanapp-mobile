@@ -242,9 +242,7 @@ const MyReportDetails = ({
                     </Pressable>
                   </View>
                 ) : address ? (
-                  <Text style={[styles.value, styles.locationText]}>
-                    {address}
-                  </Text>
+                  <View><Text style={[styles.value, styles.locationText]}>{address}</Text><Text accessibilityRole="link" onPress={() => Linking.openURL('https://docs.aws.amazon.com/location/latest/developerguide/data-attribution.html')} style={{fontSize: 11, textDecorationLine: 'underline'}}>Address data: Amazon Location</Text></View>
                 ) : (
                   <Text
                     numberOfLines={3}
