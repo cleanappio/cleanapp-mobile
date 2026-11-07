@@ -31,7 +31,7 @@ export const useReverseGeocoding = ({
   const [error, setError] = useState<string | null>(null);
 
   const fetchAddress = useCallback(async () => {
-    if (!latitude || !longitude) {
+    if (typeof latitude !== 'number' || typeof longitude !== 'number' || !Number.isFinite(latitude) || !Number.isFinite(longitude)) {
       setError('Latitude and longitude are required');
       return;
     }
@@ -61,7 +61,7 @@ export const useReverseGeocoding = ({
 
   // Auto-fetch when coordinates change
   useEffect(() => {
-    if (autoFetch && latitude && longitude) {
+    if (autoFetch && typeof latitude === 'number' && typeof longitude === 'number') {
       fetchAddress();
     }
   }, [latitude, longitude, language, autoFetch, fetchAddress]);

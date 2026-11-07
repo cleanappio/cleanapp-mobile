@@ -12,7 +12,7 @@ apply from: project(':react-native-config').projectDir.getPath() + "/dotenv.grad
 // Only public mobile configuration belongs in the APK. Never package release
 // credentials or arbitrary values from the developer's .env file.
 def clientConfigKeys = [
-    'APP_MODE', 'GEO_API_KEY', 'MAPBOX_ACCESS_TOKEN',
+    'APP_MODE', 'MAPBOX_ACCESS_TOKEN',
     'FCM_APPLICATION_ID', 'FCM_API_KEY', 'FCM_PROJECT_ID',
     'FCM_GCM_SENDER_ID', 'FCM_STORAGE_BUCKET'
 ] as Set
@@ -101,8 +101,8 @@ android {
         applicationId "com.cleanapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 61
-        versionName "3.2.30"
+        versionCode 62
+        versionName "3.2.31"
     }
     signingConfigs {
         debug {
